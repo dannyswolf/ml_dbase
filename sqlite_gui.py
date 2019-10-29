@@ -1,16 +1,16 @@
 """
 Sqlite Γραφικό περιβάλλον με Python3
-version v 0.1
+version v 0.2 Το Edit δουλευει για όλες τις βάσεις
 ===============================ΓΡΑΜΜΗ 405=======================
 TO DO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΕΞΟΥΝ ΣΩΣΤΑ *******************
-0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.
+0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
 1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY----------------------------------------------------ΕΓΙΝΕ
 2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες
 3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------
 4) ο χρήστης να επιλέγει τον πίνακα
 5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό
 6) Να βάλω να έχει log αρχείο
-
+7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια)
 """
 
 # Πρώτα αυτό για το Combobox
@@ -216,6 +216,7 @@ def add_to():
             toner_label.grid(row=index + 1)
             var = StringVar()
             data_to_add.append(var)
+
             entry = Entry(add_window, textvariable=var, bd=2).grid(column=1, row=index + 1)
 
     # model_laber = Label(add_window, text=headers[1 if headers[0] != "ID" else 2], padx=3, pady=3,  font=("San Serif", 12, "bold"), bd=3)
@@ -286,9 +287,12 @@ def add_to():
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db():
+        global headers
         culumns = ",".join(headers)
         # Να ορίσουμε τα VALUES ΤΗΣ SQL οσα είναι και τα culumns
+        # values είναι πόσα ? να έχει ανάλογα τα culumns
         values_var = []
+
         for header in headers:
             if header == "ID" or header == "id":
                 values_var.append("NULL")
@@ -346,7 +350,7 @@ def edit():
     edit_cursor.execute("SELECT * FROM " + table + " WHERE ID = ?", (selected_item,))
     selected_data = edit_cursor.fetchall()
     selected_data = list(selected_data[0])
-    print("selected_data line 330 ", selected_data)
+    print("selected_data line 349 ", selected_data)
     # δεν χρειάζεται το πέρνει απο το global headers
     # headers = list(map(lambda x: x[0], edit_cursor.description()),)
     print("headers[0] γραμμή 333 = ", headers[0])
@@ -358,49 +362,69 @@ def edit():
     edit_window_title.grid(column=1, row=0)
     Label(edit_window, text=tree.selection()).grid(column=0, row=0)
     # ===========================Εμφάνιση κεφαλίδων======================================
+    count_headers = 0
+    data_to_add = []
+    for index, header in enumerate(headers):
+        if header == "ID" or header == "id":
+            continue
+        else:
+            count_headers += 1
+            toner_label = Label(edit_window, text=header, width=10, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
+            toner_label.grid(row=index + 1)
+            var = StringVar(edit_window, value=selected_data[index])
+            data_to_add.append(var)
+            print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", var.get())
+            entry = Entry(edit_window, textvariable=var, bd=2, width=len(var.get())).grid(column=1, row=index + 1, sticky="we")
+            ########################################################################################
+            ################################  LAST COMMENT START #########################################
+            ########################################################################################
+    # toner_label = Label(edit_window, text=headers[1], width=10, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
+    # toner_label.grid(row=2)
+    # model_laber = Label(edit_window, text=headers[2], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # model_laber.grid(row=3)
+    # kodikos_label = Label(edit_window, text=headers[3], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # kodikos_label.grid(row=4)
+    # temaxia_label = Label(edit_window, text=headers[4], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # temaxia_label.grid(row=5)
+    # timi_laber = Label(edit_window, text=headers[5], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # timi_laber.grid(row=6)
+    # synolo_label = Label(edit_window, text=headers[6], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # synolo_label.grid(row=7)
+    # selides_label = Label(edit_window, text=headers[7], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # selides_label.grid(row=8)
+    # # -------------------------Εμφάνηση τιμών απο το επιλεγμένο στοιχείο-----------------
+    # toner_data = StringVar(edit_window, value=selected_data[1])
+    # toner_entry = Entry(edit_window, textvariable=toner_data, width=100, font=("San Serif", 12, "bold"), bd=3)
+    # toner_entry.grid(column=1, row=2, sticky="w")
+    #
+    # model_data = StringVar(edit_window, value=selected_data[2])
+    # model_entry = Entry(edit_window, textvariable=model_data, width=100, font=("San Serif", 12, "bold"), bd=3)
+    # model_entry.grid(column=1, row=3, sticky="w")
+    #
+    # kodikos_data = StringVar(edit_window, value=selected_data[3])
+    # kodikos_entry = Entry(edit_window, textvariable=kodikos_data, font=("San Serif", 12, "bold"), bd=3)
+    # kodikos_entry.grid(column=1, row=4, sticky="w")
+    #
+    # temaxia_data = IntVar(edit_window, value=selected_data[4])
+    # temaxia_entry = Entry(edit_window, textvariable=temaxia_data, font=("San Serif", 12, "bold"), bd=3)
+    # temaxia_entry.grid(column=1, row=5, sticky="w")
+    #
+    # timi_data = DoubleVar(edit_window, value=selected_data[5])
+    # timi_entry = Entry(edit_window, textvariable=timi_data, font=("San Serif", 12, "bold"), bd=3)
+    # timi_entry.grid(column=1, row=6, sticky="w")
+    #
+    # # Το σύνολο μόνο θα το εμφανίζει δεν χρειάζεται να το αλλάξει ο χρήστης
+    # synolo_label = Label(edit_window, text=selected_data[6], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
+    # synolo_label.grid(column=1, row=7, sticky="w")
+    #
+    # selides_data = StringVar(edit_window, value=selected_data[7])
+    # selides_entry = Entry(edit_window, textvariable=selides_data, font=("San Serif", 12, "bold"), bd=3)
+    # selides_entry.grid(column=1, row=8, sticky="w")
 
-    toner_label = Label(edit_window, text=headers[1], width=10, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
-    toner_label.grid(row=2)
-    model_laber = Label(edit_window, text=headers[2], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    model_laber.grid(row=3)
-    kodikos_label = Label(edit_window, text=headers[3], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    kodikos_label.grid(row=4)
-    temaxia_label = Label(edit_window, text=headers[4], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    temaxia_label.grid(row=5)
-    timi_laber = Label(edit_window, text=headers[5], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    timi_laber.grid(row=6)
-    synolo_label = Label(edit_window, text=headers[6], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    synolo_label.grid(row=7)
-    selides_label = Label(edit_window, text=headers[7], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    selides_label.grid(row=8)
-    # -------------------------Εμφάνηση τιμών απο το επιλεγμένο στοιχείο-----------------
-    toner_data = StringVar(edit_window, value=selected_data[1])
-    toner_entry = Entry(edit_window, textvariable=toner_data, width=100, font=("San Serif", 12, "bold"), bd=3)
-    toner_entry.grid(column=1, row=2, sticky="w")
+    ########################################################################################
+    ################################  LAST COMMENT  END   #########################################
+    ########################################################################################
 
-    model_data = StringVar(edit_window, value=selected_data[2])
-    model_entry = Entry(edit_window, textvariable=model_data, width=100, font=("San Serif", 12, "bold"), bd=3)
-    model_entry.grid(column=1, row=3, sticky="w")
-
-    kodikos_data = StringVar(edit_window, value=selected_data[3])
-    kodikos_entry = Entry(edit_window, textvariable=kodikos_data, font=("San Serif", 12, "bold"), bd=3)
-    kodikos_entry.grid(column=1, row=4, sticky="w")
-
-    temaxia_data = IntVar(edit_window, value=selected_data[4])
-    temaxia_entry = Entry(edit_window, textvariable=temaxia_data, font=("San Serif", 12, "bold"), bd=3)
-    temaxia_entry.grid(column=1, row=5, sticky="w")
-
-    timi_data = DoubleVar(edit_window, value=selected_data[5])
-    timi_entry = Entry(edit_window, textvariable=timi_data, font=("San Serif", 12, "bold"), bd=3)
-    timi_entry.grid(column=1, row=6, sticky="w")
-
-    # Το σύνολο μόνο θα το εμφανίζει δεν χρειάζεται να το αλλάξει ο χρήστης
-    synolo_label = Label(edit_window, text=selected_data[6], padx=3, pady=3, font=("San Serif", 12, "bold"), bd=3)
-    synolo_label.grid(column=1, row=7, sticky="w")
-
-    selides_data = StringVar(edit_window, value=selected_data[7])
-    selides_entry = Entry(edit_window, textvariable=selides_data, font=("San Serif", 12, "bold"), bd=3)
-    selides_entry.grid(column=1, row=8, sticky="w")
 
     # test_data = StringVar(edit_window, value=selected_data[1])
     # test_entry = Entry(edit_window, textvariable=test_data).grid(column=2, row=2)
@@ -408,29 +432,46 @@ def edit():
     # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
     # ---------------------- μετά την επεξεργασία   -------------------------------------
     def update_to_db():
-        culumns = ",".join(headers)
-        print("==========culumns=========== line 390 ", culumns)
+
+        #culumns = ",".join(headers)
+        #print("==========culumns=========== line 436 ", culumns)
+        #Τα culumns ειναι της μορφής ID, ΤΟΝΕΡ, ΜΟΝΤΕΛΟ, ΚΩΔΙΚΟΣ κτλπ.
+        #Πρεπει να γίνουν ΤΟΝΕΡ=?, ΜΟΝΤΕΛΟ=?, ΚΩΔΙΚΟΣ=? κτλπ για την σύνταξη της sql
+        #Ευκολο άν μπουν σε νεα λίστα παρά να τροποποιησω την υπάρχουσα λίστα
+        edited_culumns = []
+        for culumn in headers:
+            if culumn == "id" or culumn == "ID":
+                continue
+            else:
+                edited_culumns.append(culumn + "=?")
+        culumns = ",".join(edited_culumns)
+        print("-------------edited_culumns--------------", edited_culumns)
         # ====================ΕΠΙΛΕΓΜΈΝΟ ID =================
         selected_item = tree.selection()
         selected_id = tree.set(selected_item, "#1")
-        print("==========selected_id==========LINE 396 \n", selected_id)
+        print("==========selected_id==========LINE 447 \n", selected_id)
 
-        data_to_add = (toner_data.get(), model_data.get(), kodikos_data.get(),
-                       temaxia_data.get(), str(timi_data.get()) + " €",
-                       str(timi_data.get() * temaxia_data.get()) + " €", selides_data.get(), selected_id)
-        print("========data_to_add======line 400", data_to_add)
+        # Θα βάζει το data_to_add απο πάνω γραμμη 371
+        #βαζουμε και το id που χρειάζεται για το WHERE ID=?
+        edited_data = []
+        for data in data_to_add:
+            edited_data.append(data.get())
+        edited_data.append(selected_id)
+        # data_to_add = (toner_data.get(), model_data.get(), kodikos_data.get(),
+        #                temaxia_data.get(), str(timi_data.get()) + " €",
+        #                str(timi_data.get() * temaxia_data.get()) + " €", selides_data.get(), selected_id)
+        print("========edited data ======line 449", tuple(edited_data))
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
         # sqlite_update_query = """Update new_developers set salary = ?, email = ? where id = ?"""
-        edit_cursor.execute(
-            " UPDATE " + table + "  SET ΤΟΝΕΡ=?, ΜΟΝΤΕΛΟ=?, ΚΩΔΙΚΟΣ=?, TEMAXIA=?, ΤΙΜΗ=?, ΣΥΝΟΛΟ=?, ΣΕΛΙΔΕΣ=? WHERE ID=? ",
-            (data_to_add))
+        edit_cursor.execute("UPDATE " + table + "  SET " + culumns + " WHERE ID=? ",
+            (tuple(edited_data)))
         print(50 * "*", "UPDATED", 50 * "8")
         edit_conn.commit()
         print("===============Το προΐον ενημερώθηκε με επιτυχία ==========LINE 411")
-        print("==========Παλιά δεδομένα===========LINE 413 \n", selected_data)
+        print("==========Παλιά δεδομένα===========LINE 472 \n", selected_data)
 
-        print("==========Νέα δεδομένα============ LINE 415 \n", data_to_add)
+        print("==========Νέα δεδομένα============ LINE 474 \n", edited_data)
 
         # Ενημέρωση του tree με τα νέα δεδομένα
         open_new_file = "no"
