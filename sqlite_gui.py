@@ -1,16 +1,18 @@
 """
 Sqlite Γραφικό περιβάλλον με Python3
 version v 0.2 Το Edit δουλευει για όλες τις βάσεις
+Πρεπει να φιάκω την επαναφορα γραμμη 624
 ===============================ΓΡΑΜΜΗ 405=======================
 TO DO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΕΞΟΥΝ ΣΩΣΤΑ *******************
-0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
-1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY----------------------------------------------------ΕΓΙΝΕ
-2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες
-3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------
-4) ο χρήστης να επιλέγει τον πίνακα
-5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό
-6) Να βάλω να έχει log αρχείο
-7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια)
+TO DO LIST  0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
+TO DO LIST  1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY------------------------------------------------------------------------ΕΓΙΝΕ
+TO DO LIST  2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες------------------------------ΕΓΙΝΕ 30/10/2019
+TO DO LIST  3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------
+TO DO LIST  4) ο χρήστης να επιλέγει τον πίνακα
+TO DO LIST  5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό
+TO DO LIST  6) Να βάλω να έχει log αρχείο
+TO DO LIST  7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια)
+TO DO LIST  8) Να βάλω triggers
 """
 
 # Πρώτα αυτό για το Combobox
@@ -81,7 +83,7 @@ def update_view(open_new_file="yes"):
     up_cursor.execute("SELECT * FROM " + table)
     global headers
     headers = list(map(lambda x: x[0], up_cursor.description))
-    print("headers at line 160 ", headers)
+    print("headers at line 80 ", headers)
     up_data = up_cursor.fetchall()
     print("up_data line 162 ", up_data)
     up_index = len(up_data)
@@ -93,14 +95,21 @@ def update_view(open_new_file="yes"):
 
 
 root = Tk()
-root.geometry('1500x600+0+0')
+#root.geometry('1500x600+0+0')
 root.title('Sqlite γραφικό περιβάλλον')
 root.config(bg="#C2C0BD")
 root.resizable(width=100, height=100)
+# width = 1200
+# height = 600
+# screen_width = root.winfo_screenwidth()
+# screen_height = root.winfo_screenheight()
+# x = (screen_width / 2) - (width / 2)
+# y = (screen_height / 2) - (height / 2)
+# root.geometry("%dx%d+%d+%d" % (width, height, x, y))
 # Τίτλος προγράμματος
 
 app_title = Label(bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8, padx=8, )
-app_title.grid(column=1, row=0)
+app_title.grid(column=0, row=0)
 
 # Περιοχη για παρουσήαση του πινακα της βασης
 # Δεν χρειάζεται αφου ο χρήστης πρεπει να επιλέξει πρώτα αρχείο (dbase)
@@ -124,45 +133,25 @@ for n in range(len(data)):
 style = ttk.Style()
 # Modify the font of the body
 style.configure("mystyle.Treeview", highlightthickness=10, bd=10, font=('San Serif', 11))
-style.configure("mystyle.Treeview.Heading", font=('Calibri', 13, 'bold'))  # Modify the font of the headings
+style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'bold'))  # Modify the font of the headings
 style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
 style.configure("mystyle.Treeview", fg="red", rowheight=40, background="red")
 
 # ------------------------Εμφάνιση δεδομένων σε Frame-------------------------
-data_frame = Frame(root, bd=3, bg="white", relief="raise")
-data_frame.grid(column=1, row=7)
+data_frame = Frame(root, bd=3, bg="#C2C0BD", relief="raise")
+data_frame.grid(column=0, row=4)
 # tree = ttk.Treeview(data_frame)
 tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings")
 
 # scrolls
 scrolly = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-scrolly.grid(sticky='ns', column=2, row=7)
+scrolly.grid(column=1, row=4, sticky="ns")
 tree.configure(yscrollcommand=scrolly.set)
 scrollx = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
-scrollx.grid(sticky='we', column=1, row=8)
+scrollx.grid(sticky='we', column=0, row=8)
 tree.configure(xscrollcommand=scrollx.set)
 
-# tree["columns"] = sqlite3.Row
-tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟΣ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
-tree["show"] = "headings"
 
-tree.column("id", width=50, minwidth=50, anchor='center', stretch=True)
-tree.column("TONER", width=200, minwidth=100, anchor='center')
-tree.column("ΜΟΝΤΕΛΟΣ", width=670, minwidth=200, anchor='center')
-tree.column("ΚΩΔΙΚΟΣ", width=90, minwidth=90, anchor='center')
-tree.column("ΤΕΜΑΧΙΑ", width=90, minwidth=90, anchor='center')
-tree.column("ΤΙΜΗ", width=50, minwidth=50, anchor='center')
-tree.column("ΣΥΝΟΛΟ", width=70, minwidth=70, anchor='center')
-tree.column("ΣΕΛΙΔΕΣ", width=70, minwidth=70, anchor='center')
-
-tree.heading("id", text="id")
-tree.heading("TONER", text="TONER")
-tree.heading("ΜΟΝΤΕΛΟΣ", text="ΜΟΝΤΕΛΟ")
-tree.heading("ΚΩΔΙΚΟΣ", text="ΚΩΔΙΚΟΣ")
-tree.heading("ΤΕΜΑΧΙΑ", text="ΤΕΜΑΧΙΑ")
-tree.heading("ΤΙΜΗ", text="ΤΙΜΗ")
-tree.heading("ΣΥΝΟΛΟ", text="ΣΥΝΟΛΟ")
-tree.heading("ΣΕΛΙΔΕΣ", text="ΣΕΛΙΔΕΣ")
 
 # ΔΕΝ ΧΡΕΙΑΖΕΤΑΙ ΑΦΟΥ ΠΡΩΤΑ ΑΝΟΙΓΕΙ Ο ΧΡΗΣΤΗΣ ΤΟ ΑΡΧΕΙΟ (dbase)
 # και κανει insert τα δεδομένω με function
@@ -176,6 +165,34 @@ tree.heading("ΣΕΛΙΔΕΣ", text="ΣΕΛΙΔΕΣ")
 # Δήνουμε σαν παράμετρο "yes" για να ανοίξει νέο αρχείο
 dbase = update_view("yes")
 print("************DBASE NOW************** line 172", dbase)
+
+
+
+print("**********************head, for head in headers************* Line 162", headers)
+# tree["columns"] = sqlite3.Row
+tree["columns"] = [head for head in headers]
+#tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟΣ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
+#tree["show"] = "headings"
+for head in headers:
+    tree.column(head, anchor="center", width=150, stretch=True)
+#tree.column("id", width=50, minwidth=50, anchor='center', stretch=True)
+#tree.column("TONER", width=200, minwidth=100, anchor='center')
+#tree.column("ΜΟΝΤΕΛΟΣ", width=670, minwidth=200, anchor='center')
+#tree.column("ΚΩΔΙΚΟΣ", width=90, minwidth=90, anchor='center')
+#tree.column("ΤΕΜΑΧΙΑ", width=90, minwidth=90, anchor='center')
+#tree.column("ΤΙΜΗ", width=50, minwidth=50, anchor='center')
+#tree.column("ΣΥΝΟΛΟ", width=70, minwidth=70, anchor='center')
+#tree.column("ΣΕΛΙΔΕΣ", width=70, minwidth=70, anchor='center')
+    tree.heading(head, text=head)
+#tree.heading("id", text="id")
+#tree.heading("TONER", text="TONER")
+#tree.heading("ΜΟΝΤΕΛΟΣ", text="ΜΟΝΤΕΛΟ")
+#tree.heading("ΚΩΔΙΚΟΣ", text="ΚΩΔΙΚΟΣ")
+#tree.heading("ΤΕΜΑΧΙΑ", text="ΤΕΜΑΧΙΑ")
+#tree.heading("ΤΙΜΗ", text="ΤΙΜΗ")
+#tree.heading("ΣΥΝΟΛΟ", text="ΣΥΝΟΛΟ")
+#tree.heading("ΣΕΛΙΔΕΣ", text="ΣΕΛΙΔΕΣ")
+
 
 # Συνδεση με sqlite
 conn = sqlite3.connect(dbase)
@@ -208,7 +225,7 @@ def add_to():
     count_headers = 0  # Για να μετρίσουμε πόσες κεφαλίδες έχει ο πίνακας  χωρίς τα " ID " γιατι μας χρειάζεται για τα entry που θα κάνει ο χρήστης
     data_to_add = []
     for index, header in enumerate(headers):
-        if header == "ID" or header == "id":
+        if header == "ID" or header == "id" or header == "Id":
             continue
         else:
             count_headers += 1
@@ -294,7 +311,7 @@ def add_to():
         values_var = []
 
         for header in headers:
-            if header == "ID" or header == "id":
+            if header == "ID" or header == "id" or header == "Id":
                 values_var.append("NULL")
             else:
                 values_var.append('?')
@@ -333,7 +350,7 @@ def add_to():
 
 
 # Κουμπιά ειναι μερους ενος frame
-buttons_frame = Frame(root, width=500, height=1400, relief='raised')
+buttons_frame = Frame(root, relief='raised')
 buttons_frame.config(bg="#C2C0BD")
 
 
@@ -365,7 +382,7 @@ def edit():
     count_headers = 0
     data_to_add = []
     for index, header in enumerate(headers):
-        if header == "ID" or header == "id":
+        if header == "ID" or header == "id" or header == "Id":
             continue
         else:
             count_headers += 1
@@ -460,13 +477,15 @@ def edit():
         # data_to_add = (toner_data.get(), model_data.get(), kodikos_data.get(),
         #                temaxia_data.get(), str(timi_data.get()) + " €",
         #                str(timi_data.get() * temaxia_data.get()) + " €", selides_data.get(), selected_id)
-        print("========edited data ======line 449", tuple(edited_data))
+        print("========edited data ======line 482", tuple(edited_data))
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
         # sqlite_update_query = """Update new_developers set salary = ?, email = ? where id = ?"""
         edit_cursor.execute("UPDATE " + table + "  SET " + culumns + " WHERE ID=? ",
             (tuple(edited_data)))
-        print(50 * "*", "UPDATED", 50 * "8")
+        print(60 * "*")
+        print(50 * "*", "UPDATED", 50 * "*")
+        print(60 * "*")
         edit_conn.commit()
         print("===============Το προΐον ενημερώθηκε με επιτυχία ==========LINE 411")
         print("==========Παλιά δεδομένα===========LINE 472 \n", selected_data)
@@ -578,23 +597,31 @@ def del_from_tree():
 
 
 #=====================================ΑΝΑΖΗΤΗΣΗ=========================================
-def search(event, item=''):
-    children = tree.get_children(item)
-    for child in children:
-        text = tree.item(child, 'text')
-        if text.startswith(entry.get()):
-            tree.selection_set(child)
-        search(None, item=child)
+def Search():
+    if search_data.get() != "":
+        tree.delete(*tree.get_children())
+        search_conn = sqlite3.connect(dbase)
+        search_cursor = search_conn.cursor()
+        #idea = SELECT * FROM tablename WHERE name or email or address or designation = 'nagar';
+
+        search_cursor.execute("SELECT * FROM " + table + " WHERE ΤΟΝΕΡ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? OR  ΣΥΝΟΛΟ LIKE ? OR ΣΕΛΙΔΕΣ LIKE ?",
+                       ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%'))
+        fetch = search_cursor.fetchall()
+        for data in fetch:
+            tree.insert('', 'end', values=(data))
+        search_cursor.close()
+        search_conn.close()
 # ------------------------------------Κουμπιά------------------------------------------------------------------------
 # δεν χρειάζεται αυτο γιατί έχω βάλει απο κάτω αλλο Το file_button κάνει αυτόματα και ενημέρωση στο treeview
 # file_button = Button(buttons_frame, bg="gray10", text="Ανοιγμα αρχείου", padx=10, pady=10, bd=3, fg="white", command=open_file)
 
 
 # =================================ΑΝΑΖΉΤΗΣΗ===================================
-search_button = Button(buttons_frame, command=search, text="Αναζήτηση", padx=10, pady=10, bg="green", fg="white", bd=3)
-
 search_data = StringVar()
 search_entry = Entry(buttons_frame, textvariable=search_data)
+search_button = Button(buttons_frame, command=Search, text="Αναζήτηση", padx=10, pady=10, bg="green", fg="white", bd=3)
+open_new_file = "no"
+reset_button = Button(buttons_frame, text="Επαναφορά", padx=10, pady=10, bg="green", fg="white", bd=3, command=update_view(open_new_file))
 
 add_button = Button(buttons_frame, command=add_to, text="Προσθήκη", padx=10, pady=10, bg="green", fg="white", bd=3)
 del_button = Button(buttons_frame, command=del_from_tree, text="Διαγραφή απο λίστα", padx=10, pady=10, bg="red",
@@ -611,27 +638,28 @@ show_backup = Label(root, text="", bg="#C2C0BD", fg="black", font=("Arial Bold",
 
 # Εμφάνιση κουμιών και Logo
 image = PhotoImage(file="logo-small-orange.png")
-label_image = Label(buttons_frame, image=image)
-label_image.grid(sticky="we")
+label_image = Label(root, image=image)
+label_image.grid(column=0, row=0, sticky="w")
 
 # Το file_button κάνει αυτόματα και ενημέρωση στο treeview
-search_button.grid(sticky="we")
-search_entry.grid(sticky="we")
+search_button.grid(column=3, row=2)
+search_entry.grid(column=2, row=2,  ipady=3, ipadx=100)
 search_entry.focus()
-file_button.grid(sticky="we")
-add_button.grid(sticky='we')
-edit_button.grid(sticky='we')
-backup_button.grid(sticky='we')
+reset_button.grid(column=4, row=2)
+file_button.grid(column=3, row=0)
+add_button.grid(column=4, row=0)
+edit_button.grid(column=5, row=0)
+backup_button.grid(column=6, row=0)
 # Εχω βάλει απο πανω αλλο Το file_button κάνει αυτόματα και ενημέρωση στο treeview
 # update_button.grid(sticky="we")
-del_button.grid(sticky='we')
-exit_button.grid(sticky='we')
+del_button.grid(column=7, row=0)
+exit_button.grid(column=8, row=0)
 
 # Εμφάνιση αν έγινε το backup
-show_backup.grid(column=1, row=9)
+show_backup.grid(column=0, row=9)
 
 # Εμφάνιση των κουμίων που είναι στο frame αριστερά
-buttons_frame.grid(row=7, column=0, padx=10)
+buttons_frame.grid(row=2, column=0)
 
 
 # search_button = Button(text='Search', command=search)
