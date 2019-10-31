@@ -116,6 +116,7 @@ def update_view():
     print("=============Σύνδεση με Βαση Δεδομένων τώρα=============Line 139 ", dbase)
     print()
     up_cursor = up_conn.cursor()
+    print("=====================up_cursor============================Line 119", up_cursor)
 
     # =======================Ανάγνωριση πίνκα δεδομένων=============
     up_cursor = up_conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -414,9 +415,9 @@ def del_from_tree():
 
     # ======================ΕΠΙΒΕΒΑΙΩΣΗ ΔΙΑΓΡΑΦΗΣ============
     answer = tkinter.messagebox.askquestion("Θα πραγματοποιηθεί διαγραφή!",
-                                            " Είστε σήγουρος για την διαγραφή του {};".format(selected_data))
+                                            " Είστε σήγουρος για την διαγραφή του {};".format(selected_data), icon='warning')
     if answer == 'yes':
-        tkinter.messagebox.showinfo('Διαγραφή...', "Το {} διαγράφηκε!".format(selected_data))
+        tkinter.messagebox.showwarning('Διαγραφή...', "Το {} διαγράφηκε!".format(selected_data))
         #Αν ο χρήστης επιλεξει το "yes" παει στην γραμμή 428
         pass
     else:
