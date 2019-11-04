@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
@@ -22,7 +23,7 @@ TO DO LIST  9) Να βάλω στο μενοu RUN SQL
 """
 
 # Πρώτα αυτό για το Combobox
-from tkinter import ttk
+#from tkinter import ttk
 import sqlite3
 # Μετά αυτο για το Label Διαφορετικά βγαζει error για το font
 from tkinter import *
@@ -47,7 +48,7 @@ dbase = ""
 
 
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
-def open_file(tree):
+def open_file(root, tree):
     # Ανοιγουμε την βάση αν δεν έχουμε ανοιξει
     global dbase
 
@@ -56,13 +57,77 @@ def open_file(tree):
                                                        "*.db"), (
                                                           "all files",
                                                           "*.*")))
-    print("======================opened file ===================line 45", dbase)
-    update_view(tree)
-
+    print("======================opened file ===================line 68", dbase)
+    select_table(root, tree)
     return dbase
 
 
-def update_view(tree):
+def select_table(root, tree):
+    global table
+    # =======================Ανάγνωριση πίνκα δεδομένων=============
+    conn = sqlite3.connect(dbase)
+    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    table_name = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    dont_used_tables = ["sqlite_master", "sqlite_sequence", "sqlite_temp_master"]
+    tables = []
+    for name in table_name:
+        if name[0] not in dont_used_tables:
+            tables.append(name[0])
+
+            print("TABLE ", name[0], " ========added to tables")
+        else:
+            continue
+
+    print("=========ΟΝΟΜΑ ΠΙΝΑΚΩΝ===========LINE 82 ", tables)
+    print()
+    # ===============================Επιλογή πίνακα================================
+
+    if len(tables) > 1:
+        print("stage 0")
+
+        def change_table():
+            global table
+            print("stage 3")
+            print("====================table_var.get()=================", table_var.get())
+            table = table_var.get()
+            update_view(root, tree)
+            #choice_table_window.destroy()
+
+            return table
+        print("stage 1", "change_table DEFINED")
+
+        table_var = StringVar()
+        print("stage 2  table_var", table_var.get())
+
+        #table_var.trace("w", change_table)
+        #choice_table_window = Toplevel()
+        #choice_table_window.title("Επιλογή πίνακα")
+        choice_table_window_title = Label(root, bg="brown", fg="white", text="Παρακαλώ επιλέξτε πίνακα",
+                                 font=("Arial Bold", 15), bd=8, padx=3)
+        #choice_table_window_title.grid(column=1, row=0)
+        table_label = Label(root,  text="Πίνακες")
+        table_label.grid(column=0, row=1, ipady=3)
+        table_menu = OptionMenu(root, table_var, *tables)
+        table_menu.grid(column=0, row=1,ipadx=3)
+        table_button = Button(root, bg="brown", fg="white", text="Επιλογή", command=change_table)
+        table_button.grid(column=0, row=1,ipadx=3)
+
+        table_var.set(table_var.get())
+        #table = change_table()
+        update_view(root, tree)
+        print("=========ΟΝΟΜΑ ΠΙΝΑΚΑ===========LINE 116 ", table)
+    else:
+
+        table = tables[0]
+        # table_var.trace("w", update_view(root, tree))
+        print("=========ΟΝΟΜΑ ΠΙΝΑΚΑ===========LINE 109 ", table)
+        print()
+        update_view(root, tree)
+
+
+def update_view(root, tree):
     global dbase
     # global dbase
     # # Αν τρέξει απο το κουμπί προσθήκη του παραθύρου προσθήκη να μήν ανοιξει άλλο αρχείο
@@ -79,23 +144,11 @@ def update_view(tree):
         tree.delete(i)
 
     up_conn = sqlite3.connect(dbase)
-    print("=============Σύνδεση με Βαση Δεδομένων τώρα=============Line 116 ", dbase)
+    print("=============Σύνδεση με Βαση Δεδομένων τώρα=============Line 83 ", dbase)
     print()
     up_cursor = up_conn.cursor()
-    print("=====================up_cursor============================Line 119", up_cursor)
+    print("=====================up_cursor============================Line 138", up_cursor)
 
-    # =======================Ανάγνωριση πίνκα δεδομένων=============
-    up_cursor = up_conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    table_name = up_cursor.fetchall()
-    dont_used_tables = ["sqlite_master", "sqlite_sequence", "sqlite_temp_master"]
-    for name in table_name:
-        if name[0] not in dont_used_tables:
-            global table
-            table = name[0]
-            print("TABLE ", name[0])
-
-    print("=========ΟΝΟΜΑ ΠΙΝΑΚΑ===========LINE 153 ", table)
-    print()
     #up_cursor.execute("DELETE FROM " + table + " WHERE ΚΩΔΙΚΟΙ IS 'NONE'")
     up_cursor.execute("SELECT * FROM " + table)
     global headers
@@ -121,20 +174,21 @@ def update_view(tree):
 
     up_cursor.close()
     up_conn.close()
-    print("up_data line 147 ", up_data)
+    print("up_data line 125 ", up_data)
     up_index = len(up_data)
     for n in range(len(up_data)):
-        tree.insert("", up_index - 1, values=up_data[n],  tags=('ttk', 'simple'))
-        tree.tag_configure('simple', background='red')
+        tree.insert("", up_index - 1, values=up_data[n]) # Για το tag μπορουμε να βάλουμε το < ,  tags=('ttk', 'simple')>
+        #Αλλά δεν παίζει σε python 3.8
+        #tree.tag_configure('simple', background='red')
 
-    return dbase
+    return table
 
 
 # ====================================================================================
 # ================================Συναρτήσεις για τα κουμπιά==========================
 # ------------------------------------------------------------------------------------
 # --------------------------------Δημηουργία νεου παραθύρου---------------------------
-def add_to(tree):
+def add_to(root, tree):
     global table, dbase
     print("====================Show Table + dbase ================Line 139", table, dbase)
     add_window = Toplevel()
@@ -171,8 +225,7 @@ def add_to(tree):
             entry = Entry(add_window, textvariable=var, bd=2, width=150).grid(column=1, row=index + 1)
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
-    def add_to_db(tree, dbase, headers):
-
+    def add_to_db(root, tree, dbase, headers):
 
         culumns = ",".join(headers)
         # Να ορίσουμε τα VALUES ΤΗΣ SQL οσα είναι και τα culumns
@@ -215,13 +268,13 @@ def add_to(tree):
         add_to_db_conn.close()
         # Ενημέρωση του tree με τα νέα δεδομένα
         open_new_file = "no"
-        update_view(tree)
+        update_view(root, tree)
 
         print("Εγινε η προσθήκη")
         print(data)
 
     # ----------------------------------Κουμπί για να γίνει η προσθήκη-------------------
-    enter_button = Button(add_window, text="Προσθήκη", bg="green", fg="White", bd=8, padx=5, pady=8, command=lambda: add_to_db(tree, dbase, headers))
+    enter_button = Button(add_window, text="Προσθήκη", bg="green", fg="White", bd=8, padx=5, pady=8, command=lambda: add_to_db(root, tree, dbase, headers))
     enter_button.grid(column=1, row=9)
 
 
@@ -254,7 +307,7 @@ def search(tree, search_data):
 # ========================================================================================
 # ------------------------------------- ΕΠΕΞΕΡΓΑΣΙΑ -------------------------------------=
 # ========================================================================================
-def edit(tree):
+def edit(root, tree):
     global dbase
     # ===============ΠΡΩΤΑ BACKUP =========
     backup()
@@ -340,7 +393,7 @@ def edit(tree):
 
         # Ενημέρωση του tree με τα νέα δεδομένα
 
-        update_view(tree)
+        update_view(root, tree)
 
         print("Εγινε η Ενημέρωση του tree ")
         print(data_to_add)
@@ -385,7 +438,8 @@ def backup():
             text = "Η βάση αντιγράφηκε :  "
             result = text + os.path.realpath(backup_file)
             print("=====Αποτέλεσμα ====\n", result)
-            tkinter.messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
+            # Ειναι ενοχλητικο να εμφανιζει καθε φορα μηνυμα οτι εγινε backup
+            #tkinter.messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
     except FileNotFoundError as file_error:
         print("File Error", file_error)
         backup()

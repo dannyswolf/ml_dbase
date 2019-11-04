@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
@@ -30,6 +31,8 @@ TO DO LIST  9) Να βάλω στο μενοu RUN SQL
 """
 
 from func import *
+
+
 # Πρώτα αυτό για το Combobox
 from tkinter import ttk
 
@@ -53,7 +56,7 @@ root.config(bg="#C2C0BD")
 
 
 app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8 )
-app_title.grid(column=0, row=0)
+app_title.grid(column=0, row=0, sticky="we")
 
 # Εμφανηση Κεφαλίδων του πίνακα
 
@@ -88,6 +91,9 @@ tree.grid(column=1, row=3, columnspan=1)
 buttons_frame = Frame(root, relief=SOLID)
 buttons_frame.config(bg="#C2C0BD")
 
+
+
+
 # =================================ΑΝΑΖΉΤΗΣΗ===================================
 search_data = StringVar()
 search_entry = Entry(buttons_frame, textvariable=search_data)
@@ -97,26 +103,36 @@ search_image = PhotoImage(file="search.png")
 search_button = Button(buttons_frame, command=lambda: search(tree, search_data), text="Αναζήτηση",  bg="gray20", fg="white", bd=3, image=search_image, compound=LEFT)
 
 
+#===============================Επιλογή πίνακα================================
+choices = ["ΕΠΙΛΟΓΗ ΠΗΝΑΚΑ", "s", "c"]
+table_var = StringVar(root)
+table_var.set("ΕΠΙΛΟΓΗ ΠΗΝΑΚΑ")
+table_menu = OptionMenu(buttons_frame, table_var, *choices)
+
+select_table_button = Button(buttons_frame, text="Επιλογή πίνακα", command=lambda: select_table(root, tree))
 
 # ========================================================================================
 # ------------------------------------Κουμπιά--------------------------------------------=
 # ========================================================================================
 reset_image = PhotoImage(file="refresh.png")
 
-reset_button = Button(buttons_frame, text="Ανανέωση",  bg="gray15", fg="white", bd=3, command=lambda: update_view(tree), image=reset_image, compound=LEFT)
+reset_button = Button(buttons_frame, text="Ανανέωση",  bg="gray15", fg="white", bd=3, command=lambda: update_view(root, tree),
+                      image=reset_image, compound=LEFT)
 
 
-add_button = Button(buttons_frame, command=lambda: add_to(tree), text="Προσθήκη", padx=10, pady=10, bg="green", fg="white", bd=3)
-
-
-del_button = Button(buttons_frame, command=lambda: del_from_tree(tree), text="Διαγραφή απο λίστα", padx=10, pady=10, bg="red",
+add_button = Button(buttons_frame, command=lambda: add_to(root, tree), text="Προσθήκη", padx=10, pady=10, bg="green",
                     fg="white", bd=3)
 
-edit_button = Button(buttons_frame, command=lambda: edit(tree), text="Επεξεργασία", padx=10, pady=10, bg="green", fg="white", bd=3)
+
+del_button = Button(buttons_frame, command=lambda: del_from_tree(tree), text="Διαγραφή απο λίστα", padx=10, pady=10,
+                    bg="red", fg="white", bd=3)
+
+edit_button = Button(buttons_frame, command=lambda: edit(root, tree), text="Επεξεργασία", padx=10, pady=10, bg="green",
+                     fg="white", bd=3)
 
 
 file_button = Button(buttons_frame, text="Ανοιγμα αρχείου", padx=10, pady=10, bg="green", fg="white", bd=3,
-                     command=lambda: open_file(tree))
+                     command=lambda: open_file(root, tree))
 
 
 backup_button = Button(buttons_frame, padx=10, pady=10, bd=3, text="Αντίγραφο ασφαλείας", command=backup, bg="blue",
@@ -133,21 +149,61 @@ def search_event(event):
 
 search_entry.bind('<Return>', search_event)
 
-#ΑΥΤΟ ΔΕΝ ΠΑΙΖΕΙ
+
+#ΑΝΑΝΕΩΣΗ
 def reset_event(event):
+
+    update_view(root, tree)
+
+
+root.bind('<F5>', reset_event)
+
+
+#ΕΞΩΔΟΣ
+def quit(event):
+
     root.destroy()
 
 
-reset_button.bind('<Escape>', reset_event)
+root.bind('<Escape>', quit)
+
+
+#FOCUS ΣΤΗΝ ΑΝΑΖΗΤΗΣΗ
+def focus_search(event):
+
+    search_entry.focus()
+
+
+root.bind('<Control_L>', focus_search)
+
+
+#ΠΡΟΣΘΗΚΗ
+def add_event(event):
+
+    add_to(root, tree)
+
+
+root.bind('<F1>', add_event)
+
+
+#ΕΠΕΞΕΡΓΑΣΙΑ
+def edit_event(event):
+
+    edit(root, tree)
+
+
+root.bind('<F3>', edit_event)
 
 
 # Εμφάνιση κουμιών και Logo
 image = PhotoImage(file="logo-small-orange.png")
 label_image = Label(root, image=image)
 label_image.grid(column=0, row=0, sticky="w")
-
+#Δεν χρειάζεται το εμνφανίζει το func.py
+#table_menu.grid(column=0, row=1, ipady=3, sticky="w")
+#select_table_button.grid(column=0, row=1, ipady=3, sticky="e")
 # Το file_button κάνει αυτόματα και ενημέρωση στο treeview
-search_entry.grid(column=0, row=2,  ipady=3, ipadx=100)
+search_entry.grid(column=0, row=2,  ipady=3, ipadx=100, sticky="we")
 search_entry.focus()
 search_button.grid(column=1, row=2, )
 reset_button.grid(column=2, row=2)
@@ -166,16 +222,16 @@ reset_button.grid(column=2, row=2)
 menubar = Menu(root)
 
 filemenu = Menu(menubar, tearoff=0)
-filemenu.add_command(label="Ανοιγμα αρχείου", command=lambda: open_file(tree))
-filemenu.add_command(label="Προσθήκη", command=lambda: add_to(tree))
-filemenu.add_command(label="Επεξεργασία", command=lambda: edit(tree))
+filemenu.add_command(label="Ανοιγμα αρχείου", command=lambda: open_file(root,tree))
+filemenu.add_command(label="Προσθήκη", command=lambda: add_to(root, tree))
+filemenu.add_command(label="Επεξεργασία", command=lambda: edit(root,tree))
 filemenu.add_separator()
 filemenu.add_command(label="Διαγραφή", command=lambda: del_from_tree(tree))
 filemenu.add_command(label ="Εξωδος", command=root.quit)
 menubar.add_cascade(label="Αρχείο", menu=filemenu)
 
 backup_menu = Menu(menubar, tearoff=0)
-backup_menu.add_command(label="Αντίγραφο ασφαλείας!", command=backup)
+backup_menu.add_command(label="===Αντίγραφο ασφαλείας!===", command=backup)
 menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_menu)
 
 
