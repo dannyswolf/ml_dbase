@@ -43,7 +43,7 @@ from tkinter import *
 
 
 root = Tk()
-root.geometry('1350x630+0+0')
+root.geometry('1200x750+100+100')
 root.title('Sqlite γραφικό περιβάλλον')
 root.config(bg="#C2C0BD")
 # root.resizable(width=1000, height=100)
@@ -80,7 +80,7 @@ app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("A
 
 
 # Κουμπιά ειναι μερους ενος frame
-buttons_frame = Frame(root, relief=SOLID)
+buttons_frame = Frame(root, relief=RAISED)
 buttons_frame.config(bg="#C2C0BD")
 
 
@@ -88,11 +88,11 @@ buttons_frame.config(bg="#C2C0BD")
 
 # =================================ΑΝΑΖΉΤΗΣΗ===================================
 search_data = StringVar()
-search_entry = Entry(buttons_frame, textvariable=search_data)
+search_entry = Entry(buttons_frame, textvariable=search_data, relief=RAISED)
 
 search_image = PhotoImage(master = root, file="search.png")
 
-search_button = Button(buttons_frame, command=lambda: search(search_data), text="Αναζήτηση",  bg="gray20", fg="white", bd=3, image=search_image, compound=LEFT)
+search_button = Button(buttons_frame, command=lambda: search(search_data), text="Αναζήτηση",  bg="gray20", fg="white", bd=3, image=search_image, compound=LEFT, relief=RAISED)
 
 
 #===============================Επιλογή πίνακα================================
@@ -109,7 +109,7 @@ select_table_button = Button(buttons_frame, text="Επιλογή πίνακα", 
 reset_image = PhotoImage(master = root, file="refresh.png")
 
 reset_button = Button(buttons_frame, text="Ανανέωση",  bg="gray15", fg="white", bd=3, command=lambda: update_view(root),
-                      image=reset_image, compound=LEFT)
+                      image=reset_image, compound=LEFT, relief=RAISED)
 
 
 add_button = Button(buttons_frame, command=lambda: add_to(root), text="Προσθήκη", padx=10, pady=10, bg="green",

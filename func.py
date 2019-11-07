@@ -51,12 +51,13 @@ import tkinter.messagebox
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dic_headers = {}  # key , values key= πίνακας1 values= επικεφαλίδες [μελανακια] = [id, μελανακια, κτλπ]
+dic_headers = {}  # key , values key= πίνακας1 values= επικεφαλίδες [μελανακια] = [id, μελανακια, περιγραφή ....κτλπ]
 dbase = ""
 tables =[]
-up_data = [] # Για να πάρουμε τα δεδομένα
-dic_data = {} # [μελανακια] = [brother , 12115, 1, 20€, κτλπ ]
-tabs = []
+up_data = []    # Για να πάρουμε τα δεδομένα
+dic_data = {}   # [μελανακια] = [brother , 12115, 1, 20€, κτλπ ]
+tabs = []       # Για το Notebook
+
 
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file(root):
@@ -165,26 +166,54 @@ def select_table(root):
         update_view(root)
 
 
+
 def update_view(root):
-    global dbase
+    global dbase, dic_data, dic_headers
+    dic_data = {}
+    dic_headers = {}
 
 
-    # ------------------------Style------------------------------------
-    style = ttk.Style()
-    # Modify the font of the body
-    style.configure("mystyle.Treeview", highlightthickness=10, width=150, font=('San Serif', 11))  # Εμφάνηση δεδομένων
-    style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'bold'))  # Modify the font of the headings
-    style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-    style.configure("mystyle.Treeview", rowheight=50)
 
     def make_tabs(root):
         print("*" * 50 + "make_tabs" + 50 * "*")
         global tree, tabs, tab_control
 
+        # ------------------------Style------------------------------------
+        style = ttk.Style()
+        # # Modify the font of the body
+        #style1.theme_create("mystyle.Treeview", parent="alt")
+        #style.configure("Custom.Treeview.Heading", background="blue", foreground="white", relief="flat")
+        style.map("Treeview.Heading", relief=[('active', 'groove'), ('pressed', 'sunken')])
+        style.configure("mystyle.Treeview", highlightthickness=0, width=150, font=('San Serif', 11))  # Εμφάνηση δεδομένων
+        style.configure("TNotebook.Tab", padding=[50, 1], background="green", foreground="black")  # configure "tabs" background color
+        #"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
+
+        style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'underline'), background="green", foreground="black", relief="groove")  # Modify the font of the headings
+        style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
+        style.configure("mystyle.Treeview", rowheight=40)
+        #style1.theme_use("mystyle.Treeview")
+        # -------------------------New Style--------------------------------
+        style1 = ttk.Style()
+        mygreen = "gray"
+        myred = "green"
+        # Styles - normal, bold, roman, italic, underline, and overstrike.
+        style1.theme_create("yummy", parent="alt", settings={
+            "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
+            "Treeview": {"configure": {"font": ['San Serif', 13, "normal"]}, "rowhight": 10, "highlightthickness": 10, "background": [("selected", myred)]},
+            "Treeview.treearea": {"configure": {'sticky': 'nswe'}},
+            "Treeview.Heading": {"configure": {"font": ['San Serif', 11, 'bold']}, "background": "blue",
+                                 "foreground": "white", "relief": "flat"},
+            "TNotebook.Tab": {
+                "configure": {"padding": [50, 1], "background": mygreen, "foreground": "white"},
+                "map": {"background": [("selected", myred)],
+                        "expand": [("selected", [1, 1, 1, 0])]}}})
+
+        #style1.theme_use("yummy")
+
         tables = get_tables()
         print("tables", tables)
 
-        tab_control = ttk.Notebook(root, width=1350, height=550, padding=0, style="TButton")
+        tab_control = ttk.Notebook(root)
         tabs = [table for table in tables]
         print("Tabs line 180", tabs)
         tree = [table for table in tables]
@@ -195,8 +224,8 @@ def update_view(root):
             print("tabs[i] ==========Line 186", tabs[i])
             tab_control.add(tabs[i], text=table)
             print("tabs line 192", tabs)
-            #tab_control.grid(column=0, row=3)
-            tree[i] = ttk.Treeview(tabs[i], selectmode="browse", style="mystyle.Treeview", show="headings", height=100)
+            tab_control.grid(column=0, row=3)
+            tree[i] = ttk.Treeview(tabs[i], selectmode="browse", style="mystyle.Treeview", show="headings", height=13)
             tree[i].grid(column=0, row=4)
             tab_control.grid(column=0, row=3)
             # scrolls
@@ -204,20 +233,19 @@ def update_view(root):
             scrolly.grid(column=0, row=3, sticky="nswe", ipadx=2)
             tree[i].configure(yscrollcommand=scrolly.set)
             scrollx = ttk.Scrollbar(tabs[i], orient='horizontal', command=tree[i].xview)
-            scrollx.grid(sticky='we', column=1, row=4, ipady=2)
+            scrollx.grid(sticky='we', column=1, row=4, ipady=2, columnspan=2)
             tree[i].configure(xscrollcommand=scrollx.set)
 
     # Να σβήσει πρώτα τα δεδομένω για να πάρει τα καινούρια
     # map(tree.delete, tree.get_children())
     make_tabs(root)
     for value in tree:
-        print("Tree Value  ", value)
-    #for i in tree.get_children():
+        print("Tree Value Line 215  ", value)
+    for tre in tree:
     #    # Εμφάνηση το τι σβήνηει
-    #    #print("DELETED ΑΠΟ ΤΟ TREE ", i)
-    #    tree.delete(i)
-
-
+        for i in tre.get_children():
+            deleted_data =tre.delete(i)
+            print("Deleted Line 221", deleted_data)
     #up_cursor.execute("DELETE FROM " + table + " WHERE ΚΩΔΙΚΟΙ IS 'NONE'")
     for index, table in enumerate(tables):
         up_conn = sqlite3.connect(dbase)
@@ -230,7 +258,6 @@ def update_view(root):
         print("Up_data[table] Line 224", dic_data[table])
         up_cursor.close()
         up_conn.close()
-
 
     for tre, headers_in_dic in zip(tree, dic_headers.values()):
 
@@ -265,7 +292,7 @@ def update_view(root):
 
     for tre in tree:
     #tab_control.grid(column=0, row=3)
-        tre.grid(column=1, row=3, columnspan=1)
+        tre.grid(column=1, row=3, columnspan=2)
     print(50*"*", "Line 252")
     #up_data = up_cursor.fetchall()
     #print("up_data line 160 ", up_data)
