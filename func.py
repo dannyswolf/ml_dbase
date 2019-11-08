@@ -5,9 +5,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
-Version v 0.6 Προσθήκη καρτέλων και η αναζήτηση δουλεύει παντού :-)
-Να γίνει έλεγχος αν τα εισάγει τα δεδομένα δυο φορες στο tree σε καθε tree
-
+Version Για το μαγαζί                                               8/11/2019
+Ολα δουλευουν
 
 version v 0.5 Ο χρήστης μπορεί να επιλεξει πίνακα
 version v 0.4 Προσθήκη menu
@@ -48,21 +47,22 @@ import os
 import tkinter.messagebox
 
 
+
+
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dic_headers = {}  # key , values key= πίνακας1 values= επικεφαλίδες [μελανακια] = [id, μελανακια, περιγραφή ....κτλπ]
 dbase = ""
 tables =[]
 up_data = []    # Για να πάρουμε τα δεδομένα
 dic_data = {}   # [μελανακια] = [brother , 12115, 1, 20€, κτλπ ]
 tabs = []       # Για το Notebook
-
+tree =""
 
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file(root):
     # Ανοιγουμε την βάση αν δεν έχουμε ανοιξει
-    global dbase, tables, table
+    global dbase
 
     dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
                                            filetypes=(("db files",
@@ -73,7 +73,6 @@ def open_file(root):
     print("======================opened file ===================line 68", dbase)
     get_tables()
     select_table(root)
-
     return dbase
 
 
@@ -86,226 +85,91 @@ def get_tables():
     cursor.close()
     conn.close()
     dont_used_tables = ["sqlite_master", "sqlite_sequence", "sqlite_temp_master"]
-    tables = []
     for name in table_name:
         if name[0] not in dont_used_tables:
             tables.append(name[0])
-
+            print("Table line 125", table)
             print("TABLE ", name[0], " ========added to tables")
         else:
             continue
+
     return tables
 
 
 def select_table(root):
     global table, tables
+    print(tables, "Line 107")
 
-    # =======================Ανάγνωριση πίνκα δεδομένων=============
-    conn = sqlite3.connect(dbase)
-    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
-    table_name = cursor.fetchall()
-    cursor.close()
-    conn.close()
-    dont_used_tables = ["sqlite_master", "sqlite_sequence", "sqlite_temp_master"]
-    tables = []
-    for name in table_name:
-        if name[0] not in dont_used_tables:
-            tables.append(name[0])
+    buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
+    btn1 = Button(buttons_frame, command=lambda: update_view(root, tables[0]), text=tables[0], bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=0, ipadx=30, ipady=50)
+    btn2 = Button(buttons_frame, command=lambda: update_view(root, tables[1]), text=tables[1], bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=1, ipadx=30, ipady=50)
+    btn3 = Button(buttons_frame, command=lambda: update_view(root, tables[2]), text=tables[2], bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=2, ipadx=30, ipady=50)
+    btn4 = Button(buttons_frame, command=lambda: update_view(root, tables[3]), text=tables[3], bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=3, ipadx=30, ipady=50)
+    btn5 = Button(buttons_frame, command=lambda: update_view(root, tables[4]), text=tables[4], bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=4, ipadx=30, ipady=50)
 
-            print("TABLE ", name[0], " ========added to tables")
+    # for index, name in enumerate(tables):
+    #
+    #     btn = Button(buttons_frame, command=lambda: update_view(tree, tables[index]), text=name, bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised").grid(row=0, column=index, ipadx=30, ipady=50)
+    #     print("Name Line 116 ", name)
+    # print("buttons Line 114", buttons)
+
+    # ===============================Επιλογή πίνακα================================
+    print("*" * 50 + "len(tables)" + "*" * 50 + "line 126", len(tables))
+    buttons_frame.grid(column=0, row=0)
+
+
+def update_view(root, table_from_button):
+    data_frame = Frame(root, bg="#C2C0BD")
+    global tree, table, dbase, headers
+    table = table_from_button
+    tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=10)
+    # ================================ scrolls======================
+    scrolly = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
+    scrolly.grid(column=1, row=3, sticky="ns")
+    tree.configure(yscrollcommand=scrolly.set)
+    scrollx = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
+    scrollx.grid(sticky='we', column=0, row=4)
+    tree.configure(xscrollcommand=scrollx.set)
+
+
+    print("table Line 138", table)
+    for i in tree.get_children():
+        # Εμφάνηση το τι σβήνηει
+        #print("DELETED ΑΠΟ ΤΟ TREE ", i)
+        tree.delete(i)
+    up_conn = sqlite3.connect(dbase)
+    up_cursor = up_conn.cursor()
+    up_cursor.execute("SELECT * FROM " + table)
+    print("table line 165", table)
+    headers = list(map(lambda x: x[0], up_cursor.description))
+    print("headers at line 168 ", headers)
+    no_neded_headers = ["id", "ID", "Id"]
+    columns = []
+    for head in headers:
+        if head not in no_neded_headers:
+            columns.append(head)
         else:
             continue
 
-    print("=========ΟΝΟΜΑ ΠΙΝΑΚΩΝ===========LINE 82 ", tables)
-    print()
-    # ===============================Επιλογή πίνακα================================
-    print("*" * 50 + "len(tables)" + "*" * 50 + "line 93", len(tables))
+    tree["columns"] = [head for head in columns]
 
-    if len(tables) > 1:
-        print("*" * 50 + "len(tables)" + "*" * 50 + "Line 95",len(tables))
-        print("stage 0")
-        table = tables[0]
+    # tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟΣ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
+    # tree["show"] = "headings"
 
-        def change_table():
-            global table
-            print("stage 3")
-            print("====================table_var.get()=================", table_var.get())
-            table = table_var.get()
-            update_view(root)
-            #choice_table_window.destroy()
-            return table
-
-        table_var = StringVar()
-        print("stage 1  table_var", table_var.get())
-
-        #table_var.trace("w", change_table)
-        #choice_table_window = Toplevel()
-        #choice_table_window.title("Επιλογή πίνακα")
-        choice_table_window_title = Label(root, bg="brown", fg="white", text="Παρακαλώ επιλέξτε πίνακα",
-                                 font=("Arial Bold", 15), bd=8, padx=3)
-        #choice_table_window_title.grid(column=1, row=0)
-        #table_label = Label(root,  text="Πίνακες")
-        #table_label.grid(column=0, row=1, sticky="w", columnspan = 2)
-        table_menu = OptionMenu(root, table_var, *tables)
-        table_menu.grid(column=0, row=1, sticky="w")
-
-        table_button = Button(root, bg="brown", fg="white", text="Επιλογή", command=change_table)
-        table_button.grid(column=0, row=2, sticky="w")
-
-        table_var.set(table_var.get())
-        #table = change_table()
-        update_view(root)
-        print("=========ΟΝΟΜΑ ΠΙΝΑΚΑ===========LINE 116 ", table)
-
-    else:
-
-        table = tables[0]
-        # table_var.trace("w", update_view(root, tree))
-        print("=========ΟΝΟΜΑ ΠΙΝΑΚΑ===========LINE 109 ", table)
-        print()
-        update_view(root)
-
-
-
-def update_view(root):
-    global dbase, dic_data, dic_headers
-    dic_data = {}
-    dic_headers = {}
-
-
-
-    def make_tabs(root):
-        print("*" * 50 + "make_tabs" + 50 * "*")
-        global tree, tabs, tab_control
-
-        # ------------------------Style------------------------------------
-        style = ttk.Style()
-        # # Modify the font of the body
-        #style1.theme_create("mystyle.Treeview", parent="alt")
-        #style.configure("Custom.Treeview.Heading", background="blue", foreground="white", relief="flat")
-        style.map("Treeview.Heading", relief=[('active', 'groove'), ('pressed', 'sunken')])
-        style.configure("mystyle.Treeview", highlightthickness=0, width=150, font=('San Serif', 11))  # Εμφάνηση δεδομένων
-        style.configure("TNotebook.Tab", padding=[50, 1], background="green", foreground="black")  # configure "tabs" background color
-        #"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
-
-        style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'underline'), background="green", foreground="black", relief="groove")  # Modify the font of the headings
-        style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-        style.configure("mystyle.Treeview", rowheight=40)
-        #style1.theme_use("mystyle.Treeview")
-        # -------------------------New Style--------------------------------
-        style1 = ttk.Style()
-        mygreen = "gray"
-        myred = "green"
-        # Styles - normal, bold, roman, italic, underline, and overstrike.
-        style1.theme_create("yummy", parent="alt", settings={
-            "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
-            "Treeview": {"configure": {"font": ['San Serif', 13, "normal"]}, "rowhight": 10, "highlightthickness": 10, "background": [("selected", myred)]},
-            "Treeview.treearea": {"configure": {'sticky': 'nswe'}},
-            "Treeview.Heading": {"configure": {"font": ['San Serif', 11, 'bold']}, "background": "blue",
-                                 "foreground": "white", "relief": "flat"},
-            "TNotebook.Tab": {
-                "configure": {"padding": [50, 1], "background": mygreen, "foreground": "white"},
-                "map": {"background": [("selected", myred)],
-                        "expand": [("selected", [1, 1, 1, 0])]}}})
-
-        #style1.theme_use("yummy")
-
-        tables = get_tables()
-        print("tables", tables)
-
-        tab_control = ttk.Notebook(root)
-        tabs = [table for table in tables]
-        print("Tabs line 180", tabs)
-        tree = [table for table in tables]
-        print("Tree ================Line 185", tree)
-        for i, table in enumerate(tables):
-            print("I ==========={} Table==========={}=========line 184", i, table)
-            tabs[i] = ttk.Frame(tab_control)
-            print("tabs[i] ==========Line 186", tabs[i])
-            tab_control.add(tabs[i], text=table)
-            print("tabs line 192", tabs)
-            tab_control.grid(column=0, row=3)
-            tree[i] = ttk.Treeview(tabs[i], selectmode="browse", style="mystyle.Treeview", show="headings", height=13)
-            tree[i].grid(column=0, row=4)
-            tab_control.grid(column=0, row=3)
-            # scrolls
-            scrolly = ttk.Scrollbar(tabs[i], orient='vertical', command=tree[i].yview)
-            scrolly.grid(column=0, row=3, sticky="nswe", ipadx=2)
-            tree[i].configure(yscrollcommand=scrolly.set)
-            scrollx = ttk.Scrollbar(tabs[i], orient='horizontal', command=tree[i].xview)
-            scrollx.grid(sticky='we', column=1, row=4, ipady=2, columnspan=2)
-            tree[i].configure(xscrollcommand=scrollx.set)
-
-    # Να σβήσει πρώτα τα δεδομένω για να πάρει τα καινούρια
-    # map(tree.delete, tree.get_children())
-    make_tabs(root)
-    for value in tree:
-        print("Tree Value Line 215  ", value)
-    for tre in tree:
-    #    # Εμφάνηση το τι σβήνηει
-        for i in tre.get_children():
-            deleted_data =tre.delete(i)
-            print("Deleted Line 221", deleted_data)
-    #up_cursor.execute("DELETE FROM " + table + " WHERE ΚΩΔΙΚΟΙ IS 'NONE'")
-    for index, table in enumerate(tables):
-        up_conn = sqlite3.connect(dbase)
-        up_cursor = up_conn.cursor()
-        up_cursor.execute("SELECT * FROM " + table)
-        print("table line 222", table)
-        dic_headers[table] = list(map(lambda x: x[0], up_cursor.description))
-        print("dic_headers[table]========Line 223", dic_headers[table])
-        dic_data[table] = up_cursor.fetchall()
-        print("Up_data[table] Line 224", dic_data[table])
-        up_cursor.close()
-        up_conn.close()
-
-    for tre, headers_in_dic in zip(tree, dic_headers.values()):
-
-        print("tre ===========  Line 230", tre)
-        # tree["columns"] = sqlite3.Row
-        tre["columns"] = [head for head in headers_in_dic]
-        headers.insert(index, headers_in_dic)
-        print("Headers line 235", headers)
-
-        print(25 * "*", "tre[\"columns\"] Line 233", tre["columns"])
-        print("headers_in_dic Line 234", headers_in_dic)
-        # tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
-        #tre["show"] = "headings"
-        for head in headers_in_dic:
-
-            tre.column(head, anchor="w", width=375 if head == headers_in_dic[2] else 100, stretch=False)
-            tre.heading(head, text=head)
-            print("tre.column Line 240", head, tre.column)
-        #index = len(dic_data["ΜΕΛΑΝΑΚΙΑ"])
-        #print("dic_data[melanakia] Line 241", dic_data["ΜΕΛΑΝΑΚΙΑ"])
-
-    for tre, tab in zip(tree, dic_data): # Το tab περνει για τιμες το κλειδι απο το dic_data δλδ τους πινακες ΜΕΛΑΝΑΚΙΑ, ΤΟΝΕΡ ΚΤΛΠ
-        print("tab Line 244", tab)
-        print("tre Line 245", tre)
-        up_index = len(dic_data[tab])
-        print("Up_index = ", up_index)
-        for n in range(len(dic_data[tab])):
-
-            tre.insert("", up_index - 1, values=dic_data[tab][n])
-            print("index Line 248", up_index)
-            print("value Line 249", dic_data[tab][n])
-
-    for tre in tree:
-    #tab_control.grid(column=0, row=3)
-        tre.grid(column=1, row=3, columnspan=2)
-    print(50*"*", "Line 252")
-    #up_data = up_cursor.fetchall()
-    #print("up_data line 160 ", up_data)
-    #up_index = len(up_data)
-    #for n in range(len(up_data)):
-    #    tree.insert("", up_index - 1, values=up_data[n]))
-    #for tre, n in zip(tree, up_data):
-    #    tre.insert("", up_index - 1, values=up_data[n]) # Για το tag μπορουμε να βάλουμε το < ,  tags=('ttk', 'simple')>
-        #Αλλά δεν παίζει σε python 3.8
-        #tree.tag_configure('simple', background='red')
-
-    return table
-
+    for head in headers:
+        if head not in no_neded_headers:
+            tree.column(head, anchor="center", width=300 if head == headers[2] else 80, stretch=FALSE)
+            tree.heading(head, text=head)
+        else:
+            continue
+    up_data = up_cursor.fetchall()
+    print("up_data line 178 ", up_data)
+    up_index = len(up_data)
+    for n in range(len(up_data)):
+        tree.insert("", up_index - 1, values=up_data[n])
+    data_frame.grid(column=0, row=3)
+    tree.grid(column=0, row=0)
+    return dbase
 
 # ====================================================================================
 # ================================Συναρτήσεις για τα κουμπιά==========================
@@ -349,7 +213,7 @@ def add_to(root):
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db(root, dbase, headers):
-
+        global table
         culumns = ",".join(headers)
         # Να ορίσουμε τα VALUES ΤΗΣ SQL οσα είναι και τα culumns
         # values είναι πόσα ? να έχει ανάλογα τα culumns
@@ -391,7 +255,7 @@ def add_to(root):
         add_to_db_conn.close()
         # Ενημέρωση του tree με τα νέα δεδομένα
 
-        update_view(root)
+        update_view(root, table)
 
         print("Εγινε η προσθήκη")
         print(data)
@@ -403,48 +267,41 @@ def add_to(root):
 
 print("headers Line 372", headers)
 
+
 #=====================================ΑΝΑΖΗΤΗΣΗ=========================================
 def search(search_data):
-    global dbase, tree, tabs
-    selected_tab = tab_control.index(tab_control.select())  # Επιστρέφει το νουμερο της επιλεγμένης καρτέλας
-    index = 0
-
-    for tre, headers_in_dic in zip(tree, dic_headers.values()):
-        #Φτιάχνουμε τα πεδία για την αναζήτηση id, μελάνι, μοντέλο κτλπ
-        headers.insert(index, headers_in_dic)
-        print("Headers line 382", headers)
-        index += 1
-    print("selected_tab=======Line 372", selected_tab)
-    print("Ονομα του επιλεγμένου tab ", tabs[0])
-    selected_table = tables[selected_tab]
+    global tree, table
     if search_data.get() != "":
-        print("Headers line 388", headers[selected_tab])
-        tree[selected_tab].delete(*tree[selected_tab].get_children())
-
+        tree.delete(*tree.get_children())
         search_conn = sqlite3.connect(dbase)
         search_cursor = search_conn.cursor()
         #idea = SELECT * FROM tablename WHERE name or email or address or designation = 'nagar';
-
         search_headers = []
-        no_needed_headers = ["id", "ID", "Id"]
+        no_neded_headers = ["id", "ID", "Id"]
         operators = []
-        for header in headers[selected_tab]:
-            print("Header Line 400", header)
-            if header not in no_needed_headers:
+        for header in headers:
+            if header not in no_neded_headers:
                 search_headers.append(header + " LIKE ?")
                 operators.append('%' + str(search_data.get()) + '%')
         search_headers = " OR ".join(search_headers)
-        print("search_headers Line 405", search_headers)
-        print("===================Searching headers ================Line 623", search_headers)
-        print("===================Operators=========================Line 627", operators)
-        search_cursor.execute("SELECT * FROM " + selected_table + " WHERE " + search_headers, operators)
+        print("===================search_data=======================Line 276", search_data)
+        print("===================Searching headers ================Line 277", search_headers)
+        print("===================Operators=========================Line 278", operators)
+        print("=====================table===========================Line 279", table)
+
+        #search_cursor.execute("SELECT * FROM " + table + " WHERE \
+        #               ΤΟΝΕΡ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? OR  ΣΥΝΟΛΟ LIKE ? OR ΣΕΛΙΔΕΣ LIKE ?",
+        #               ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%'))
+        search_cursor.execute("SELECT * FROM " + table + " WHERE " + search_headers, operators)
+            # ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
+            #  '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
+            #  '%' + str(search_data.get()) + '%'))
+
         fetch = search_cursor.fetchall()
         for data in fetch:
-            tree[selected_tab].insert('', 'end', values=data)
+            tree.insert('', 'end', values=(data))
         search_cursor.close()
         search_conn.close()
-
-
 # ========================================================================================
 # ------------------------------------- ΕΠΕΞΕΡΓΑΣΙΑ -------------------------------------=
 # ========================================================================================
@@ -492,7 +349,7 @@ def edit(root):
     # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
     # ---------------------- μετά την επεξεργασία   -------------------------------------
     def update_to_db():
-        global tree
+        global tree, table
         #culumns = ",".join(headers)
         #print("==========culumns=========== line 436 ", culumns)
         #Τα culumns ειναι της μορφής ID, ΤΟΝΕΡ, ΜΟΝΤΕΛΟ, ΚΩΔΙΚΟΣ κτλπ.
@@ -534,7 +391,7 @@ def edit(root):
 
         # Ενημέρωση του tree με τα νέα δεδομένα
 
-        update_view(root, tree)
+        update_view(root, table)
 
         print("Εγινε η Ενημέρωση του tree ")
         print(data_to_add)
@@ -542,7 +399,7 @@ def edit(root):
 
     update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση πρωιόντος", bg="red",
                            fg="white", bd=3)
-    update_button.grid(column=1, row=9)
+    update_button.grid(column=1, row=10)
 
 
 # ========================================================================================

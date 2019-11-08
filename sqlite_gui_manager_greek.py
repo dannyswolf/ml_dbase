@@ -6,7 +6,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
-Version v 0.6 Προσθήκη καρτέλων και η αναζήτηση δουλεύει :-)              6/11/2019
+Version Για το μαγαζί                                               8/11/2019
+Ολα δουλευουν
 
 version v 0.5 διαχωρισμός συναρτήσεων  απο το γραφικό περιβάλλων          3/11/2019
 Προσθήκη icons και συντόμευση πληκτρολογίου
@@ -43,7 +44,7 @@ from tkinter import *
 
 
 root = Tk()
-root.geometry('1200x750+100+100')
+root.geometry('1200x620+100+100')
 root.title('Sqlite γραφικό περιβάλλον')
 root.config(bg="#C2C0BD")
 # root.resizable(width=1000, height=100)
@@ -54,83 +55,89 @@ root.config(bg="#C2C0BD")
 # x = (screen_width / 2) - (width / 2)
 # y = (screen_height / 2) - (height / 2)
 # root.geometry("%dx%d+%d+%d" % (width, height, x, y))
+
+
+# ------------------------Style------------------------------------
+style = ttk.Style()
+# # Modify the font of the body
+#style1.theme_create("mystyle.Treeview", parent="alt")
+#style.configure("Custom.Treeview.Heading", background="blue", foreground="white", relief="flat")
+style.map("Treeview.Heading", relief=[('active', 'groove'), ('pressed', 'sunken')])
+style.configure("mystyle.Treeview", highlightthickness=0, width=150, font=('San Serif', 11))  # Εμφάνηση δεδομένων
+style.configure("TNotebook.Tab", padding=[50, 1], background="green", foreground="black")  # configure "tabs" background color
+#"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
+
+style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'underline'), background="green", foreground="black", relief="groove")  # Modify the font of the headings
+style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
+style.configure("mystyle.Treeview", rowheight=40)
+#style1.theme_use("mystyle.Treeview")
+        # -------------------------New Style--------------------------------
+style1 = ttk.Style()
+mygreen = "gray"
+myred = "green"
+# Styles - normal, bold, roman, italic, underline, and overstrike.
+style1.theme_create("yummy", parent="alt", settings={
+        "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
+        "Treeview": {"configure": {"font": ['San Serif', 13, "normal"]}, "rowhight": 10, "highlightthickness": 10, "background": [("selected", myred)]},
+        "Treeview.treearea": {"configure": {'sticky': 'nswe'}},
+        "Treeview.Heading": {"configure": {"font": ['San Serif', 11, 'bold']}, "background": "blue",
+                            "foreground": "white", "relief": "flat"},
+        "TNotebook.Tab": {
+            "configure": {"padding": [50, 1], "background": mygreen, "foreground": "white"},
+            "map": {"background": [("selected", myred)],
+                    "expand": [("selected", [1, 1, 1, 0])]}}})
+
+        #style1.theme_use("yummy")
+
+
 # Τίτλος προγράμματος
-
-
 app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8 )
 #app_title.grid(column=0, row=0, sticky="we")
-
-# Εμφανηση Κεφαλίδων του πίνακα
-
 
 
 # ------------------------Εμφάνιση δεδομένων σε Frame-------------------------
 
-# =======================Δημηουργεία καρτέλων==========================
-
-#data_frame = Frame(root, width=1024, bg="#C2C0BD", relief=SOLID)
-#data_frame.grid(column=0, row=4, columnspan=1)
-# tree = ttk.Treeview(data_frame)
-#tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=10)
-
-
-
-
-#tree.grid(column=1, row=3, columnspan=1)
-
-
-# Κουμπιά ειναι μερους ενος frame
-buttons_frame = Frame(root, relief=RAISED)
-buttons_frame.config(bg="#C2C0BD")
-
-
+buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
+buttons_frame.grid(column=0, row=1)
+search_frame = Frame(root, bg="#C2C0BD")
 
 
 # =================================ΑΝΑΖΉΤΗΣΗ===================================
 search_data = StringVar()
 search_entry = Entry(buttons_frame, textvariable=search_data, relief=RAISED)
 
-search_image = PhotoImage(master = root, file="search.png")
-
+search_image = PhotoImage(master=search_frame, file="search.png")
 search_button = Button(buttons_frame, command=lambda: search(search_data), text="Αναζήτηση",  bg="gray20", fg="white", bd=3, image=search_image, compound=LEFT, relief=RAISED)
 
+# =======================Δημιουργία Tree==========================
 
-#===============================Επιλογή πίνακα================================
-choices = ["ΕΠΙΛΟΓΗ ΠΗΝΑΚΑ", "s", "c"]
-table_var = StringVar(root)
-table_var.set("ΕΠΙΛΟΓΗ ΠΗΝΑΚΑ")
-table_menu = OptionMenu(buttons_frame, table_var, *choices)
 
-select_table_button = Button(buttons_frame, text="Επιλογή πίνακα", command=lambda: select_table(root))
+#data_frame.grid(column=0, row=3, columnspan=2)
+#(column=1, row=1)
+
 
 # ========================================================================================
 # ------------------------------------Κουμπιά--------------------------------------------=
-# ========================================================================================
-reset_image = PhotoImage(master = root, file="refresh.png")
-
-reset_button = Button(buttons_frame, text="Ανανέωση",  bg="gray15", fg="white", bd=3, command=lambda: update_view(root),
-                      image=reset_image, compound=LEFT, relief=RAISED)
-
-
-add_button = Button(buttons_frame, command=lambda: add_to(root), text="Προσθήκη", padx=10, pady=10, bg="green",
-                    fg="white", bd=3)
-
-
-del_button = Button(buttons_frame, command=del_from_tree, text="Διαγραφή απο λίστα", padx=10, pady=10,
-                    bg="red", fg="white", bd=3)
-
-edit_button = Button(buttons_frame, command=lambda: edit(root), text="Επεξεργασία", padx=10, pady=10, bg="green",
-                     fg="white", bd=3)
-
-
-file_button = Button(buttons_frame, text="Ανοιγμα αρχείου", padx=10, pady=10, bg="green", fg="white", bd=3,
-                     command=lambda: open_file(root))
-
-
-backup_button = Button(buttons_frame, padx=10, pady=10, bd=3, text="Αντίγραφο ασφαλείας", command=backup, bg="blue",
-                       fg="white")
-exit_button = Button(buttons_frame, bg="black", fg="white", padx=10, pady=10, bd=3, text='Εξωδος', command=root.destroy)
-
+# =======================================================================================
+#
+# add_button = Button(buttons_frame, command=lambda: add_to(root), text="Προσθήκη", padx=10, pady=10, bg="green",
+#                     fg="white", bd=3)
+#
+#
+# del_button = Button(buttons_frame, command=del_from_tree, text="Διαγραφή απο λίστα", padx=10, pady=10,
+#                     bg="red", fg="white", bd=3)
+#
+# edit_button = Button(buttons_frame, command=lambda: edit(root), text="Επεξεργασία", padx=10, pady=10, bg="green",
+#                      fg="white", bd=3)
+#
+#
+# file_button = Button(buttons_frame, text="Ανοιγμα αρχείου", padx=10, pady=10, bg="green", fg="white", bd=3,
+#                      command=lambda: open_file(root))
+#
+# backup_button = Button(buttons_frame, padx=10, pady=10, bd=3, text="Αντίγραφο ασφαλείας", command=backup, bg="blue",
+#                        fg="white")
+# exit_button = Button(buttons_frame, bg="black", fg="white", padx=10, pady=10, bd=3, text='Εξωδος', command=root.destroy)
+#
 
 #======================Πληκτολόγιο=====================
 def search_event(event):
@@ -193,10 +200,13 @@ label_image = Label(root, image=image)
 #table_menu.grid(column=0, row=1, ipady=3, sticky="w")
 #select_table_button.grid(column=0, row=1, ipady=3, sticky="e")
 # Το file_button κάνει αυτόματα και ενημέρωση στο treeview
-search_entry.grid(column=0, row=2,  ipady=3, ipadx=100, sticky="we")
-search_entry.focus()
-search_button.grid(column=1, row=2, )
-reset_button.grid(column=2, row=2)
+search_entry.grid(column=0, row=3,  ipady=10, ipadx=400, sticky="we")
+search_entry.focus_force()
+search_button.grid(column=1, row=3, ipadx=10, ipady=7)
+#search_frame.grid(column=0, row=2)
+#data_frame.grid(column=0, row=3)
+#tree.grid(column=0, row=3)
+#reset_button.grid(column=2, row=2)
 #file_button.grid(column=3, row=0)
 #add_button.grid(column=4, row=0)
 #edit_button.grid(column=5, row=0)
@@ -219,7 +229,7 @@ filemenu.add_command(label="Επεξεργασία --> F3", command=lambda: edit
 filemenu.add_separator()
 filemenu.add_command(label="Διαγραφή", command=del_from_tree)
 filemenu.add_command(label ="Εξωδος --> Esc", command=root.quit)
-filemenu.add_command(label="make tabs", command=lambda: make_tabs(root))
+#filemenu.add_command(label="make tabs", command=lambda: make_tabs(root))
 menubar.add_cascade(label="Αρχείο", menu=filemenu)
 
 backup_menu = Menu(menubar, tearoff=0)
@@ -229,7 +239,7 @@ menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_m
 
 root.config(menu=menubar)
 # Εμφάνιση των κουμίων που είναι στο frame αριστερά
-buttons_frame.grid(row=2, column=0)
+#buttons_frame.grid(row=2, column=0)
 
 
 root.mainloop()
