@@ -7,7 +7,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 
 
-Version v0.8 Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
+Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
 Στην v0.7  έφτιαχνε συνεχεια frames στο root
 ΕΓΙΝΕ ΚΑΘΑΡΣΙΣΜΟΣ ΚΩΔΙΚΑ
 ΠΡΕΠΕΙ ΝΑ ΚΑΝΩ ΤΟ ΣΥΝΟΛΟ = TIMI * TEMAXIA
@@ -56,6 +56,7 @@ root = Tk()
 root.geometry('1300x720+100+100')
 root.title('Sqlite γραφικό περιβάλλον')
 root.config(bg="#C2C0BD")
+# root.withdraw()
 # root.resizable(width=1000, height=100)
 # width = 1200
 # height = 600
@@ -67,19 +68,36 @@ root.config(bg="#C2C0BD")
 
 
 # ------------------------Style------------------------------------
+def fixed_map(option):
+    # Fix for setting text colour for Tkinter 8.6.9
+    # From: https://core.tcl.tk/tk/info/509cafafae
+    #
+    # Returns the style map for 'option' with any styles starting with
+    # ('!disabled', '!selected', ...) filtered out.
+
+    # style.map() returns an empty list for missing options, so this
+    # should be future-safe.
+    return [elm for elm in style.map('Treeview', query_opt=option) if
+      elm[:2] != ('!disabled', '!selected')]
+
+
+
 style = ttk.Style()
+#style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+style.theme_use('vista')
 # # # Modify the font of the body
-style.theme_create("mystyle.Treeview", parent="alt")
+style.theme_create("mystyle.Treeview", parent="vista")
 #style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
+style.map('mystyle.Treeview', foreground=fixed_map('foreground'), background=fixed_map('background'))
 
 style.configure("mystyle.Treeview", highlightthickness=0, width=1000, font=('San Serif', 11))  # Εμφάνηση δεδομένων
 #style.configure('W.TButton', font=('calibri', 10, 'bold', 'underline'), foreground='red')
 
 #"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
-
-style.configure("mystyle.Treeview.Heading", font=('San Serif', 15, 'bold'), background="red",  foreground="orange", relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
+#fieldbackground="black"
+style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'bold'),  background="#D7E4BC", foreground="#948B54", relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
 #style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-style.configure("mystyle.Treeview", rowheight=40)
+style.configure("mystyle.Treeview", background="white", rowheight=40)
 #style.configure("mystyle.Treeview", background="#850664", foreground="#000000", fieldbackground="#FFFFFF")
 #style.theme_use("mystyle.Treeview")
 #         # -------------------------New Style--------------------------------

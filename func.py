@@ -5,6 +5,15 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+
+Version V0.8.4 Symbol € added to everything Db merged-----------------------------------------------------15/11/2019
+
+Version V0.8.3 Dinamic buttons work well -------------------------------------------------------12/11/2019
+
+
+Version V0.8.02 Sort added to headers-----------------------------------------------------------11/11/2019
+
+
 Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
 Στην v0.7  έφτιαχνε συνεχεια frames στο root
 ΕΓΙΝΕ ΚΑΘΑΡΣΙΣΜΟΣ ΚΩΔΙΚΑ
@@ -144,13 +153,17 @@ def select_table(root):
     buttons = []
 
     # Αλλαγή χρώματος κουμπιου που πατιετε
-    def change_color(btn):
+    def change_color(table_name):
+        # Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
         #print("btn_pressed Line 135", btn)
         #print("buttons line 136", buttons)
         for button in buttons:
             #allazei ta xromata se ayto poy pataw
-            if button == btn:
-                btn.configure(background="#EFA12C")
+            # Το κάνουμε με έλνχω των θεσεων δλδ αν το κουμπί που πατάμε εχει την ίδια θέση με τον πίνακα
+            # που αντιπροσοπευει πατόντας το τοτε να αλλάζει το χρώμα στο κουμπί σε πορτοκαλί
+            # και στα υπολειπα κουμπιά σε gray20
+            if tables.index(table_name) == buttons.index(button):
+                button.configure(background="#EFA12C")
             else:
                 button.configure(background="gray20")
 
@@ -174,35 +187,42 @@ def select_table(root):
                            fg="white", bd=0, compound=LEFT, relief=RAISED)
 
     search_entry.bind('<Return>', search_event)
-    search_entry.grid(column=0, row=3, ipady=3, ipadx=200, sticky="we")
+    search_entry.grid(column=0, row=3, ipady=3, ipadx=200, sticky="w")
     search_entry.focus_force()
 
     search_button.grid(column=1, row=3, ipadx=1, ipady=1)
     buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
     #print("buttons_frame exists line 169", buttons_frame)
-
     #-------------------------------------------------------------------Κουμπιά -----------------------------------
+    # for i in range(boardWidth):
+    #     newButton = tk.Button(root, text=str(i + 1),command=lambda j=i + 1: Board.playColumn(j, Board.getCurrentPlayer()))
+    #     Board.boardButtons.append(newButton)
+    # ----------------------------------Δυνομικη δημιουργια κουμπιών ----------------------------------
+    for index, table_name in enumerate(tables):
+        btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)], text=table_name, font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+        buttons.append(btn)
+        btn.grid(row=0, column=index, ipadx=15, ipady=20)
 
-    btn1 = Button(buttons_frame, command=lambda: [update_view(root, tables[0]), change_color(btn1)], text=tables[0], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    buttons.append(btn1)
-    btn1.grid(row=0, column=0, ipadx=15, ipady=20)
-    #print("Table Line 176", tables[0])
-
-    btn2 = Button(buttons_frame, command=lambda: [update_view(root, tables[1]), change_color(btn2)], text=tables[1], font = ('Sans','10','bold'),bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    btn2.grid(row=0, column=1, ipadx=15, ipady=20)
-    buttons.append(btn2)
-
-    btn3 = Button(buttons_frame, command=lambda: [update_view(root, tables[2]), change_color(btn3)], text=tables[2], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    buttons.append(btn3)
-    btn3.grid(row=0, column=2, ipadx=15, ipady=20)
-
-    btn4 = Button(buttons_frame, command=lambda: [update_view(root, tables[3]), change_color(btn4)], text=tables[3], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    buttons.append(btn4)
-    btn4.grid(row=0, column=3, ipadx=15, ipady=20)
-
-    btn5 = Button(buttons_frame, command=lambda: [update_view(root, tables[4]), change_color(btn5)], text=tables[4], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    buttons.append(btn5)
-    btn5.grid(row=0, column=4, ipadx=15, ipady=20)
+    # btn1 = Button(buttons_frame, command=lambda: [update_view(root, tables[0]), change_color(btn1)], text=tables[0], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+    # buttons.append(btn1)
+    # btn1.grid(row=0, column=0, ipadx=15, ipady=20)
+    # #print("Table Line 176", tables[0])
+    #
+    # btn2 = Button(buttons_frame, command=lambda: [update_view(root, tables[1]), change_color(btn2)], text=tables[1], font = ('Sans','10','bold'),bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+    # btn2.grid(row=0, column=1, ipadx=15, ipady=20)
+    # buttons.append(btn2)
+    #
+    # btn3 = Button(buttons_frame, command=lambda: [update_view(root, tables[2]), change_color(btn3)], text=tables[2], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+    # buttons.append(btn3)
+    # btn3.grid(row=0, column=2, ipadx=15, ipady=20)
+    #
+    # btn4 = Button(buttons_frame, command=lambda: [update_view(root, tables[3]), change_color(btn4)], text=tables[3], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+    # buttons.append(btn4)
+    # btn4.grid(row=0, column=3, ipadx=15, ipady=20)
+    #
+    # btn5 = Button(buttons_frame, command=lambda: [update_view(root, tables[4]), change_color(btn5)], text=tables[4], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+    # buttons.append(btn5)
+    # btn5.grid(row=0, column=4, ipadx=15, ipady=20)
 
     #----------------------------------Δυνομικη δημιουργια κουμπιών ----------------------------------
     #---------------------------------Πρεπει να αλλάξω το view δεν τα εμφανίζει καλα τα δεδομένα-------------------
@@ -213,8 +233,20 @@ def select_table(root):
     #     print("Name Line 199 ", name)
     # print("buttons Line 200", buttons)
 
-    search_frame.grid(column=1, row=1)
+    search_frame.grid(column=0, row=1)
     buttons_frame.grid(column=0, row=0)
+
+
+#---------------------------ΤΑΞΙΝΟΜΗΣΗ-------------------------------
+def sort_by_culumn(tree, column, reverse):
+    l = [(tree.set(k, column), k) for k in tree.get_children("")]
+    l.sort(reverse=reverse)
+
+    for index, (val, k) in enumerate(l):
+        tree.move(k, "", index)
+
+    tree.heading(column, command=lambda: sort_by_culumn(tree, column, not reverse))
+
 
 
 def update_view(root, table_from_button):
@@ -254,14 +286,23 @@ def update_view(root, table_from_button):
 
     for head in headers:
 
-        tree.column(head, anchor="w", width=1000 if head == headers[2] else 100, stretch=FALSE)
-        tree.heading(head, text=head)
+        tree.column(head, anchor="w", width=1000 if head == "ΠΕΡΙΓΡΑΦΗ" else 12*len(head), stretch=FALSE)
+        tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
+        #tree.heading(head, text=head, command=lambda: sort_by_culumn(tree, head, False))
 
     up_data = up_cursor.fetchall()
     #print("up_data line 247 ", up_data)
     up_index = len(up_data)
+    tree.tag_configure('oddrow', background='gray90', foreground="black", font=("arial", 10, "bold"))
+    tree.tag_configure('evenrow', background='white')
     for n in range(len(up_data)):
-        tree.insert("", up_index - 1, values=up_data[n])
+        #print("Grammh 297 Up_data[n]", up_data[n][0])
+        if int(up_data[n][0]) % 2 == 0:
+            #print("===========================   0    ===========")
+            tree.insert("", up_index - 1, values=up_data[n], tags=('oddrow',))
+        else:
+            #print("=====================================     1        ====================")
+            tree.insert("", up_index-1, values=up_data[n], tags=("evenrow",))
 
     data_frame.grid(column=0, row=3, columnspan=100)
 
@@ -313,7 +354,7 @@ def add_to(root):
             var = StringVar()
             data_to_add.append(var)
 
-            entry = Entry(add_window, textvariable=var, bd=2, width=150).grid(column=2, row=index + 1)
+            entry = Entry(add_window,  textvariable=var, bd=2, width=150).grid(column=2, row=index + 1)
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db(root, dbase, headers):
@@ -323,19 +364,28 @@ def add_to(root):
         # values είναι πόσα ? να έχει ανάλογα τα culumns
         values_var = []
 
-        for header in headers:
-            if header == "ID" or header == "id" or header == "Id":
+        for head in headers:
+            if head == "ID" or head == "id" or head == "Id":
                 values_var.append("null")
             else:
                 values_var.append('?')
         values = ",".join(values_var)
-        print("============values_var============line 318", values)
+        print("============values_var============line 371", values)
         # print("==========culumns===========", culumns)
         data = []
         for i in range(len(data_to_add)):
             data.append(data_to_add[i].get())
         # data = tuple(data_to_add)
-        print("===========DATA TO ADD AFTER LOOP =========LINE 324 ", data)
+        try:
+            for index, i in enumerate(data):
+                print("Line 380", index, i)
+            if headers[8] == "ΣΥΝΟΛΟ":
+                data[7] = str(float(data[5]) * float(data[6])) + " €"
+                data[6] = str(data[6]) + " €"
+                data[5] = str(data[5])
+        except IndexError as error:
+            print("Δεν υπάρχει σύνολο για να γίνει υπολογισμός συνόλου τιμής * τεμάχια", error)
+        print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
         # data_to_add = (toner.get(), model.get(), kodikos.get(),
         #               temaxia.get(), str(timi.get()) + " €", str(timi.get() * temaxia.get()) + " €", selides.get())
 
@@ -345,11 +395,11 @@ def add_to(root):
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
         sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(" + values + ");"  # values είναι πόσα ? να έχει ανάλογα τα culumns
         print("===============sql_insert==========\n", sql_insert)
-        print("=======DATA TO ADD===== LINE 334 \n", data)
+        print("=======DATA TO ADD===== LINE 387 \n", data)
         add_to_db_conn = sqlite3.connect(dbase)
         print("conected ", 50 * ".")
         add_to_db_cursor = add_to_db_conn.cursor()
-        print("cursor maked ", 50 * ".")
+        print("cursor done ", 50 * ".")
         add_to_db_cursor.execute(sql_insert, tuple(data))
         print("sql executed  ", 50 * ".")
 
@@ -367,7 +417,7 @@ def add_to(root):
 
     # ----------------------------------Κουμπί για να γίνει η προσθήκη-------------------
     enter_button = Button(add_window, text="Προσθήκη", bg="green", fg="White", bd=8, padx=5, pady=8, command=lambda: add_to_db(root, dbase, headers))
-    enter_button.grid(column=1, row=10)
+    enter_button.grid(column=1, row=13)
 
     # ΕΞΩΔΟΣ
     def quit(event):
@@ -410,8 +460,15 @@ def search(search_data):
             #  '%' + str(search_data.get()) + '%'))
 
         fetch = search_cursor.fetchall()
+        tree.tag_configure('oddrow', background='gray90', foreground="black", font=("arial", 10, "bold"))
+        tree.tag_configure('evenrow', background='white')
+        odd_or_even = 0
         for data in fetch:
-            tree.insert('', 'end', values=data)
+            odd_or_even += 1
+            if odd_or_even % 2 == 0:
+                tree.insert('', 'end', values=data, tags=('oddrow',))
+            else:
+                tree.insert("", 'end', values=data, tags=("evenrow",))
         search_cursor.close()
         search_conn.close()
 
@@ -419,7 +476,7 @@ def search(search_data):
 # ------------------------------------- ΕΠΕΞΕΡΓΑΣΙΑ -------------------------------------=
 # ========================================================================================
 def edit(root):
-    global dbase, tree
+    global dbase, tree, headers
     print("Γραμμή 423: ---------------ΛΟΓΟΣ BACKUP --->>> ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
     # ===============ΠΡΩΤΑ BACKUP =========
     backup()
@@ -486,9 +543,34 @@ def edit(root):
         # Θα βάζει το data_to_add απο πάνω γραμμη 371
         #βαζουμε και το id που χρειάζεται για το WHERE ID=?
         edited_data = []
+
         for data in data_to_add:
             edited_data.append(data.get())
         edited_data.append(selected_id)
+
+        for index, i in enumerate(headers):
+            print("Line 551", index, i)
+        try:
+            if headers[8] == "ΣΥΝΟΛΟ":
+            #************************************  TO FIX   ******************************
+                if "€" in edited_data[6]:
+                    edited_data[7] = str(float(edited_data[6][:-1]) * float(edited_data[5])) + " €"
+                    edited_data[5] = str(edited_data[5])
+                else:
+                    edited_data[7] = str(float(edited_data[6]) * float(edited_data[5])) + " €"
+                    edited_data[5] = str(edited_data[5])
+                if "€" not in str(edited_data[6]):
+                    edited_data[6] = str(edited_data[6]) + " €"
+                else:
+                    pass
+
+            else:
+                pass
+        except ValueError as error:
+            messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n Η Τιμή πρέπει να είναι με .(τελεία) όχι ,(κομμα) και Τεμάχια μόνο ακέραιους αριθμούς ".format(error))
+
+            edit_window.destroy()
+            return None
         #print("Γραμμη 491:  ----------- ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", tuple(edited_data))
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
