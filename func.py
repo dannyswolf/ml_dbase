@@ -559,7 +559,8 @@ def edit(root):
         for index, i in enumerate(headers):
             print("Line 551", index, i)
         try:
-            if headers[8] == "ΣΥΝΟΛΟ":
+           
+            if "ΣΥΝΟΛΟ" in headers:
             #************************************  TO FIX   ******************************
                 if "€" in edited_data[6]:
                     edited_data[7] = str(float(edited_data[6][:-1]) * float(edited_data[5])) + " €"
