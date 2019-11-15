@@ -84,9 +84,9 @@ def fixed_map(option):
 
 style = ttk.Style()
 #style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
-style.theme_use('alt')
+style.theme_use('vista')
 # # # Modify the font of the body
-style.theme_create("mystyle.Treeview", parent="alt")
+style.theme_create("mystyle.Treeview", parent="vista")
 #style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
 style.map('mystyle.Treeview', foreground=fixed_map('foreground'), background=fixed_map('background'))
 
@@ -95,7 +95,7 @@ style.configure("mystyle.Treeview", highlightthickness=0, width=1000, font=('San
 
 #"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
 #fieldbackground="black"
-style.configure("mystyle.Treeview.Heading", font=('San Serif', 13, 'bold'),  background="#657b83", foreground="#948B54", relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
+style.configure("mystyle.Treeview.Heading", font=('Calibri', 12, 'bold'),  background="#657b83", foreground="black", relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
 #style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
 style.configure("mystyle.Treeview", background="white", rowheight=40)
 #style.configure("mystyle.Treeview", background="#850664", foreground="#000000", fieldbackground="#FFFFFF")

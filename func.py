@@ -301,8 +301,8 @@ def update_view(root, table_from_button):
     up_data = up_cursor.fetchall()
     #print("up_data line 247 ", up_data)
     up_index = len(up_data)
-    tree.tag_configure('oddrow', background='gray90', foreground="black", font=("sans serif", 10, "bold"))
-    tree.tag_configure('evenrow', background='white', font=("sans serif", 10, "bold"))
+    tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
+    tree.tag_configure('evenrow', background='white', font=("Calibri", 10))
     for n in range(len(up_data)):
         #print("Grammh 297 Up_data[n]", up_data[n][0])
         if int(up_data[n][0]) % 2 == 0:
@@ -468,8 +468,8 @@ def search(search_data):
             #  '%' + str(search_data.get()) + '%'))
 
         fetch = search_cursor.fetchall()
-        tree.tag_configure('oddrow', background='gray90', foreground="black", font=("arial", 10, "bold"))
-        tree.tag_configure('evenrow', background='white')
+        tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
+        tree.tag_configure('evenrow', background='white', font=("Calibri", 10))
         odd_or_even = 0
         for data in fetch:
             odd_or_even += 1
