@@ -6,6 +6,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 
 
+
 Version V0.8.4 Symbol € added to everything Db merged-----------------------------------------------------15/11/2019
 
 Version V0.8.3 Dinamic buttons work well -------------------------------------------------------12/11/2019
@@ -165,7 +166,7 @@ def select_table(root):
             if tables.index(table_name) == buttons.index(button):
                 button.configure(background="#EFA12C")
             else:
-                button.configure(background="gray20")
+                button.configure(background="#657b83")
 
     search_frame = Frame(root, bg="#C2C0BD")
 
@@ -199,9 +200,12 @@ def select_table(root):
     #     Board.boardButtons.append(newButton)
     # ----------------------------------Δυνομικη δημιουργια κουμπιών ----------------------------------
     for index, table_name in enumerate(tables):
-        btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)], text=table_name, font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
+        btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)], text=table_name, font = ('Sans','10','bold'), bg="#657b83", fg="white", bd=5, compound=LEFT, relief="raised")
         buttons.append(btn)
-        btn.grid(row=0, column=index, ipadx=15, ipady=20)
+        if len(buttons) >= 5:
+            btn.grid(row=1, column=index-4, ipadx=len(str(table_name))+10, ipady=20, sticky="ew")
+        else:
+            btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
     # btn1 = Button(buttons_frame, command=lambda: [update_view(root, tables[0]), change_color(btn1)], text=tables[0], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
     # buttons.append(btn1)
@@ -252,11 +256,15 @@ def sort_by_culumn(tree, column, reverse):
 def update_view(root, table_from_button):
     data_frame = Frame(root, bg="#C2C0BD")
     global tree, dbase, headers, table
+    if tree:
+        tree.destroy()
+    else:
+        pass
     table = table_from_button
-    tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=20)
+    tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=19)
     # ================================ scrolls======================
     scrolly = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-    scrolly.grid(column=501, row=3, sticky="ns")
+    scrolly.grid(column=150, row=3, sticky="nse")
     tree.configure(yscrollcommand=scrolly.set)
     scrollx = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
     scrollx.grid(sticky='we', column=0, row=4, columnspan=100)
@@ -286,15 +294,15 @@ def update_view(root, table_from_button):
 
     for head in headers:
 
-        tree.column(head, anchor="w", width=1000 if head == "ΠΕΡΙΓΡΑΦΗ" else 12*len(head), stretch=FALSE)
+        tree.column(head, anchor="w", width=900 if head == "ΠΕΡΙΓΡΑΦΗ" else 13*len(head), stretch=FALSE)
         tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
         #tree.heading(head, text=head, command=lambda: sort_by_culumn(tree, head, False))
 
     up_data = up_cursor.fetchall()
     #print("up_data line 247 ", up_data)
     up_index = len(up_data)
-    tree.tag_configure('oddrow', background='gray90', foreground="black", font=("arial", 10, "bold"))
-    tree.tag_configure('evenrow', background='white')
+    tree.tag_configure('oddrow', background='gray90', foreground="black", font=("sans serif", 10, "bold"))
+    tree.tag_configure('evenrow', background='white', font=("sans serif", 10, "bold"))
     for n in range(len(up_data)):
         #print("Grammh 297 Up_data[n]", up_data[n][0])
         if int(up_data[n][0]) % 2 == 0:
@@ -310,7 +318,7 @@ def update_view(root, table_from_button):
         edit(root)
 
     tree.bind("<Double-1>", double_click)
-    tree.grid(column=0, row=1, columnspan=100)
+    tree.grid(column=0, row=1, columnspan=100, sticky="es")
 
     return dbase
 
@@ -567,7 +575,7 @@ def edit(root):
             else:
                 pass
         except ValueError as error:
-            messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n Η Τιμή πρέπει να είναι με .(τελεία) όχι ,(κομμα) και Τεμάχια μόνο ακέραιους αριθμούς ".format(error))
+            messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n Η Τιμή πρέπει να είναι με .(τελεία) όχι ,(κομμα) \n και στο Τεμάχια μόνο ακέραιους αριθμούς ".format(error))
 
             edit_window.destroy()
             return None
@@ -602,7 +610,7 @@ def edit(root):
     edit_window.bind('<Escape>', quit)
     update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση πρωιόντος", bg="red",
                            fg="white", bd=3)
-    update_button.grid(column=1, row=10)
+    update_button.grid(column=1, row=len(headers)+1)
 
 
 # ========================================================================================
