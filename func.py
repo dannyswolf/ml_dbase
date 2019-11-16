@@ -6,6 +6,11 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 
 
+Version V0.9    -----------------------------------------------------------------------------------------17/11/2019
+                1) Προσθήκη τελευταίας τροποποιήσης (ημερομηνία , ώρα και όνομα χρήστη που έκανε την τελευταία αλλαγή)
+                2) Το σύνολο το κάνει μόνο του
+                3) Ο χρήστης μπορεί να προσθέση κενό προίον
+                4) Ολοι οι πίνακες εμφανίζονται στο ιδιο πλάτος
 
 Version V0.8.4 Symbol € added to everything Db merged-----------------------------------------------------15/11/2019
 
@@ -32,16 +37,16 @@ version v 0.4 Προσθήκη menu
 version v 0.3 Η αναζήτηση δουλευει για ολες τις Βάσεις και πινακες
 
 
-===============================ΓΡΑΜΜΗ 405=======================
+
 TO DO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΕΞΟΥΝ ΣΩΣΤΑ *******************
 TO DO LIST  0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
 TO DO LIST  1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY------------------------------------------------------------------------ΕΓΙΝΕ
 TO DO LIST  2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες------------------------------ΕΓΙΝΕ 30/10/2019
 TO DO LIST  3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------------------------------------------------------------------Εγινε 1/11/2019
 TO DO LIST  4) ο χρήστης να επιλέγει τον πίνακα---------------------------------------------------------------------Εγινε 6/11/2019
-TO DO LIST  5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό
+TO DO LIST  5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό--------------------------------------------------Εγινε 17/11/2019
 TO DO LIST  6) Να βάλω να έχει log αρχείο---------------------------------------------------------------------------Εγινε 10/11/2019
-TO DO LIST  7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια)
+TO DO LIST  7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) -------------------------------Εγινε 17/11/2019
 TO DO LIST  8) Να βάλω triggers
 TO DO LIST  9) Να βάλω στο μενοu RUN SQL
 """
@@ -55,19 +60,28 @@ import sqlite3
 from datetime import datetime
 
 # Import os για να κάνουμε τον φακελο backup
-import os, logging, sys
+import os
+
+# Για τα αρχεία log files
+import logging
+
+#Για τα directory - φακέλους
+import sys
+
+#Για την τελευταια τροποpoiήση απο ποιόν χρήστη
+import getpass
+
+
 
 
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dbase = ""
+dbase = "ΑΠΟΘΗΚΗ.db"
 tables =[]
 up_data = []    # Για να πάρουμε τα δεδομένα
-dic_data = {}   # [μελανακια] = [brother , 12115, 1, 20€, κτλπ ]
-tabs = []       # Για το Notebook
 tree = ""
-
+user = getpass.getuser() # Για να πάρουμε το όνομα χρήστη απο τον υπολογιστή
 #-------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
 today = datetime.today().strftime("%d %m %Y")
 log_dir = "logs" + "\\" + today + "\\"
@@ -113,12 +127,12 @@ def open_file(root):
         else:
             #print("list root.grid.slaves  after deleted line 82", list)
             continue
-    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
-                                           filetypes=(("db files",
-                                                       "*.db"), (
-                                                          "all files",
-                                                          "*.*")))
-
+    #dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
+    #                                       filetypes=(("db files",
+    #                                                   "*.db"), (
+    #                                                      "all files",
+    #                                                      "*.*")))
+    dbase = "ΑΠΟΘΗΚΗ.db"
     print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
@@ -291,10 +305,28 @@ def update_view(root, table_from_button):
 
     # tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟΣ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
     # tree["show"] = "headings"
-
+    alignment = ""
+    platos = 0
     for head in headers:
-
-        tree.column(head, anchor="w", width=900 if head == "ΠΕΡΙΓΡΑΦΗ" else 13*len(head), stretch=FALSE)
+        #==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
+        if head == "ΤΙΜΗ" or head == "ΣΥΝΟΛΟ":  # ΣΤΟΙΧΗΣΗ ΔΕΞΙΑ
+            alignment = "e"
+            platos = len(head) * 12
+        elif head == "ΚΩΔΙΚΟΣ" or head == "ΤΕΜΑΧΙΑ":  # ΣΤΟΙΧΗΣΗ ΚΕΝΤΡΟ
+            alignment = "center"
+            platos = len(head) * 12
+        elif head == "ΠΑΡΑΤΗΡΗΣΗΣ" or head == "ΠΕΡΙΓΡΑΦΗ": # ΣΤΟΙΧΗΣΗ ΑΡΙΣΤΕΡΑ
+            if head == "ΠΑΡΑΤΗΡΗΣΗΣ" and len(headers) < 7:
+                platos = 450
+            elif head == "ΠΕΡΙΓΡΑΦΗ":
+                platos = 1100
+            alignment = "w"
+        elif head == "PARTS_NR":
+            platos = 150
+        else:
+            alignment = "center"
+            platos = len(head) * 12
+        tree.column(head, anchor=alignment, width=platos, stretch=FALSE)
         tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
         #tree.heading(head, text=head, command=lambda: sort_by_culumn(tree, head, False))
 
@@ -384,15 +416,27 @@ def add_to(root):
         for i in range(len(data_to_add)):
             data.append(data_to_add[i].get())
         # data = tuple(data_to_add)
+        print("Line 406 data before €",data)
         try:
-            for index, i in enumerate(data):
-                print("Line 380", index, i)
-            if headers[8] == "ΣΥΝΟΛΟ":
-                data[7] = str(float(data[5]) * float(data[6])) + " €"
-                data[6] = str(data[6]) + " €"
+            if "ΣΥΝΟΛΟ" in headers:
+                # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
+                # data[6]= 0 αν ο χρήστης δεν δόσει τιμή
+                if data[6] == "":
+                    data[6] = 0
+                else:
+                    pass
+                data[7] = float(data[5]) * float(data[6])
+                data[7] = str("{:0.2f}".format(data[7])) + "€"
+                data[6] = str("{:0.2f}".format(float(data[6]))) + " €"
                 data[5] = str(data[5])
         except IndexError as error:
             print("Δεν υπάρχει σύνολο για να γίνει υπολογισμός συνόλου τιμής * τεμάχια", error)
+        except ValueError as error:
+            print("H τιμή δεν μπορεί να είναι κενή", error)
+            pass
+        # ================================ Προσθήκη τελευταίας τροποποιησης ============================
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        data[-1] = now + "  " + user + "  " + data[-1]
         print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
         # data_to_add = (toner.get(), model.get(), kodikos.get(),
         #               temaxia.get(), str(timi.get()) + " €", str(timi.get() * temaxia.get()) + " €", selides.get())
@@ -541,7 +585,7 @@ def edit(root):
             else:
                 edited_culumns.append(culumn + "=?")
         culumns = ",".join(edited_culumns)
-        #print("-------------edited_culumns--------------Line 464", edited_culumns)
+        print("-------------edited_culumns--------------Line 554", edited_culumns)
 
         # ====================ΕΠΙΛΕΓΜΈΝΟ ID =================
         selected_item = tree.selection()
@@ -554,32 +598,55 @@ def edit(root):
 
         for data in data_to_add:
             edited_data.append(data.get())
-        edited_data.append(selected_id)
 
-        for index, i in enumerate(headers):
-            print("Line 551", index, i)
-        try:
-           
-            if "ΣΥΝΟΛΟ" in headers:
-            #************************************  TO FIX   ******************************
-                if "€" in edited_data[6]:
-                    edited_data[7] = str(float(edited_data[6][:-1]) * float(edited_data[5])) + " €"
-                    edited_data[5] = str(edited_data[5])
-                else:
-                    edited_data[7] = str(float(edited_data[6]) * float(edited_data[5])) + " €"
-                    edited_data[5] = str(edited_data[5])
-                if "€" not in str(edited_data[6]):
-                    edited_data[6] = str(edited_data[6]) + " €"
+        # ================================ Προσθήκη τελευταίας τροποποιησης ============================
+        # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        edited_data[-1] = now + "  " + user + "  " + edited_data[-1]
+        #================================= Προσθήκη id =================================================
+        edited_data.append(selected_id)
+        print("Line 573 Edited data ", edited_data)
+        # ====================================== ΑΥΤΟΜΑΤΗ ΕΝΗΜΕΡΩΣΗ ΣΥΝΟΛΟΥ =============================
+        #======================================= ΚΑΙ ΠΡΟΣΘΗΚΗ ΣΥΜΒΟΛΟΥ €    =============================
+        if "ΣΥΝΟΛΟ=?" in edited_culumns:
+            print("Συνολο == ", "ΣΥΝΟΛΟ=?" in edited_culumns)
+            try:
+                #Αν ο χρήστης δεν βάλει τεμάχειο να γίνει αυτόματα 0
+                if edited_data[5] == "":
+                    edited_data[5] = 0
+                    print("Line 604 edited_data[5] ", edited_data[5])
                 else:
                     pass
+                # Αν ο χρήστης δεν ορίσει τιμή να γίνει αυτόματα 0
+                if edited_data[6] == "":
+                    edited_data[6] = "0"   # 0 σε string γιατί ψάχνουμε αν έχει το € μέσα
+                    print("Line 610 edited_data[6] ", edited_data[6])
+                else:
+                    pass
+                # {:0.2f} Για να εμφανίνζει την τιμή με 2 δεκαδικά πίσω απο την τιμή 10.00 € και οχι 10 €
+                if "€" in edited_data[6]:
+                    edited_data[7] = str("{:0.2f}".format(float(edited_data[6][:-1]) * float(edited_data[5]))) + " €"
+                    edited_data[5] = str(edited_data[5])
 
-            else:
-                pass
-        except ValueError as error:
-            messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n Η Τιμή πρέπει να είναι με .(τελεία) όχι ,(κομμα) \n και στο Τεμάχια μόνο ακέραιους αριθμούς ".format(error))
+                else:
+                    edited_data[7] = str("{:0.2f}".format(float(edited_data[6]) * float(edited_data[5]))) + " €"
+                    edited_data[5] = str(edited_data[5])
 
-            edit_window.destroy()
-            return None
+                if "€" not in str(edited_data[6]):
+                    edited_data[6] = str("{:0.2f}".format(float(edited_data[6]))) + " €"
+
+                else:
+                    edited_data[6] = str("{:0.2f}".format(float(edited_data[6][:-1]))) + " €"
+
+
+            except ValueError as error:
+                messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n1)Η Τιμή πρέπει να είναι αριθμός και με .(τελεία) όχι ,(κομμα) "\
+                                   .format(error))
+
+                edit_window.destroy()
+                return None
+        else:
+            pass
         #print("Γραμμη 491:  ----------- ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", tuple(edited_data))
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
