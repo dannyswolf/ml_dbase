@@ -5,6 +5,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+Version V0.9.3   | ΤΑΞΙΝΟΜΗΣΗ  δουλεύει σωστά  | -----------------------18/11/2019
 
 Version V0.9.2   | Το πρόβλημα με το , λύθηκε | ------------------------17/11/2019
 
@@ -48,12 +49,12 @@ TODO 1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY---------------------------------
 TODO 2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες-----------------ΕΓΙΝΕ 30/10/2019
 TODO 3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ --------------------------------------------------------------------------Εγινε 1/11/2019
 TODO 4) ο χρήστης να επιλέγει τον πίνακα--------------------------------------------------------Εγινε 6/11/2019
-TODO 5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό-------------------------------------Εγινε 17/11/2019
+TODO 5) Ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό-------------------------------------Εγινε 17/11/2019
 TODO 6) Να βάλω να έχει log αρχείο--------------------------------------------------------------Εγινε 10/11/2019
 TODO 7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) ------------------Εγινε 17/11/2019
 TODO 8) Να βάλω triggers
 TODO 9) Να βάλω στο μενοu RUN SQL
-TODO 10) Το sort δεν παίζει καλά με τα νούμερα
+TODO 10) Το sort δεν παίζει καλά με τα νούμερα -------------------------------------------------Eγινε 18/11/2019
 """
 
 
@@ -231,13 +232,25 @@ def select_table(root):
 
 # ---------------------------ΤΑΞΙΝΟΜΗΣΗ-------------------------------
 def sort_by_culumn(tree, column, reverse):
-    lista = [(tree.set(k, column), k) for k in tree.get_children("")]
+    lista = [[tree.set(k, column), k] for k in tree.get_children("")]
     try:
         # sorted(iterable, *, key=None, reverse=False)
         # Return a new sorted list from the items in iterable.
-        lista = sorted(lista, key=lambda x: float(x[0]), reverse=reverse)
-    except ValueError:
-        lista.sort(reverse=reverse)
+        if column == "ΤΙΜΗ" or column == "ΣΥΝΟΛΟ" or column == "ΚΩΔΙΚΟΣ" or column == "ΣΕΛΙΔΕΣ":
+            for index, (x, y) in enumerate(lista):
+
+                lista[index][0] = lista[index][0].replace("€", "")  # Αφαίρεση €
+
+                lista[index][0] = lista[index][0].replace(",", ".")  # Αφαίρεση ,
+                if lista[index][0] == "":  # Αφαίρεση "" αν είναι κενό δλδ
+                    lista[index][0] = 0.00
+                if lista[index][0] == 'None':  # Αφαίρεση  αν είναι 'None'
+                    lista[index][0] = 0
+
+        lista = sorted(lista, key=lambda x: float(x[0]), reverse=reverse)  # Ταξινόμηση για τιμές και σύνολα
+    except ValueError as error:  # Αν δεν είναι αριθμή το κάνει με το lista.sort()
+        print("Σφάλμα ", error)
+        lista = sorted(lista, reverse=reverse)
     for index, (val, k) in enumerate(lista):
         tree.move(k, "", index)
 
