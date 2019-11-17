@@ -7,14 +7,12 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 
 
-Version V0.9.1   Dynamic screen sizes  ==================================================================17/11/2019
-
-
+Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
 
 Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
 Στην v0.7  έφτιαχνε συνεχεια frames στο root
 ΕΓΙΝΕ ΚΑΘΑΡΣΙΣΜΟΣ ΚΩΔΙΚΑ
-ΠΡΕΠΕΙ ΝΑ ΚΑΝΩ ΤΟ ΣΥΝΟΛΟ = TIMI * TEMAXIA --------------------------------------------
+ΠΡΕΠΕΙ ΝΑ ΚΑΝΩ ΤΟ ΣΥΝΟΛΟ = TIMI * TEMAXIA
 
 
 Version v0.7 Για το μαγαζί δουλευουν ολα ----------------------------9/11/2019
@@ -34,43 +32,25 @@ version v 0.3 Η αναζήτηση δουλευει για ολες τις Βά
 Η ΑΝΑΖΗΤΗΣΗ ΔΕΝ ΔΟΥΛΕΥΕΙ ΜΕ ΤΟ ΑΝΟΙΓΜΑ ΤΟΥ ΠΡΩΤΟΥ ΑΡΧΕΙΟΥ
 ΧΑΛΑΕΙ ΤΟ ΠΛΑΤΟΣ ΤΟΥ ΠΡΟΓΡΑΜΜΑΤΟΣ ΜΕ ΤΗΝ ΑΝΑΝΕΩΣΗ
 
-
-
-TO DO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΕΞΟΥΝ ΣΩΣΤΑ *******************
-TO DO LIST  0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
-TO DO LIST  1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY------------------------------------------------------------------------ΕΓΙΝΕ
-TO DO LIST  2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες------------------------------ΕΓΙΝΕ 30/10/2019
-TO DO LIST  3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------------------------------------------------------------------Εγινε 1/11/2019
-TO DO LIST  4) ο χρήστης να επιλέγει τον πίνακα---------------------------------------------------------------------Εγινε 6/11/2019
-TO DO LIST  5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό--------------------------------------------------Εγινε 17/11/2019
-TO DO LIST  6) Να βάλω να έχει log αρχείο---------------------------------------------------------------------------Εγινε 10/11/2019
-TO DO LIST  7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) -------------------------------Εγινε 17/11/2019
-TO DO LIST  8) Να βάλω triggers
-TO DO LIST  9) Να βάλω στο μενοu RUN SQL
+TODO LIST  8) Να βάλω triggers
+TODO LIST  9) Να βάλω στο μενοu RUN SQL
 """
 
 from func import *
 
-
 root = Tk()
-height = root.winfo_screenheight() / 1.3
-width = root.winfo_screenwidth() / 1.3
-
-x = 100
-y = 100
-root.geometry("%dx%d+%d+%d" % (width, height, x, y))
-root.title('Sqlite γραφικό περιβάλλον')
+root.geometry('800x600+100+100')
+root.title('ML Database V 0.9.1')
 root.config(bg="#C2C0BD")
-
-#root.withdraw()
-#root.resizable(width=1000, height=100)
-#width = 1200
-#height = 600
-#screen_width = root.winfo_screenwidth()
-#screen_height = root.winfo_screenheight()
-#x = (screen_width / 2) - (width / 2)
-#y = (screen_height / 2) - (height / 2)
-#root.geometry("%dx%d+%d+%d" % (width, height, x, y))
+# root.withdraw()
+# root.resizable(width=1000, height=100)
+# width = 1200
+# height = 600
+# screen_width = root.winfo_screenwidth()
+# screen_height = root.winfo_screenheight()
+# x = (screen_width / 2) - (width / 2)
+# y = (screen_height / 2) - (height / 2)
+# root.geometry("%dx%d+%d+%d" % (width, height, x, y))
 
 
 # ------------------------Style------------------------------------
@@ -83,29 +63,30 @@ def fixed_map(option):
 
     # style.map() returns an empty list for missing options, so this
     # should be future-safe.
-    return [elm for elm in style.map('Treeview', query_opt=option) if
-      elm[:2] != ('!disabled', '!selected')]
+    return [elm for elm in style.map('Treeview', query_opt=option) if elm[:2] != ('!disabled', '!selected')]
 
 
-
+width_of_tree = root.winfo_screenwidth()
 style = ttk.Style()
-#style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+# style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
 style.theme_use('vista')
 # # # Modify the font of the body
 style.theme_create("mystyle.Treeview", parent="vista")
-#style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
+# style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
 style.map('mystyle.Treeview', foreground=fixed_map('foreground'), background=fixed_map('background'))
 
-style.configure("mystyle.Treeview", highlightthickness=0, width=1000, font=('San Serif', 11))  # Εμφάνηση δεδομένων
-#style.configure('W.TButton', font=('calibri', 10, 'bold', 'underline'), foreground='red')
+# ==================================== Εμφάνηση δεδομένων ==============================================
+style.configure("mystyle.Treeview", highlightthickness=0, width=width_of_tree-100, font=('San Serif', 11))
+# style.configure('W.TButton', font=('calibri', 10, 'bold', 'underline'), foreground='red')
 
-#"map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
-#fieldbackground="black"
-style.configure("mystyle.Treeview.Heading", font=('Calibri', 12, 'bold'),  background="#657b83", foreground="black", relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
-#style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
+# "map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
+# fieldbackground="black"
+style.configure("mystyle.Treeview.Heading", font=('Calibri', 12, 'bold'),  background="#657b83", foreground="black",
+                relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
+# style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
 style.configure("mystyle.Treeview", background="white", rowheight=40)
-#style.configure("mystyle.Treeview", background="#850664", foreground="#000000", fieldbackground="#FFFFFF")
-#style.theme_use("mystyle.Treeview")
+# style.configure("mystyle.Treeview", background="#850664", foreground="#000000", fieldbackground="#FFFFFF")
+# style.theme_use("mystyle.Treeview")
 #         # -------------------------New Style--------------------------------
 # style1 = ttk.Style()
 # mygreen = "gray"
@@ -113,7 +94,8 @@ style.configure("mystyle.Treeview", background="white", rowheight=40)
 # Styles - normal, bold, roman, italic, underline, and overstrike.
 # style.theme_create("mystyle.Treeview", parent="alt", settings={
 #         "TNotebook": {"configure": {"tabmargins": [2, 5, 2, 0]}},
-#         "Treeview": {"configure": {"font": ['San Serif', 13, "normal"]}, "rowhight": 50, "highlightthickness": 10, "background": [("selected", myred)]},
+#         "Treeview": {"configure": {"font": ['San Serif', 13, "normal"]}, "rowhight": 50, "highlightthickness": 10,
+#         "background": [("selected", myred)]},
 #         "Treeview.treearea": {"configure": {'sticky': 'nswe'}},
 #         "Treeview.Heading": {"configure": {"font": ['San Serif', 11, 'bold']}, "background": "red",
 #                             "foreground": "white", "relief": "flat"},
@@ -126,8 +108,8 @@ style.configure("mystyle.Treeview", background="white", rowheight=40)
 
 
 # Τίτλος προγράμματος
-app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8 )
-#app_title.grid(column=0, row=0, sticky="we")
+app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8)
+# app_title.grid(column=0, row=0, sticky="we")
 
 
 # -----------------------Buttons Frame-------------------------
@@ -136,7 +118,7 @@ buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
 buttons_frame.grid(column=0, row=1)
 
 
-#---------------------binds------------------------------
+# ---------------------binds------------------------------
 # #ΑΝΑΝΕΩΣΗ
 # def reset_event(event):
 #
@@ -146,7 +128,7 @@ buttons_frame.grid(column=0, row=1)
 # root.bind('<F5>', reset_event)
 
 
-#ΕΞΩΔΟΣ
+# ΕΞΩΔΟΣ
 def exit_event(event):
     if messagebox.askokcancel("Εξωδος", "Θέλετε πραγματικά να εγκαταλείψετε;"):
         root.destroy()
@@ -155,7 +137,7 @@ def exit_event(event):
 root.bind('<Escape>', exit_event)
 
 
-#ΠΡΟΣΘΗΚΗ
+# ΠΡΟΣΘΗΚΗ
 def add_event(event):
 
     add_to(root)
@@ -164,7 +146,7 @@ def add_event(event):
 root.bind('<F1>', add_event)
 
 
-#ΕΠΕΞΕΡΓΑΣΙΑ
+# ΕΠΕΞΕΡΓΑΣΙΑ
 def edit_event(event):
 
     edit(root)
@@ -172,13 +154,7 @@ def edit_event(event):
 
 root.bind('<F3>', edit_event)
 
-
-# Εμφάνιση κουμιών και Logo
-#image = PhotoImage(master = root, file="logo-small-orange.png")
-#label_image = Label(root, image=image)
-#label_image.grid(column=0, row=0, sticky="w")
-
-#--------------------------------------   MENU   -----------------------------------------
+# --------------------------------------   MENU   -----------------------------------------
 menubar = Menu(root)
 
 filemenu = Menu(menubar, tearoff=0)
@@ -188,7 +164,7 @@ filemenu.add_command(label="Προσθήκη --> F1", command=lambda: add_to(roo
 filemenu.add_command(label="Επεξεργασία --> F3", command=lambda: edit(root))
 filemenu.add_separator()
 filemenu.add_command(label="Διαγραφή", command=del_from_tree)
-filemenu.add_command(label ="Εξωδος --> Esc", command=root.quit)
+filemenu.add_command(label="Εξωδος --> Esc", command=root.quit)
 menubar.add_cascade(label="Αρχείο", menu=filemenu)
 
 backup_menu = Menu(menubar, tearoff=0)
@@ -197,5 +173,6 @@ menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_m
 
 
 root.config(menu=menubar)
+
 if __name__ == "__main__":
     root.mainloop()

@@ -5,7 +5,10 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
-Version V0.9.1   Dynamic screen sizes  ==================================================================17/11/2019
+
+Version V0.9.2   | Το πρόβλημα με το , λύθηκε | ------------------------17/11/2019
+
+Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
 
 Version V0.9    -----------------------------------------------------------------------------------------17/11/2019
                 1) Προσθήκη τελευταίας τροποποιήσης (ημερομηνία , ώρα και όνομα χρήστη που έκανε την τελευταία αλλαγή)
@@ -39,22 +42,25 @@ version v 0.3 Η αναζήτηση δουλευει για ολες τις Βά
 
 
 
-TO DO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΕΞΟΥΝ ΣΩΣΤΑ *******************
-TO DO LIST  0) Να φιάξω την επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.------------Εγινε 29/10/2019
-TO DO LIST  1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY------------------------------------------------------------------------ΕΓΙΝΕ
-TO DO LIST  2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες------------------------------ΕΓΙΝΕ 30/10/2019
-TO DO LIST  3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ ---------------------------------------------------------------------------------------Εγινε 1/11/2019
-TO DO LIST  4) ο χρήστης να επιλέγει τον πίνακα---------------------------------------------------------------------Εγινε 6/11/2019
-TO DO LIST  5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό--------------------------------------------------Εγινε 17/11/2019
-TO DO LIST  6) Να βάλω να έχει log αρχείο---------------------------------------------------------------------------Εγινε 10/11/2019
-TO DO LIST  7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) -------------------------------Εγινε 17/11/2019
-TO DO LIST  8) Να βάλω triggers
-TO DO LIST  9) Να βάλω στο μενοu RUN SQL
+TODO LIST   ********* ΠΡΕΠΕΙ ΝΑ ΤΑ ΒΑΛΩ ΟΛΛΑ ΣΕ CLASS ΓΙΑ ΝΑ ΠΑΙΞΟΥΝ ΣΩΣΤΑ *******************
+TODO 0) Επεξεργρασία επιλεγμένου απο το treeview  ΝΑ ΠΕΡΝΕΙ column αντι TONER=? κτλπ.-----------Εγινε 29/10/2019
+TODO 1) ΝΑ ΦΤΙΑΞΩ ΤΟ BACKUP DIRECTORY-----------------------------------------------------------ΕΓΙΝΕ
+TODO 2) ΤΟ TREE NA ΕΜΦΑΝΙΖΕΙ OTI ΒΑΣΗ ΚΑΙ ΝΑ ΕΠΙΛΕΞΩ--να εμφανίζει τους πίνακες-----------------ΕΓΙΝΕ 30/10/2019
+TODO 3) ΝΑ ΒΑΛΩ ΜΕΝΟΥ --------------------------------------------------------------------------Εγινε 1/11/2019
+TODO 4) ο χρήστης να επιλέγει τον πίνακα--------------------------------------------------------Εγινε 6/11/2019
+TODO 5) ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό-------------------------------------Εγινε 17/11/2019
+TODO 6) Να βάλω να έχει log αρχείο--------------------------------------------------------------Εγινε 10/11/2019
+TODO 7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) ------------------Εγινε 17/11/2019
+TODO 8) Να βάλω triggers
+TODO 9) Να βάλω στο μενοu RUN SQL
+TODO 10) Το sort δεν παίζει καλά με τα νούμερα
 """
 
 
 # Πρώτα αυτό για το Combobox
-from tkinter import ttk, Frame, Button, Tk, Label, RAISED, PhotoImage, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE, Toplevel, font
+from tkinter import ttk, Frame, Button, Tk, Label, RAISED, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE,\
+    TclError, Toplevel, font
+
 import sqlite3
 
 # datetime για backup την βαση πριν κάθε αλλαγή
@@ -66,24 +72,22 @@ import os
 # Για τα αρχεία log files
 import logging
 
-#Για τα directory - φακέλους
+# Για τα directory - φακέλους
 import sys
 
-#Για την τελευταια τροποpoiήση απο ποιόν χρήστη
+# Για την τελευταια τροποpoiήση απο ποιόν χρήστη
 import getpass
-
-
 
 
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
 dbase = ""
-tables =[]
+tables = []
 up_data = []    # Για να πάρουμε τα δεδομένα
 tree = ""
-user = getpass.getuser() # Για να πάρουμε το όνομα χρήστη απο τον υπολογιστή
-#-------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
+user = getpass.getuser()  # Για να πάρουμε το όνομα χρήστη απο τον υπολογιστή
+# -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
 today = datetime.today().strftime("%d %m %Y")
 log_dir = "logs" + "\\" + today + "\\"
 
@@ -97,10 +101,10 @@ log_file_name = "ml_database_log" + datetime.now().strftime("%d %m %Y %H %M %S")
 log_file = os.path.join(log_dir, log_file_name)
 
 
-#log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-root_logger= logging.getLogger()
-root_logger.setLevel(logging.DEBUG) # or whatever
-handler = logging.FileHandler(log_file, 'w', 'utf-8') # or whatever
+# log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+root_logger = logging.getLogger()
+root_logger.setLevel(logging.DEBUG)  # or whatever
+handler = logging.FileHandler(log_file, 'w', 'utf-8')  # or whatever
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')  # or whatever
 handler.setFormatter(formatter)  # Pass handler as a parameter, not assign
 root_logger.addHandler(handler)
@@ -113,34 +117,33 @@ def open_file(root):
 
     global dbase
     # Να σβήσουμε παλιά κουμπιά και tree αν ανοιξουμε αλη βαση δεδομένων
-    list = root.grid_slaves()
-    #print("list root.grid.slaves line 78", list)
-    for i in list:
-        if len(list) > 1:
-            #print("i line 73", i)
+    list_of_frames = root.grid_slaves()
+    # print("list_of_frames root.grid.slaves line 78", list_of_frames)
+    for i in list_of_frames:
+        if len(list_of_frames) > 1:
+            # print("i line 73", i)
             if ".!frame" in str(i):
-                #print(i, "deleted line 75")
+                # print(i, "deleted line 75")
                 i.destroy()
 
             elif ".!scrollbar" in str(i):
-                #print(i, "deleted line 79")
+                # print(i, "deleted line 79")
                 i.destroy()
         else:
-            #print("list root.grid.slaves  after deleted line 82", list)
+            # print("list_of_frames root.grid.slaves  after deleted line 129", list_of_frames)
             continue
-    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
-                                           filetypes=(("db files",
-                                                       "*.db"), (
+    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων", filetypes=(("db files",
+                                                                                                            "*.db"), (
                                                           "all files",
                                                           "*.*")))
-    #dbase = "ΑΠΟΘΗΚΗ.db"
+    # dbase = "ΑΠΟΘΗΚΗ.db"
     print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
     return dbase
 
 
-#Ορισμός πινάκων
+# Ορισμός πινάκων
 def get_tables():
     global tables
     tables = []
@@ -154,7 +157,7 @@ def get_tables():
     for name in table_name:
         if name[0] not in dont_used_tables:
             tables.append(name[0])
-            #print("TABLE ", name[0], " ========added to tables line 118")
+            # print("TABLE ", name[0], " ========added to tables line 118")
 
         else:
             continue
@@ -162,7 +165,7 @@ def get_tables():
     return tables
 
 
-#Δημιουργια κουμπιών συμφονα με τους πινακες της βασης
+# Δημιουργια κουμπιών συμφονα με τους πινακες της βασης
 def select_table(root):
     global tables
 
@@ -171,10 +174,10 @@ def select_table(root):
     # Αλλαγή χρώματος κουμπιου που πατιετε
     def change_color(table_name):
         # Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
-        #print("btn_pressed Line 135", btn)
-        #print("buttons line 136", buttons)
+        # print("btn_pressed Line 135", btn)
+        # print("buttons line 136", buttons)
         for button in buttons:
-            #allazei ta xromata se ayto poy pataw
+            # allazei ta xromata se ayto poy pataw
             # Το κάνουμε με έλνχω των θεσεων δλδ αν το κουμπί που πατάμε εχει την ίδια θέση με τον πίνακα
             # που αντιπροσοπευει πατόντας το τοτε να αλλάζει το χρώμα στο κουμπί σε πορτοκαλί
             # και στα υπολειπα κουμπιά σε gray20
@@ -208,64 +211,37 @@ def select_table(root):
 
     search_button.grid(column=1, row=3, ipadx=1, ipady=1)
     buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
-    #print("buttons_frame exists line 169", buttons_frame)
-    #-------------------------------------------------------------------Κουμπιά -----------------------------------
-    # for i in range(boardWidth):
-    #     newButton = tk.Button(root, text=str(i + 1),command=lambda j=i + 1: Board.playColumn(j, Board.getCurrentPlayer()))
-    #     Board.boardButtons.append(newButton)
+    # print("buttons_frame exists line 169", buttons_frame)
+    # -----------------------------------------Κουμπιά -----------------------------------
     # ----------------------------------Δυνομικη δημιουργια κουμπιών ----------------------------------
     for index, table_name in enumerate(tables):
-        btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)], text=table_name, font = ('Sans','10','bold'), bg="#657b83", fg="white", bd=5, compound=LEFT, relief="raised")
+        btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)],
+                     text=table_name, font=('Sans', '10', 'bold'), bg="#657b83", fg="white", bd=5, compound=LEFT,
+                     relief="raised")
+
         buttons.append(btn)
         if len(buttons) >= 5:
             btn.grid(row=1, column=index-4, ipadx=len(str(table_name))+10, ipady=20, sticky="ew")
         else:
             btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
-    # btn1 = Button(buttons_frame, command=lambda: [update_view(root, tables[0]), change_color(btn1)], text=tables[0], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    # buttons.append(btn1)
-    # btn1.grid(row=0, column=0, ipadx=15, ipady=20)
-    # #print("Table Line 176", tables[0])
-    #
-    # btn2 = Button(buttons_frame, command=lambda: [update_view(root, tables[1]), change_color(btn2)], text=tables[1], font = ('Sans','10','bold'),bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    # btn2.grid(row=0, column=1, ipadx=15, ipady=20)
-    # buttons.append(btn2)
-    #
-    # btn3 = Button(buttons_frame, command=lambda: [update_view(root, tables[2]), change_color(btn3)], text=tables[2], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    # buttons.append(btn3)
-    # btn3.grid(row=0, column=2, ipadx=15, ipady=20)
-    #
-    # btn4 = Button(buttons_frame, command=lambda: [update_view(root, tables[3]), change_color(btn4)], text=tables[3], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    # buttons.append(btn4)
-    # btn4.grid(row=0, column=3, ipadx=15, ipady=20)
-    #
-    # btn5 = Button(buttons_frame, command=lambda: [update_view(root, tables[4]), change_color(btn5)], text=tables[4], font = ('Sans','10','bold'), bg="gray20", fg="white", bd=5, compound=LEFT, relief="raised")
-    # buttons.append(btn5)
-    # btn5.grid(row=0, column=4, ipadx=15, ipady=20)
-
-    #----------------------------------Δυνομικη δημιουργια κουμπιών ----------------------------------
-    #---------------------------------Πρεπει να αλλάξω το view δεν τα εμφανίζει καλα τα δεδομένα-------------------
-    # buttons = [table for table in tables]
-    # for index, name in enumerate(tables):
-    #     buttons[index] = Button(buttons_frame, command=lambda: update_view(tree, tables[index]), text=name, bg="gray20", fg="white", bd=3, compound=LEFT, relief="raised")
-    #     buttons[index].grid(row=0, column=index, ipadx=30, ipady=50)
-    #     print("Name Line 199 ", name)
-    # print("buttons Line 200", buttons)
-
     search_frame.grid(column=0, row=1)
     buttons_frame.grid(column=0, row=0)
 
 
-#---------------------------ΤΑΞΙΝΟΜΗΣΗ-------------------------------
+# ---------------------------ΤΑΞΙΝΟΜΗΣΗ-------------------------------
 def sort_by_culumn(tree, column, reverse):
-    l = [(tree.set(k, column), k) for k in tree.get_children("")]
-    l.sort(reverse=reverse)
-
-    for index, (val, k) in enumerate(l):
+    lista = [(tree.set(k, column), k) for k in tree.get_children("")]
+    try:
+        # sorted(iterable, *, key=None, reverse=False)
+        # Return a new sorted list from the items in iterable.
+        lista = sorted(lista, key=lambda x: float(x[0]), reverse=reverse)
+    except ValueError:
+        lista.sort(reverse=reverse)
+    for index, (val, k) in enumerate(lista):
         tree.move(k, "", index)
 
     tree.heading(column, command=lambda: sort_by_culumn(tree, column, not reverse))
-
 
 
 def update_view(root, table_from_button):
@@ -286,19 +262,18 @@ def update_view(root, table_from_button):
     scrollx.grid(sticky='we', column=0, row=4, columnspan=100)
     tree.configure(xscrollcommand=scrollx.set)
 
-    print("Γραμμη 236: Επιλεγμένος πίνακας -->> ", table)
+    # print("Γραμμη 236: Επιλεγμένος πίνακας -->> ", table)
     for i in tree.get_children():
         # Εμφάνηση το τι σβήνηει
-        #print("DELETED ΑΠΟ ΤΟ TREE ", i)
+        # print("DELETED ΑΠΟ ΤΟ TREE ", i)
         tree.delete(i)
     up_conn = sqlite3.connect(dbase)
     up_cursor = up_conn.cursor()
     up_cursor.execute("SELECT * FROM " + table)
-    print("Γραμμη 244: Επιλογή όλων απο τον πίνακα -->>", table)
+    print("Γραμμη 266: Επιλογή όλων απο τον πίνακα -->>", table)
     headers = list(map(lambda x: x[0], up_cursor.description))
 
-    print("Γραμμη 247: Κεφαλίδες -->> ", headers)
-    no_neded_headers = ["id", "ID", "Id"]
+    print("Γραμμη 269: Κεφαλίδες -->> ", headers)
     columns = []
     for head in headers:
         columns.append(head)
@@ -310,9 +285,8 @@ def update_view(root, table_from_button):
 
     width = root.winfo_screenwidth()
     alignment = ""
-    platos = 0
     for head in headers:
-        #==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
+        # ==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
         if head == "ΤΙΜΗ" or head == "ΣΥΝΟΛΟ":  # ΣΤΟΙΧΗΣΗ ΔΕΞΙΑ
             alignment = "e"
             if head == "ΤΙΜΗ":
@@ -341,20 +315,19 @@ def update_view(root, table_from_button):
             platos = int(width / 17)
         tree.column(head, anchor=alignment, width=platos, stretch="false")
         tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
-        #tree.heading(head, text=head, command=lambda: sort_by_culumn(tree, head, False))
 
     up_data = up_cursor.fetchall()
-    #print("up_data line 247 ", up_data)
+    # print("up_data line 247 ", up_data)
     up_index = len(up_data)
     tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
     tree.tag_configure('evenrow', background='white', font=("Calibri", 10))
     for n in range(len(up_data)):
-        #print("Grammh 297 Up_data[n]", up_data[n][0])
+        # print("Grammh 297 Up_data[n]", up_data[n][0])
         if int(up_data[n][0]) % 2 == 0:
-            #print("===========================   0    ===========")
+            # print("===========================   0    ===========")
             tree.insert("", up_index - 1, values=up_data[n], tags=('oddrow',))
         else:
-            #print("=====================================     1        ====================")
+            # print("=====================================     1        ====================")
             tree.insert("", up_index-1, values=up_data[n], tags=("evenrow",))
 
     data_frame.grid(column=0, row=3, columnspan=100)
@@ -374,7 +347,7 @@ def update_view(root, table_from_button):
 # --------------------------------Δημηουργία νεου παραθύρου---------------------------
 def add_to(root):
     global table, dbase
-    print("====================Show Table + dbase ================Line 269", table, dbase)
+    # print("====================Show Table + dbase ================Line 269", table, dbase)
     add_window = Toplevel()
     add_window.focus()
     add_window.title("Προσθήκη δεδομένων")
@@ -388,20 +361,22 @@ def add_to(root):
         conn = sqlite3.connect(dbase)
         cursor = conn.execute("SELECT * FROM " + table)
         headers = list(map(lambda x: x[0], cursor.description))
-        print("HEADERS ============= Line 284 ", headers)
+        print("HEADERS ============= Line 393 ", headers)
     except sqlite3.OperationalError as error:
-        messagebox.showwarning("Σφάλμα....."," Παρακαλώ πρώτα επιλέξτε πίνακα για να κάνετε προσθήκη δεδομένων",
-                               icon='warning')
-
-
-
+        messagebox.showwarning("Σφάλμα.....", "{} \nΠαρακαλώ πρώτα επιλέξτε πίνακα για να κάνετε προσθήκη δεδομένων",
+                               icon='warning'.format(error))
+        add_window.destroy()
+        return None
+    finally:
+        cursor.close()
+        conn.close()
 
     # ===========================Εμφάνιση κεφαλίδων======================================
     # ΟΙ ΚΕΦΑΛΊΔΕΣ ΕΊΝΑΙ ΤΑ COLUMNS ΤΟΥ ΠΊΝΑΚΑ
-    count_headers = 0  # Για να μετρίσουμε πόσες κεφαλίδες έχει ο πίνακας  χωρίς τα " ID " γιατι μας χρειάζεται για τα entry που θα κάνει ο χρήστης
+    # Nα μετρίσουμε πόσες κεφαλίδες έχει ο πίνακας χωρίς τα " ID " , μας χρειάζεται για τα entry που θα κάνει ο χρήστης
+    count_headers = 0
     data_to_add = []
-    cursor.close()
-    conn.close()
+
     for index, header in enumerate(headers):
         if header == "ID" or header == "id" or header == "Id":
             continue
@@ -412,7 +387,7 @@ def add_to(root):
             var = StringVar()
             data_to_add.append(var)
 
-            entry = Entry(add_window,  textvariable=var, bd=2, width=150).grid(column=2, row=index + 1)
+            Entry(add_window,  textvariable=var, bd=2, width=150).grid(column=2, row=index + 1)
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db(root, dbase, headers):
@@ -428,13 +403,13 @@ def add_to(root):
             else:
                 values_var.append('?')
         values = ",".join(values_var)
-        print("============values_var============line 371", values)
+        # print("============values_var============line 371", values)
         # print("==========culumns===========", culumns)
         data = []
         for i in range(len(data_to_add)):
             data.append(data_to_add[i].get())
         # data = tuple(data_to_add)
-        print("Line 406 data before €",data)
+        # print("Line 406 data before €", data)
         try:
             if "ΣΥΝΟΛΟ" in headers:
                 # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
@@ -442,7 +417,7 @@ def add_to(root):
                 if data[6] == "":
                     data[6] = 0
                 else:
-                    pass
+                    data[6] = data[6].replace(",", ".")  # Μετατροπή , σε . για πολλαπλασιασμό (να βρούμε το σύνολο)
                 data[7] = float(data[5]) * float(data[6])
                 data[7] = str("{:0.2f}".format(data[7])) + "€"
                 data[6] = str("{:0.2f}".format(float(data[6]))) + " €"
@@ -454,24 +429,25 @@ def add_to(root):
             pass
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        data[-1] = now + "  " + user + "  " + data[-1]
-        print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
+        data[-1] = "||" + now + " " + user + " ==>> " + data[-1]
+        # print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
         # data_to_add = (toner.get(), model.get(), kodikos.get(),
         #               temaxia.get(), str(timi.get()) + " €", str(timi.get() * temaxia.get()) + " €", selides.get())
 
         # ΒΑΖΟΥΜΕ ΤΟ ΠΡΩΤΟ NULL ΓΙΑ ΝΑ ΠΆΡΕΙ ΜΟΝΟ ΤΟΥ ΤΟ ID = PRIMARY KEY
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
-        # INSERT        INTO         table(column1, column2,..)        VALUES(value1, value2, ...);  TA  VALUES πρεπει να είναι tuple
+        # INSERT INTO table(column1, column2,..)VALUES(value1, value2, ...);  TA  VALUES πρεπει να είναι tuple
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
-        sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(" + values + ");"  # values είναι πόσα ? να έχει ανάλογα τα culumns
-        print("===============sql_insert==========\n", sql_insert)
+        # values είναι πόσα ? να έχει ανάλογα τα culumns
+        sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(" + values + ");"
+        # print("===============sql_insert==========\n", sql_insert)
         print("=======DATA TO ADD===== LINE 387 \n", data)
         add_to_db_conn = sqlite3.connect(dbase)
-        print("conected ", 50 * ".")
+        # print("conected ", 50 * ".")
         add_to_db_cursor = add_to_db_conn.cursor()
-        print("cursor done ", 50 * ".")
+        # print("cursor done ", 50 * ".")
         add_to_db_cursor.execute(sql_insert, tuple(data))
-        print("sql executed  ", 50 * ".")
+        # print("sql executed  ", 50 * ".")
 
         add_to_db_conn.commit()
         print("ΣΤΗΝ ΒΑΣΗ ΠΡΟΣΤΕΘΗΚΑΝ ", data)
@@ -482,32 +458,30 @@ def add_to(root):
 
         update_view(root, table)
         add_window.destroy()
-        print("Εγινε η προσθήκη")
-        print(data)
+        # print("Εγινε η προσθήκη")
+        # print(data)
 
     # ----------------------------------Κουμπί για να γίνει η προσθήκη-------------------
-    enter_button = Button(add_window, text="Προσθήκη", bg="green", fg="White", bd=8, padx=5, pady=8, command=lambda: add_to_db(root, dbase, headers))
+    enter_button = Button(add_window, text="Προσθήκη", bg="green", fg="White", bd=8, padx=5, pady=8,
+                          command=lambda: add_to_db(root, dbase, headers))
     enter_button.grid(column=1, row=13)
 
     # ΕΞΩΔΟΣ
-    def quit(event):
+    def quit_app(event):
 
         add_window.destroy()
 
-    add_window.bind('<Escape>', quit)
+    add_window.bind('<Escape>', quit_app)
 
 
-
-
-
-#=====================================ΑΝΑΖΗΤΗΣΗ=========================================
+# =====================================ΑΝΑΖΗΤΗΣΗ=========================================
 def search(search_data):
     global tree, table
     if search_data.get() != "":
         tree.delete(*tree.get_children())
         search_conn = sqlite3.connect(dbase)
         search_cursor = search_conn.cursor()
-        #idea = SELECT * FROM tablename WHERE name or email or address or designation = 'nagar';
+        # idea = SELECT * FROM tablename WHERE name or email or address or designation = 'nagar';
         search_headers = []
         no_neded_headers = ["id", "ID", "Id"]
         operators = []
@@ -521,13 +495,15 @@ def search(search_data):
         print("===================Operators=========================Line 387", operators)
         print("=====================table===========================Line 388", table)
 
-        #search_cursor.execute("SELECT * FROM " + table + " WHERE \
-        #               ΤΟΝΕΡ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? OR  ΣΥΝΟΛΟ LIKE ? OR ΣΕΛΙΔΕΣ LIKE ?",
-        #               ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%'))
+        # search_cursor.execute("SELECT * FROM " + table + " WHERE \
+        # ΤΟΝΕΡ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? etc...
+        # ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) +
+        # '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) +
+        # '%', '%' + str(search_data.get()) + '%'))
         search_cursor.execute("SELECT * FROM " + table + " WHERE " + search_headers, operators)
-            # ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
-            #  '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
-            #  '%' + str(search_data.get()) + '%'))
+        # ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
+        #  '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
+        #  '%' + str(search_data.get()) + '%'))
 
         fetch = search_cursor.fetchall()
         tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
@@ -545,6 +521,8 @@ def search(search_data):
 # ========================================================================================
 # ------------------------------------- ΕΠΕΞΕΡΓΑΣΙΑ -------------------------------------=
 # ========================================================================================
+
+
 def edit(root):
     global dbase, tree, headers
     print("Γραμμή 423: ---------------ΛΟΓΟΣ BACKUP --->>> ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
@@ -552,10 +530,10 @@ def edit(root):
     backup()
     print("Γραμμη 425: ΕΠΕΞΕΡΓΑΣΙΑ ΣΤΟ Επιλεγμένο id -->", (tree.set(tree.selection(), '#1')))
     if not tree.set(tree.selection(), "#1"):
-        answer = messagebox.showwarning("Σφάλμα.....",
-                                                " Παρακαλώ πρώτα επιλέξτε απο την λίστα για να κάνετε επεξεργασία",
-                                                icon='warning')
-        return NONE
+        messagebox.showwarning("Σφάλμα.....", " Παρακαλώ πρώτα επιλέξτε απο την λίστα για να κάνετε επεξεργασία",
+                               icon='warning')
+
+        return None
 
     selected_item = (tree.set(tree.selection(), '#1'))
     edit_conn = sqlite3.connect(dbase)
@@ -563,8 +541,8 @@ def edit(root):
     edit_cursor.execute("SELECT * FROM " + table + " WHERE ID = ?", (selected_item,))
     selected_data = edit_cursor.fetchall()
     selected_data = list(selected_data[0])
-    #print("selected_data line 424 ", selected_data)
-    #print("headers[0] γραμμή 425 = ", headers[0])
+    # print("selected_data line 424 ", selected_data)
+    # print("headers[0] γραμμή 425 = ", headers[0])
     edit_window = Toplevel()
     edit_window.focus()
     edit_window.title("Επεξεργασία δεδομέμων")
@@ -581,21 +559,21 @@ def edit(root):
             continue
         else:
             count_headers += 1
-            toner_label = Label(edit_window, text=header, width=15, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
-            toner_label.grid(row=index + 1)
+            ton_label = Label(edit_window, text=header, width=15, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
+            ton_label.grid(row=index + 1)
             var = StringVar(edit_window, value=selected_data[index])
             data_to_add.append(var)
-            #print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
-            entry = Entry(edit_window, textvariable=var, bd=2, width=len(var.get())).grid(column=1, row=index + 1, sticky="we")
+            # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
+            Entry(edit_window, textvariable=var, bd=2, width=len(var.get())).grid(column=1, row=index + 1, sticky="we")
 
     # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
     # ---------------------- μετά την επεξεργασία   -------------------------------------
     def update_to_db():
         global tree, table
-        #culumns = ",".join(headers)
-        #Τα culumns ειναι της μορφής ID, ΤΟΝΕΡ, ΜΟΝΤΕΛΟ, ΚΩΔΙΚΟΣ κτλπ.
-        #Πρεπει να γίνουν ΤΟΝΕΡ=?, ΜΟΝΤΕΛΟ=?, ΚΩΔΙΚΟΣ=? κτλπ για την σύνταξη της sql
-        #Ευκολο άν μπουν σε νεα λίστα παρά να τροποποιησω την υπάρχουσα λίστα
+        # culumns = ",".join(headers)
+        # Τα culumns ειναι της μορφής ID, ΤΟΝΕΡ, ΜΟΝΤΕΛΟ, ΚΩΔΙΚΟΣ κτλπ.
+        # Πρεπει να γίνουν ΤΟΝΕΡ=?, ΜΟΝΤΕΛΟ=?, ΚΩΔΙΚΟΣ=? κτλπ για την σύνταξη της sql
+        # Ευκολο άν μπουν σε νεα λίστα παρά να τροποποιησω την υπάρχουσα λίστα
         edited_culumns = []
         for culumn in headers:
             if culumn == "id" or culumn == "ID":
@@ -603,15 +581,15 @@ def edit(root):
             else:
                 edited_culumns.append(culumn + "=?")
         culumns = ",".join(edited_culumns)
-        print("-------------edited_culumns--------------Line 554", edited_culumns)
+        # print("-------------edited_culumns--------------Line 554", edited_culumns)
 
         # ====================ΕΠΙΛΕΓΜΈΝΟ ID =================
         selected_item = tree.selection()
         selected_id = tree.set(selected_item, "#1")
-        #print("==========selected_id==========LINE 469 \n", selected_id)
+        # print("==========selected_id==========LINE 469 \n", selected_id)
 
         # Θα βάζει το data_to_add απο πάνω γραμμη 371
-        #βαζουμε και το id που χρειάζεται για το WHERE ID=?
+        # βαζουμε και το id που χρειάζεται για το WHERE ID=?
         edited_data = []
 
         for data in data_to_add:
@@ -620,28 +598,30 @@ def edit(root):
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        edited_data[-1] = now + "  " + user + "  " + edited_data[-1]
-        #================================= Προσθήκη id =================================================
+        edited_data[-1] = "||" + now + " " + user + " ==>> " + edited_data[-1]
+        # ================================= Προσθήκη id =================================================
         edited_data.append(selected_id)
-        print("Line 573 Edited data ", edited_data)
+        # print("Line 573 Edited data ", edited_data)
         # ====================================== ΑΥΤΟΜΑΤΗ ΕΝΗΜΕΡΩΣΗ ΣΥΝΟΛΟΥ =============================
-        #======================================= ΚΑΙ ΠΡΟΣΘΗΚΗ ΣΥΜΒΟΛΟΥ €    =============================
+        # ======================================= ΚΑΙ ΠΡΟΣΘΗΚΗ ΣΥΜΒΟΛΟΥ €    =============================
         if "ΣΥΝΟΛΟ=?" in edited_culumns:
-            print("Συνολο == ", "ΣΥΝΟΛΟ=?" in edited_culumns)
+            # print("Συνολο == ", "ΣΥΝΟΛΟ=?" in edited_culumns)
             try:
-                #Αν ο χρήστης δεν βάλει τεμάχειο να γίνει αυτόματα 0
+                edited_data[6] = edited_data[6].replace(",", ".") # Μετατροπή , σε . για πολλαπλασιασμό
+                # Αν ο χρήστης δεν βάλει τεμάχειο να γίνει αυτόματα 0
                 if edited_data[5] == "":
                     edited_data[5] = 0
-                    print("Line 604 edited_data[5] ", edited_data[5])
+                    # print("Line 604 edited_data[5] ", edited_data[5])
                 else:
                     pass
                 # Αν ο χρήστης δεν ορίσει τιμή να γίνει αυτόματα 0
                 if edited_data[6] == "":
                     edited_data[6] = "0"   # 0 σε string γιατί ψάχνουμε αν έχει το € μέσα
-                    print("Line 610 edited_data[6] ", edited_data[6])
+                    # print("Line 610 edited_data[6] ", edited_data[6])
                 else:
                     pass
                 # {:0.2f} Για να εμφανίνζει την τιμή με 2 δεκαδικά πίσω απο την τιμή 10.00 € και οχι 10 €
+
                 if "€" in edited_data[6]:
                     edited_data[7] = str("{:0.2f}".format(float(edited_data[6][:-1]) * float(edited_data[5]))) + " €"
                     edited_data[5] = str(edited_data[5])
@@ -656,21 +636,20 @@ def edit(root):
                 else:
                     edited_data[6] = str("{:0.2f}".format(float(edited_data[6][:-1]))) + " €"
 
-
             except ValueError as error:
-                messagebox.showwarning('ΠΡΟΣΟΧΉ ...', "Σφάλμα {} \n1)Η Τιμή πρέπει να είναι αριθμός και με .(τελεία) όχι ,(κομμα) "\
-                                   .format(error))
+                messagebox.showwarning('ΠΡΟΣΟΧΉ ...',
+                                       "Σφάλμα {} \n1)Η Τιμή πρέπει να είναι αριθμός και με .(τελεία) όχι ,(κομμα) "
+                                       .format(error))
 
                 edit_window.destroy()
                 return None
         else:
             pass
-        #print("Γραμμη 491:  ----------- ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", tuple(edited_data))
+        # print("Γραμμη 491:  ----------- ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", tuple(edited_data))
         # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
         # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
         # sqlite_update_query = """Update new_developers set salary = ?, email = ? where id = ?"""
-        edit_cursor.execute("UPDATE " + table + "  SET " + culumns + " WHERE ID=? ",
-            (tuple(edited_data)))
+        edit_cursor.execute("UPDATE " + table + "  SET " + culumns + " WHERE ID=? ", (tuple(edited_data)))
 
         edit_conn.commit()
         print(60 * "*")
@@ -684,16 +663,16 @@ def edit(root):
 
         update_view(root, table)
         edit_window.destroy()
-        print("Γραμμη 510: Εγινε η Ενημέρωση του tree ")
-        #print(data_to_add)
+        # print("Γραμμη 510: Εγινε η Ενημέρωση του tree ")
+        # print(data_to_add)
 
         # ΕΞΩΔΟΣ
 
-    def quit(event):
+    def quit_app(event):
 
         edit_window.destroy()
 
-    edit_window.bind('<Escape>', quit)
+    edit_window.bind('<Escape>', quit_app)
     update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση πρωιόντος", bg="red",
                            fg="white", bd=3)
     update_button.grid(column=1, row=len(headers)+1)
@@ -732,18 +711,17 @@ def backup():
             back_conn.close()
             text = "Η βάση αντιγράφηκε :  "
             result = text + os.path.realpath(backup_file)
-            print("=====Αποτέλεσμα ====Line 558\n", result)
+            # print("=====Αποτέλεσμα ====Line 558\n", result)
             # Ειναι ενοχλητικο να εμφανιζει καθε φορα μηνυμα οτι εγινε backup
-            #tkinter.messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
+            # tkinter.messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
     except FileNotFoundError as file_error:
-        print("File Error", file_error)
+        messagebox.showwarning("Σφάλμα...", "{}".format(file_error))
+        print("File Error Line 710", file_error)
         backup()
     except sqlite3.Error as error:
-        if os.path.exists(backup_file):
-            result = os.path.abspath(backup_file)
-        else:
+        if not os.path.exists(backup_file):
             result = "Σφάλμα κατα την αντιγραφή : ", error
-            messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', error)
+            messagebox.showwarning("Σφάλμα...", "{}".format(result))
     finally:
         try:
             if back_conn:
@@ -771,11 +749,11 @@ def del_from_tree():
 
     # ======================ΕΠΙΒΕΒΑΙΩΣΗ ΔΙΑΓΡΑΦΗΣ============
     answer = messagebox.askquestion("Θα πραγματοποιηθεί διαγραφή!",
-                                            " Είστε σήγουρος για την διαγραφή του {};".format(selected_data), icon='warning')
-    print('Γραμμή 597: =================ΔΙΑΓΡΑΦΗ===============', "Το {} επιλέχθηκε για διαγαφή !".format(selected_data))
+                                    " Είστε σήγουρος για την διαγραφή του {};".format(selected_data), icon='warning')
+    print('Γραμμή 597: =============ΔΙΑΓΡΑΦΗ===============', "Το {} επιλέχθηκε για διαγαφή !".format(selected_data))
     if answer == 'yes':
         messagebox.showwarning('Διαγραφή...', "Το {} διαγράφηκε!".format(selected_data))
-        #Αν ο χρήστης επιλεξει το "yes" παει στην γραμμή 607 ==>> del_cursor.execute("DEL............
+        # Αν ο χρήστης επιλεξει το "yes" παει στην γραμμή 607 ==>> del_cursor.execute("DEL............
 
         pass
     else:
@@ -793,9 +771,7 @@ def del_from_tree():
 
     try:
         tree.delete(tree.selection())
-        #print("=============================ΕΓΙΝΕ ΔΙΑΓΡΑΦΗ ΑΠΟ ΤΟ TREE====================================line 600 ")
+        # print("=============================ΕΓΙΝΕ ΔΙΑΓΡΑΦΗ ΑΠΟ ΤΟ TREE====================================line 600 ")
         return selected_item
     except TclError as error:
-        print("ΣΦΑΛΜΑ Line 603", error)
-
-
+        print("ΣΦΑΛΜΑ Line 768", error)
