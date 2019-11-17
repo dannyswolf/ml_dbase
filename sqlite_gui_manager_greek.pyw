@@ -7,6 +7,10 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 
 
+Version V0.9.1   Dynamic screen sizes  ==================================================================17/11/2019
+
+
+
 Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
 Στην v0.7  έφτιαχνε συνεχεια frames στο root
 ΕΓΙΝΕ ΚΑΘΑΡΣΙΣΜΟΣ ΚΩΔΙΚΑ
@@ -48,25 +52,25 @@ TO DO LIST  9) Να βάλω στο μενοu RUN SQL
 from func import *
 
 
-
-
-# Μετά αυτο για το Label Διαφορετικά βγαζει error για το font
-#from tkinter import
-
-
 root = Tk()
-root.geometry('1300x620+100+100')
+height = root.winfo_screenheight() / 1.3
+width = root.winfo_screenwidth() / 1.3
+
+x = 100
+y = 100
+root.geometry("%dx%d+%d+%d" % (width, height, x, y))
 root.title('Sqlite γραφικό περιβάλλον')
 root.config(bg="#C2C0BD")
-# root.withdraw()
-# root.resizable(width=1000, height=100)
-# width = 1200
-# height = 600
-# screen_width = root.winfo_screenwidth()
-# screen_height = root.winfo_screenheight()
-# x = (screen_width / 2) - (width / 2)
-# y = (screen_height / 2) - (height / 2)
-# root.geometry("%dx%d+%d+%d" % (width, height, x, y))
+
+#root.withdraw()
+#root.resizable(width=1000, height=100)
+#width = 1200
+#height = 600
+#screen_width = root.winfo_screenwidth()
+#screen_height = root.winfo_screenheight()
+#x = (screen_width / 2) - (width / 2)
+#y = (screen_height / 2) - (height / 2)
+#root.geometry("%dx%d+%d+%d" % (width, height, x, y))
 
 
 # ------------------------Style------------------------------------
@@ -170,8 +174,8 @@ root.bind('<F3>', edit_event)
 
 
 # Εμφάνιση κουμιών και Logo
-image = PhotoImage(master = root, file="logo-small-orange.png")
-label_image = Label(root, image=image)
+#image = PhotoImage(master = root, file="logo-small-orange.png")
+#label_image = Label(root, image=image)
 #label_image.grid(column=0, row=0, sticky="w")
 
 #--------------------------------------   MENU   -----------------------------------------
@@ -193,6 +197,5 @@ menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_m
 
 
 root.config(menu=menubar)
-open_file(root)
 if __name__ == "__main__":
     root.mainloop()

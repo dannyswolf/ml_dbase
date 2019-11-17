@@ -5,6 +5,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+Version V0.9.1   Dynamic screen sizes  ==================================================================17/11/2019
 
 Version V0.9    -----------------------------------------------------------------------------------------17/11/2019
                 1) Προσθήκη τελευταίας τροποποιήσης (ημερομηνία , ώρα και όνομα χρήστη που έκανε την τελευταία αλλαγή)
@@ -77,7 +78,7 @@ import getpass
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dbase = "ΑΠΟΘΗΚΗ.db"
+dbase = ""
 tables =[]
 up_data = []    # Για να πάρουμε τα δεδομένα
 tree = ""
@@ -127,12 +128,12 @@ def open_file(root):
         else:
             #print("list root.grid.slaves  after deleted line 82", list)
             continue
-    #dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
-    #                                       filetypes=(("db files",
-    #                                                   "*.db"), (
-    #                                                      "all files",
-    #                                                      "*.*")))
-    dbase = "ΑΠΟΘΗΚΗ.db"
+    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
+                                           filetypes=(("db files",
+                                                       "*.db"), (
+                                                          "all files",
+                                                          "*.*")))
+    #dbase = "ΑΠΟΘΗΚΗ.db"
     print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
@@ -274,11 +275,12 @@ def update_view(root, table_from_button):
         tree.destroy()
     else:
         pass
+    rows = int(root.winfo_screenheight() / 60)
     table = table_from_button
-    tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=19)
+    tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=rows)
     # ================================ scrolls======================
     scrolly = ttk.Scrollbar(root, orient='vertical', command=tree.yview)
-    scrolly.grid(column=150, row=3, sticky="nse")
+    scrolly.grid(column=100, row=3, sticky="nse")
     tree.configure(yscrollcommand=scrolly.set)
     scrollx = ttk.Scrollbar(root, orient='horizontal', command=tree.xview)
     scrollx.grid(sticky='we', column=0, row=4, columnspan=100)
@@ -305,28 +307,39 @@ def update_view(root, table_from_button):
 
     # tree["columns"] = ["id", "TONER", "ΜΟΝΤΕΛΟΣ", "ΚΩΔΙΚΟΣ", "ΤΕΜΑΧΙΑ", "ΤΙΜΗ", "ΣΥΝΟΛΟ", "ΣΕΛΙΔΕΣ"]
     # tree["show"] = "headings"
+
+    width = root.winfo_screenwidth()
     alignment = ""
     platos = 0
     for head in headers:
         #==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
         if head == "ΤΙΜΗ" or head == "ΣΥΝΟΛΟ":  # ΣΤΟΙΧΗΣΗ ΔΕΞΙΑ
             alignment = "e"
-            platos = len(head) * 12
+            if head == "ΤΙΜΗ":
+                platos = int(width / 25)
+            else:
+                platos = int(width / 23)
         elif head == "ΚΩΔΙΚΟΣ" or head == "ΤΕΜΑΧΙΑ":  # ΣΤΟΙΧΗΣΗ ΚΕΝΤΡΟ
             alignment = "center"
-            platos = len(head) * 12
-        elif head == "ΠΑΡΑΤΗΡΗΣΗΣ" or head == "ΠΕΡΙΓΡΑΦΗ": # ΣΤΟΙΧΗΣΗ ΑΡΙΣΤΕΡΑ
+            if head == "ΚΩΔΙΚΟΣ":
+                platos = int(width / 23)
+            else:
+                platos = int(width / 20)
+        elif head == "ΠΑΡΑΤΗΡΗΣΗΣ" or head == "ΠΕΡΙΓΡΑΦΗ":  # ΣΤΟΙΧΗΣΗ ΑΡΙΣΤΕΡΑ
             if head == "ΠΑΡΑΤΗΡΗΣΗΣ" and len(headers) < 7:
-                platos = 450
+                platos = int(width / 3)
             elif head == "ΠΕΡΙΓΡΑΦΗ":
-                platos = 1100
+                platos = int(width / 2.37)
+            else:
+                platos = int(width / 12)
             alignment = "w"
+
         elif head == "PARTS_NR":
-            platos = 150
+            platos = int(width / 12)
         else:
             alignment = "center"
-            platos = len(head) * 12
-        tree.column(head, anchor=alignment, width=platos, stretch=FALSE)
+            platos = int(width / 17)
+        tree.column(head, anchor=alignment, width=platos, stretch="false")
         tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
         #tree.heading(head, text=head, command=lambda: sort_by_culumn(tree, head, False))
 
@@ -350,7 +363,7 @@ def update_view(root, table_from_button):
         edit(root)
 
     tree.bind("<Double-1>", double_click)
-    tree.grid(column=0, row=1, columnspan=100, sticky="es")
+    tree.grid(column=0, row=1, columnspan=100, sticky="w")
 
     return dbase
 
@@ -371,12 +384,17 @@ def add_to(root):
     add_window_title.grid(column=1, row=0)
 
     # ------------------------------Να πάρουμε τις κεφαλίδες---------------------------
+    try:
+        conn = sqlite3.connect(dbase)
+        cursor = conn.execute("SELECT * FROM " + table)
+        headers = list(map(lambda x: x[0], cursor.description))
+        print("HEADERS ============= Line 284 ", headers)
+    except sqlite3.OperationalError as error:
+        messagebox.showwarning("Σφάλμα....."," Παρακαλώ πρώτα επιλέξτε πίνακα για να κάνετε προσθήκη δεδομένων",
+                               icon='warning')
 
-    conn = sqlite3.connect(dbase)
-    cursor = conn.execute("SELECT * FROM " + table)
 
-    headers = list(map(lambda x: x[0], cursor.description))
-    print("HEADERS ============= Line 284 ", headers)
+
 
     # ===========================Εμφάνιση κεφαλίδων======================================
     # ΟΙ ΚΕΦΑΛΊΔΕΣ ΕΊΝΑΙ ΤΑ COLUMNS ΤΟΥ ΠΊΝΑΚΑ
