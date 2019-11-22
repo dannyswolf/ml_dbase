@@ -5,7 +5,11 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
-Version V0.9.4   | Fixed log file (layout), fonts και toplev παράθυρα   | -----------------------18/11/2019
+
+
+Version V0.9.5   | Προσθήκη χρωμάτων στα MAGENTA CYAN BLACK YELLOW | ------------------------------22/11/2019
+
+Version V0.9.4   | Fixed log file (layout), fonts και toplevel παράθυρα   | -----------------------18/11/2019
 
 
 Version V0.9.3   | ΤΑΞΙΝΟΜΗΣΗ  δουλεύει σωστά  | -----------------------18/11/2019
@@ -55,7 +59,8 @@ TODO 4) ο χρήστης να επιλέγει τον πίνακα-------------
 TODO 5) Ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό-------------------------------------Εγινε 17/11/2019
 TODO 6) Να βάλω να έχει log αρχείο--------------------------------------------------------------Εγινε 10/11/2019
 TODO 7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) ------------------Εγινε 17/11/2019
-TODO 8) Να βάλω triggers
+TODO 8) ΠΡΕΠΕΙ ΝΑ ΦΤΙΑΞΩ ΤΟ BACKGROYND STA COLORS ΝΑ ΕΙΝΑΙ ΣΥΜΦΟΝΑ ΜΕ ΤΗΝ ΣΕΙΡΑ ΓΡΙ Ή ΑΣΠΡΟ
+TODO 9) ΠΡΕΠΕΙ ΣΤΗΣ ΠΑΡΑΤΗΡΗΣΕΙΣ ΝΑ ΒΑΖΕΙ ΜΟΝΟ ΤΗΝ ΤΕΛΕΥΤΑΙΑ ΤΡΟΠΟΠΟΙΗΣΗ
 TODO 9) Να βάλω στο μενοu RUN SQL
 TODO 10) Το sort δεν παίζει καλά με τα νούμερα -------------------------------------------------Eγινε 18/11/2019
 """
@@ -64,15 +69,15 @@ __author__ = "Jordanis Ntini"
 __copyright__ = "Copyright © 2019"
 __credits__ = ['Athanasia Tzampazi']
 __license__ = 'Gpl'
-__version__ = '0.9.4'
+__version__ = '0.9.5'
 __maintainer__ = "Jordanis Ntini"
 __email__ = "ntinisiordanis@gmail.com"
 __status__ = 'Development'
 
 # Πρώτα αυτό για το Combobox
-from tkinter import ttk, Frame, Button, Tk, Label, RAISED, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE,\
-    TclError, Toplevel, font
-
+from tkinter import ttk, Frame, Button, Tk, Label, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE,\
+    TclError, Toplevel, font, PhotoImage, RAISED, END
+from tkinter.scrolledtext import ScrolledText
 import sqlite3
 
 # datetime για backup την βαση πριν κάθε αλλαγή
@@ -160,7 +165,7 @@ def get_tables():
     tables = []
     # =======================Ανάγνωριση πίνακα δεδομένων=============
     conn = sqlite3.connect(dbase)
-    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table';")
+    cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
     table_name = cursor.fetchall()
     cursor.close()
     conn.close()
@@ -178,7 +183,7 @@ def get_tables():
 
 def select_table(root):
 
-    """ Δημιουργια κουμπιών συμφονα με τους πινακες της βασης """
+    """ Δημιουργια κουμπιών σύμφωνα με τους πίνακες της βασης """
 
     global tables
     buttons = []
@@ -194,13 +199,22 @@ def select_table(root):
         """
         # print("btn_pressed Line 135", btn)
         # print("buttons line 136", buttons)
+        lazaros_tables = ["ΦΩΤΟΤΥΠΙΚΑ", "ΤΟΝΕΡ"]
         for button in buttons:
 
             if tables.index(table_name) == buttons.index(button):
+
                 button.configure(background="#EFA12C")
             else:
                 button.configure(background="#657b83")
 
+        # -------------------- Χρώματα για τον Λάζαρος ------------------------
+        # for button in buttons:
+        #     for table_name in tables:
+        #         if table_name in lazaros_tables:
+        #             button.configure(background="#836d65")
+        #         else:
+        #             continue
     search_frame = Frame(root, bg="#C2C0BD")
 
     # ======================Πληκτολόγιο=====================
@@ -227,16 +241,17 @@ def select_table(root):
 
     search_button.grid(column=1, row=3, ipadx=1, ipady=1)
     buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
+
     # -----------------------------------------Κουμπιά -----------------------------------
     #  Δυνομική δημιουργια κουμπιών σύμφονα με του πίνακες της βάσης δεδομένων
     for index, table_name in enumerate(tables):
         btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)],
-                     text=table_name, font=('San Serif', '10', 'bold'), bg="#657b83", fg="white", bd=5, compound=LEFT,
-                     relief="raised")
+                     image="", compound=LEFT, text=table_name, font=('San Serif', '10', 'bold'),
+                     bg="#657b83", fg="white", bd=5, relief=RAISED,)
 
         buttons.append(btn)
-        if len(buttons) >= 5:
-            btn.grid(row=1, column=index-4, ipadx=len(str(table_name))+10, ipady=20, sticky="ew")
+        if len(buttons) >= 10:
+            btn.grid(row=1, column=index-9, ipadx=len(str(table_name))+10, ipady=20, sticky="ew")
         else:
             btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
@@ -359,20 +374,47 @@ def update_view(root, table_from_button):
     up_data = up_cursor.fetchall()
     # print("up_data line 247 ", up_data)
     up_index = len(up_data)
+    colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
     tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("San Serif", 10))
     tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
+    tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="red", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowMAGENTA', background='white', foreground="red", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
+    tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
+    tree.tag_configure("evenrowC/M/Y", background="white", foreground="green", font=("San Serif", 10, "bold"))
+
     for n in range(len(up_data)):
         # Κατασκευή tree το up_index -1 == το τελος ("end")
+        try:
+            # up_data[n][columns.index("ΠΕΡΙΓΡΑΦΗ")] == Ψάχνει όπου είναι η ΚΕΦΑΛΙΔΑ "περιγραφή"
+            color = [color for color in colors if color in up_data[n][headers.index("ΠΕΡΙΓΡΑΦΗ")]]
 
-        if int(up_data[n][0]) % 2 == 0:
+        except TypeError as error:
+            # Αν δεν έχει πειργραφή μαλλον συνεχίζει
+            continue
+            # Οταν στον πίνακα το up_data[n][4] δεν είναι η περιγραφή
+        if int(up_data[n][0]) % 2 == 0 and color:
             # Αν το id διαιρείται με το δυο αλλάζουμε το background
 
-            tree.insert("", up_index - 1, values=up_data[n], tags=('oddrow',))
+            tree.insert("", up_index - 1, values=up_data[n],
+                        tags=("oddrow" + str(color[0]) if len(color) < 2 else "oddrow" + str(color[-1]),))
+
+        elif int(up_data[n][0]) % 2 == 0 and not color:
+            tree.insert("", up_index-1, values=up_data[n], tags=("oddrow",))
+
+        elif int(up_data[n][0]) % 2 != 0 and color:
+            tree.insert("", up_index - 1, values=up_data[n],
+                        tags=("evenrow" + str(color[0]) if len(color) < 2 else "evenrow" + str(color[-1]),))
+
         else:
+            tree.insert("", up_index - 1, values=up_data[n], tags=("evenrow",))
 
-            tree.insert("", up_index-1, values=up_data[n], tags=("evenrow",))
-
-    data_frame.grid(column=0, row=3, columnspan=100)
+    data_frame.grid(column=0, row=3, columnspan=100, ipady=5)
 
     def double_click(event):
         """ Με δυπλό click εμφανίζεται η επεξεργασία δεδομένων"""
@@ -432,8 +474,20 @@ def add_to(root):
             var = StringVar()
 
             data_to_add.append(var)
+            if header == "ΠΕΡΙΓΡΑΦΗ":
+                def get_text_from_perigrafi():
+                    fetched_content = perigrafi.get('1.0', 'end-1c')
+                    return fetched_content
 
-            Entry(add_window,  textvariable=var, bd=2, width=80).grid(column=2, row=index + 1)
+                perigrafi = ScrolledText(add_window, height=2, bd=2, width=80)
+
+                text_from_perigrafi = get_text_from_perigrafi()
+                print("Line 485 ", text_from_perigrafi)
+                perigrafi.grid(column=2, row=index + 1)
+
+                data_to_add.append(text_from_perigrafi)
+            else:
+                Entry(add_window,  textvariable=var, bd=2, width=80).grid(column=2, row=index + 1)
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db(root, dbase, headers):
@@ -537,10 +591,10 @@ def search(search_data):
                 search_headers.append(header + " LIKE ?")
                 operators.append('%' + str(search_data.get()) + '%')
         search_headers = " OR ".join(search_headers)
-        print("===================search_data=======================Line 385", search_data)
-        print("===================Searching headers ================Line 386", search_headers)
-        print("===================Operators=========================Line 387", operators)
-        print("=====================table===========================Line 388", table)
+        # print("===================search_data=======================Line 385", search_data)
+        # print("===================Searching headers ================Line 386", search_headers)
+        # print("===================Operators=========================Line 387", operators)
+        # print("=====================table===========================Line 388", table)
 
         # search_cursor.execute("SELECT * FROM " + table + " WHERE \
         # ΤΟΝΕΡ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? etc...
@@ -553,15 +607,38 @@ def search(search_data):
         #  '%' + str(search_data.get()) + '%'))
 
         fetch = search_cursor.fetchall()
-        tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
-        tree.tag_configure('evenrow', background='white', font=("Calibri", 10))
+        colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
+        tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("San Serif", 10))
+        tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
+        tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="red", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowMAGENTA', background='white', foreground="red", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
+        tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
+        tree.tag_configure("evenrowC/M/Y", background="white", foreground="green", font=("San Serif", 10, "bold"))
         odd_or_even = 0
         for data in fetch:
+            # Κάνει αναζήτηση του color μόνο στην κεφαλίδα "ΠΕΙΓΡΑΦΉ"
+            color = [color for color in colors if color in data[headers.index("ΠΕΡΙΓΡΑΦΗ")]]
+            # color = [color for color in colors if color in data[4]]  # up_data[n][4] == ΠΕΡΙΓΡΑΦΗ
             odd_or_even += 1
-            if odd_or_even % 2 == 0:
-                tree.insert('', 'end', values=data, tags=('oddrow',))
+            if odd_or_even % 2 == 0 and color:
+                tree.insert("", "end", values=data,
+                            tags=("oddrow" + color[0] if len(color) < 2 else "oddrow" + color[-1],))
+
+            elif odd_or_even % 2 == 0 and not color:
+                tree.insert("", "end", values=data, tags=("oddrow",))
+
+            elif odd_or_even % 2 != 0 and color:
+                tree.insert("", "end", values=data,
+                            tags=("evenrow" + color[0] if len(color) < 2 else "evenrow" + color[-1],))
             else:
                 tree.insert("", 'end', values=data, tags=("evenrow",))
+
         search_cursor.close()
         search_conn.close()
 
@@ -618,7 +695,8 @@ def edit(root):
             var = StringVar(edit_window, value=selected_data[index])
             data_to_add.append(var)
             # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
-            Entry(edit_window, textvariable=var, bd=2, width=len(var.get())+5).grid(column=1, row=index + 1, sticky="we")
+            Entry(edit_window, textvariable=var, bd=2, width=len(var.get())+5)\
+                .grid(column=1, row=index + 1, ipady=3, sticky="we")
 
     # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
     # ---------------------- μετά την επεξεργασία   -------------------------------------
@@ -652,7 +730,7 @@ def edit(root):
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        edited_data[-1] = "||" + now + " " + user + " ==>> " + edited_data[-1]
+        edited_data[-1] = "||" + now + " " + user + " ==>> " + data_to_add[-1].get()
         # ================================= Προσθήκη id =================================================
         edited_data.append(selected_id)
         # print("Line 573 Edited data ", edited_data)
@@ -726,7 +804,7 @@ def edit(root):
         edit_window.destroy()
 
     edit_window.bind('<Escape>', quit_app)
-    update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση πρωιόντος", bg="red",
+    update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", bg="red",
                            fg="white", bd=3)
     update_button.grid(column=0, row=len(headers)+1)
 
