@@ -5,7 +5,9 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+Version V1.0.0   | Προσθήκη πίνακα παραγγελίες και ολα  παίζουν σωστά | ------------------------------24/11/2019
 
+Version V0.9.6   | Προσθήκη scolledtext και ολα τα χρώματα παίζουν σωστά | ------------------------------23/11/2019
 
 Version V0.9.5   | Προσθήκη χρωμάτων στα MAGENTA CYAN BLACK YELLOW | ------------------------------22/11/2019
 
@@ -59,23 +61,23 @@ TODO 4) ο χρήστης να επιλέγει τον πίνακα-------------
 TODO 5) Ελεγχος αν ο χρήστης εισάγει αλφαριθμητικό ή αριθμό-------------------------------------Εγινε 17/11/2019
 TODO 6) Να βάλω να έχει log αρχείο--------------------------------------------------------------Εγινε 10/11/2019
 TODO 7) Να κάνει αυτόματα υπολογισμό το σύνολο (όταν έχουμε τιμη και τεμάχια) ------------------Εγινε 17/11/2019
-TODO 8) ΠΡΕΠΕΙ ΝΑ ΦΤΙΑΞΩ ΤΟ BACKGROYND STA COLORS ΝΑ ΕΙΝΑΙ ΣΥΜΦΟΝΑ ΜΕ ΤΗΝ ΣΕΙΡΑ ΓΡΙ Ή ΑΣΠΡΟ
-TODO 9) ΠΡΕΠΕΙ ΣΤΗΣ ΠΑΡΑΤΗΡΗΣΕΙΣ ΝΑ ΒΑΖΕΙ ΜΟΝΟ ΤΗΝ ΤΕΛΕΥΤΑΙΑ ΤΡΟΠΟΠΟΙΗΣΗ
-TODO 9) Να βάλω στο μενοu RUN SQL
-TODO 10) Το sort δεν παίζει καλά με τα νούμερα -------------------------------------------------Eγινε 18/11/2019
+TODO 8) ΠΡΕΠΕΙ ΝΑ ΦΤΙΑΞΩ ΤΟ BACKGROYND STA COLORS ΝΑ ΕΙΝΑΙ ΣΥΜΦΟΝΑ ΜΕ ΤΗΝ ΣΕΙΡΑ ΓΡΙ Ή ΑΣΠΡΟ-----Εγινε 22/11/2019
+TODO 9) ΠΡΕΠΕΙ ΣΤΗΣ ΠΑΡΑΤΗΡΗΣΕΙΣ ΝΑ ΒΑΖΕΙ ΜΟΝΟ ΤΗΝ ΤΕΛΕΥΤΑΙΑ ΤΡΟΠΟΠΟΙΗΣΗ------------------------Εγινε 22/11/2019
+TODO 10) Να βάλω στο μενοu RUN SQL
+TODO 11) Το sort δεν παίζει καλά με τα νούμερα -------------------------------------------------Eγινε 18/11/2019
 """
 
 __author__ = "Jordanis Ntini"
 __copyright__ = "Copyright © 2019"
 __credits__ = ['Athanasia Tzampazi']
 __license__ = 'Gpl'
-__version__ = '0.9.5'
+__version__ = '1.0.0'
 __maintainer__ = "Jordanis Ntini"
 __email__ = "ntinisiordanis@gmail.com"
 __status__ = 'Development'
 
 # Πρώτα αυτό για το Combobox
-from tkinter import ttk, Frame, Button, Tk, Label, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE,\
+from tkinter import ttk, Frame, Button, Tk, Label, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE, \
     TclError, Toplevel, font, PhotoImage, RAISED, END
 from tkinter.scrolledtext import ScrolledText
 import sqlite3
@@ -95,13 +97,12 @@ import sys
 # Για την τελευταια τροποpoiήση απο ποιόν χρήστη
 import getpass
 
-
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
 dbase = "ΑΠΟΘΗΚΗ.db"
 tables = []
-up_data = []    # Για να πάρουμε τα δεδομένα
+up_data = []  # Για να πάρουμε τα δεδομένα
 tree = ""
 user = getpass.getuser()  # Για να πάρουμε το όνομα χρήστη απο τον υπολογιστή
 # -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
@@ -113,10 +114,8 @@ if not os.path.exists(log_dir):
 else:
     pass
 
-
 log_file_name = "ml_database_log" + datetime.now().strftime("%d %m %Y %H %M %S") + ".log"
 log_file = os.path.join(log_dir, log_file_name)
-
 
 # log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 root_logger = logging.getLogger()
@@ -131,7 +130,6 @@ sys.stdout.write = root_logger.info
 
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file(root):
-
     """ Ανοιγμα αρχείου βάσης δεδομένων"""
 
     global dbase
@@ -158,7 +156,6 @@ def open_file(root):
 
 # Ορισμός πινάκων
 def get_tables():
-
     """ Αποκόμιση  πινάκων απο την βάση δεδομένων """
 
     global tables
@@ -182,7 +179,6 @@ def get_tables():
 
 
 def select_table(root):
-
     """ Δημιουργια κουμπιών σύμφωνα με τους πίνακες της βασης """
 
     global tables
@@ -215,6 +211,7 @@ def select_table(root):
         #             button.configure(background="#836d65")
         #         else:
         #             continue
+
     search_frame = Frame(root, bg="#C2C0BD")
 
     # ======================Πληκτολόγιο=====================
@@ -247,11 +244,11 @@ def select_table(root):
     for index, table_name in enumerate(tables):
         btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)],
                      image="", compound=LEFT, text=table_name, font=('San Serif', '10', 'bold'),
-                     bg="#657b83", fg="white", bd=5, relief=RAISED,)
+                     bg="#657b83", fg="white", bd=5, relief=RAISED, )
 
         buttons.append(btn)
-        if len(buttons) >= 10:
-            btn.grid(row=1, column=index-9, ipadx=len(str(table_name))+10, ipady=20, sticky="ew")
+        if len(buttons) >= 11:
+            btn.grid(row=1, column=index - 10, ipadx=len(str(table_name)) + 10, ipady=20, sticky="ew")
         else:
             btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
@@ -294,6 +291,31 @@ def sort_by_culumn(tree, column, reverse):
         tree.move(k, "", index)
 
     tree.heading(column, command=lambda: sort_by_culumn(tree, column, not reverse))
+
+
+# -----------------------------  Αδειασμα παραγγελιών  -------------------------------------------
+def empty_table():
+    answer = messagebox.askquestion("Θα πραγματοποιηθεί διαγραφή όλων των παραγγελείων",
+                                    " Είστε σήγουρος για την διαγραφή τους", icon='warning')
+    if answer == 'yes':
+        empty_conn = sqlite3.connect(dbase)
+        empty_cursor = empty_conn.cursor()
+        empty_cursor.execute("""SELECT * FROM Ω_ΠΑΡΑΓΓΕΛΙΕΣ""")
+        paraggelies = empty_cursor.fetchall()
+        print("===============Παραγγελίες οι οποιές διαγράφικαν=========")
+        for paraggelia in paraggelies:
+            print(paraggelia)
+        empty_cursor.execute("""DELETE FROM Ω_ΠΑΡΑΓΓΕΛΙΕΣ;""")
+        empty_conn.commit()
+        empty_cursor.execute("""VACUUM;""")
+        empty_cursor.close()
+        empty_conn.close()
+        messagebox.showwarning("ΠΡΟΣΟΧΗ ", "Ο πίνακας Ω_ΠΑΡΑΓΓΕΛΙΕΣ άδειασε")
+
+    else:
+        messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
+
+        return None
 
 
 def update_view(root, table_from_button):
@@ -379,10 +401,10 @@ def update_view(root, table_from_button):
     tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
     tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
     tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
-    tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
-    tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
-    tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="red", font=("San Serif", 10, "bold"))
-    tree.tag_configure('evenrowMAGENTA', background='white', foreground="red", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="cyan", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowCYAN', background='white', foreground="cyan", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowMAGENTA', background='white', foreground="magenta", font=("San Serif", 10, "bold"))
     tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
     tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
     tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
@@ -405,7 +427,7 @@ def update_view(root, table_from_button):
                         tags=("oddrow" + str(color[0]) if len(color) < 2 else "oddrow" + str(color[-1]),))
 
         elif int(up_data[n][0]) % 2 == 0 and not color:
-            tree.insert("", up_index-1, values=up_data[n], tags=("oddrow",))
+            tree.insert("", up_index - 1, values=up_data[n], tags=("oddrow",))
 
         elif int(up_data[n][0]) % 2 != 0 and color:
             tree.insert("", up_index - 1, values=up_data[n],
@@ -414,14 +436,22 @@ def update_view(root, table_from_button):
         else:
             tree.insert("", up_index - 1, values=up_data[n], tags=("evenrow",))
 
-    data_frame.grid(column=0, row=3, columnspan=100, ipady=5)
+    data_frame.grid(column=0, row=3, columnspan=100)
 
     def double_click(event):
         """ Με δυπλό click εμφανίζεται η επεξεργασία δεδομένων"""
         edit(root)
 
     tree.bind("<Double-1>", double_click)
-    tree.grid(column=0, row=1, columnspan=100, sticky="w")
+
+
+    if table_from_button == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
+        empty_button = Button(data_frame, text="Αδειασμα παραγγελιών", command=empty_table, bg="red", fg="white",
+                              bd=3, padx=3, pady=10)
+        empty_button.grid(column=102, row=0, sticky="we")
+        tree.grid(column=0, row=1, columnspan=100)
+    else:
+        tree.grid(column=0, row=1, columnspan=100)
 
     return dbase
 
@@ -432,16 +462,16 @@ def update_view(root, table_from_button):
 # --------------------------------Δημηουργία νεου παραθύρου---------------------------
 def add_to(root):
     """ Προσθήκη προίοντος """
-    global table, dbase
-    height = int(root.winfo_screenheight() / 2.5)
-    width = int(root.winfo_screenwidth() / 2)
+    global table, dbase, headers
+    height = int(root.winfo_screenheight() / 18 * len(headers))
+    width = int(root.winfo_screenwidth() / 1.5)
     add_window = Toplevel()
     add_window_geometry = str(width) + "x" + str(height) + "+100+100"
     add_window.geometry(add_window_geometry)
     add_window.focus()
     add_window.title("Προσθήκη δεδομένων")
     # Τίτλος παραθύρου
-    add_window_title = Label(add_window, bg="brown", fg="white", text="Προσθήκη προίοντος", font=("San Serif Bold", 15),
+    add_window_title = Label(add_window, bg="brown", fg="white", text="Προσθήκη προϊόντος", font=("San Serif Bold", 15),
                              bd=8, padx=3, )
     add_window_title.grid(column=1, row=0)
 
@@ -472,22 +502,15 @@ def add_to(root):
             toner_label = Label(add_window, text=header, width=15, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
             toner_label.grid(column=1, row=index + 1)
             var = StringVar()
-
-            data_to_add.append(var)
+            # Εμφάνισει περιγραφής σαν Scrolledtext και όχι σαν απλο Entry
             if header == "ΠΕΡΙΓΡΑΦΗ":
-                def get_text_from_perigrafi():
-                    fetched_content = perigrafi.get('1.0', 'end-1c')
-                    return fetched_content
+                perigrafi = ScrolledText(add_window, bd=2, width=58, height=3)
+                data_to_add.append(perigrafi)
 
-                perigrafi = ScrolledText(add_window, height=2, bd=2, width=80)
-
-                text_from_perigrafi = get_text_from_perigrafi()
-                print("Line 485 ", text_from_perigrafi)
                 perigrafi.grid(column=2, row=index + 1)
-
-                data_to_add.append(text_from_perigrafi)
             else:
-                Entry(add_window,  textvariable=var, bd=2, width=80).grid(column=2, row=index + 1)
+                Entry(add_window, textvariable=var, bd=2, width=80).grid(column=2, row=index + 1)
+                data_to_add.append(var)
 
     # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
     def add_to_db(root, dbase, headers):
@@ -507,9 +530,20 @@ def add_to(root):
         # print("==========culumns===========", culumns)
         data = []
         for i in range(len(data_to_add)):
-            data.append(data_to_add[i].get())
+            # Ελενχος αν είναι απο το scrolledtext
+            # Το scrolledtext θελει get('1.0', 'end-1c') και οχι απλό get
+            # Ο Ελεγχος γίνεται με το αν το data_to_add[i] == με class scrolledtext
+            # Αν δεν ειναι scrolledtext τότε πέρνουμε τα δεδομένα με το var.get()
+            type_of_data_to_add = str(type(data_to_add[i]))
+            if "scrolledtext" in type_of_data_to_add:
+                # print("Line 513 Data do add need .get", data_to_add[i].get('1.0', 'end-1c'))
+                data.append(data_to_add[i].get('1.0', 'end-1c'))
+
+            else:
+                data.append(data_to_add[i].get())
         # data = tuple(data_to_add)
         # print("Line 406 data before €", data)
+
         try:
             if "ΣΥΝΟΛΟ" in headers:
                 # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
@@ -529,7 +563,14 @@ def add_to(root):
             pass
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        data[-1] = "||" + now + " " + user + " ==>> " + data[-1]
+        # Ελεγχος αν ο πίνακας είναι παραγγελίες
+        if table == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
+            # Αν ο χρήστης είναι στον πίνακα παραγγελίες τότε προσθέτει την ημερωμηνία αυτόματα
+            # now[:10] == ημερωμηνία χωρείς την ώρα
+            data[headers.index("ΗΜΕΡΩΜΗΝΙΑ")-1] = now[:10]
+            data[-1] = data[-1]
+        else:
+            data[-1] = now + " " + user + " ==>> " + data[-1]
         # print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
         # data_to_add = (toner.get(), model.get(), kodikos.get(),
         #               temaxia.get(), str(timi.get()) + " €", str(timi.get() * temaxia.get()) + " €", selides.get())
@@ -612,10 +653,10 @@ def search(search_data):
         tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
         tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
         tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
-        tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
-        tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
-        tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="red", font=("San Serif", 10, "bold"))
-        tree.tag_configure('evenrowMAGENTA', background='white', foreground="red", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="cyan", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowCYAN', background='white', foreground="cyan", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowMAGENTA', background='white', foreground="magenta", font=("San Serif", 10, "bold"))
         tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
         tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
         tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
@@ -642,6 +683,7 @@ def search(search_data):
         search_cursor.close()
         search_conn.close()
 
+
 # ========================================================================================
 # ------------------------------------- ΕΠΕΞΕΡΓΑΣΙΑ -------------------------------------=
 # ========================================================================================
@@ -649,9 +691,9 @@ def search(search_data):
 
 def edit(root):
     global dbase, tree, headers
-    print("Γραμμή 571: ---------------ΛΟΓΟΣ BACKUP --->>> ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
+
     # ===============ΠΡΩΤΑ BACKUP =========
-    backup()
+
     # print("Γραμμη 425: ΕΠΕΞΕΡΓΑΣΙΑ ΣΤΟ Επιλεγμένο id -->", (tree.set(tree.selection(), '#1')))
     if not tree.set(tree.selection(), "#1"):
         messagebox.showwarning("Σφάλμα.....", " Παρακαλώ πρώτα επιλέξτε απο την λίστα για να κάνετε επεξεργασία",
@@ -668,12 +710,11 @@ def edit(root):
     # print("selected_data line 424 ", selected_data)
     # print("headers[0] γραμμή 425 = ", headers[0])
     edit_window = Toplevel()
-    height = int(root.winfo_screenheight() / 2.5)
-    width = int(root.winfo_screenwidth() / 2)
-    x = "+100"
-    y = "+100"
+    height = int(root.winfo_screenheight() / 20 * len(headers))
+    width = int(root.winfo_screenwidth() / 1.5)
+    x = "+200"
+    y = "+200"
     edit_window_geometry = str(width) + "x" + str(height) + x + y
-    print(edit_window_geometry)
     edit_window.geometry(edit_window_geometry)
     edit_window.focus()
     edit_window.title("Επεξεργασία δεδομέμων")
@@ -685,22 +726,53 @@ def edit(root):
     # ===========================Εμφάνιση κεφαλίδων======================================
     count_headers = 0
     data_to_add = []
+    colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
+
     for index, header in enumerate(headers):
         if header == "ID" or header == "id" or header == "Id":
             continue
         else:
+
             count_headers += 1
             ton_label = Label(edit_window, text=header, width=15, padx=1, pady=1, font=("San Serif", 12, "bold"), bd=3)
             ton_label.grid(row=index + 1)
             var = StringVar(edit_window, value=selected_data[index])
-            data_to_add.append(var)
-            # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
-            Entry(edit_window, textvariable=var, bd=2, width=len(var.get())+5)\
-                .grid(column=1, row=index + 1, ipady=3, sticky="we")
+            # Αν υπάρχει "περιγραφη" στις κεφαλίδες η εμφάνιση των δεδομένων της κεφαλίδας περιγραφή ειναι με scrolltext
+            if header == "ΠΕΡΙΓΡΑΦΗ":
+                color = [color for color in colors if color in selected_data[index]]
+
+                perigrafi = ScrolledText(edit_window, height=3, width=80, bd=2)
+                # Αν υπάρχει χρώμα να ελέγχει ποιο χρώμα και ανάλογα να τροποποιεί  το κείμενο
+                if color:
+                    if color[0] == "YELLOW":
+                        perigrafi.insert('1.0', selected_data[index], "YELLOW")
+                        perigrafi.tag_config(color, foreground="orange", font=("San Serif", 10, "bold"))
+
+                    elif len(color) > 1 or "C/M/Y" in color:
+                        perigrafi.insert('1.0', selected_data[index], "green")
+                        perigrafi.tag_config("green", foreground="green", font=("San Serif", 10, "bold"))
+                    else:
+
+                        perigrafi.insert('1.0', selected_data[index], color)
+                        perigrafi.tag_config(color, foreground=color, font=("San Serif", 10, "bold"))
+                else:
+                    perigrafi.insert('1.0', selected_data[index])
+
+                perigrafi.grid(column=1, row=index + 1)
+
+                data_to_add.append(perigrafi)
+            else:
+
+                # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
+                Entry(edit_window, textvariable=var, bd=2, width=len(var.get()) + 5) \
+                    .grid(column=1, row=index + 1, ipady=3, sticky="we")
+                data_to_add.append(var)
 
     # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
     # ---------------------- μετά την επεξεργασία   -------------------------------------
     def update_to_db():
+        backup()
+        print("Γραμμή 733: ---------------ΛΟΓΟΣ BACKUP --->>> ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
         global tree, table
         # culumns = ",".join(headers)
         # Τα culumns ειναι της μορφής ID, ΤΟΝΕΡ, ΜΟΝΤΕΛΟ, ΚΩΔΙΚΟΣ κτλπ.
@@ -725,53 +797,77 @@ def edit(root):
         edited_data = []
 
         for data in data_to_add:
-            edited_data.append(data.get())
+            type_of_data = str(type(data))
+            # Ελεγχος εάν είναι scrolledtext τοτε η προσθήκη θελει (data.get('1.0', 'end-1c') και οχι σκετο data.get()
+            # το '1.0' το 1 είναι η πρώτη γραμμή  το 0 είναι ο πρώτος χαρακτήρας
+            if "scrolledtext" in type_of_data:
+                edited_data.append(data.get('1.0', 'end-1c'))
+            else:
+                edited_data.append(data.get())
 
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        edited_data[-1] = "||" + now + " " + user + " ==>> " + data_to_add[-1].get()
+        # Aν ο πίνακας εχει περισσοτερα απο 7 κεφαλίδες τότε στο "ΠΑΡΑΤΗΡΗΣΕΙΣ" να βάλει μόνο ημερωμηνία και χρήστη
+        if table == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
+            edited_data[-1] = data_to_add[-1].get()
+        elif len(edited_culumns) > 7:
+            edited_data[-1] = now + " " + user
+        # Διαφορετικά να βάλει και ότι γράφει ο χρήστης
+        else:
+            edited_data[-1] = now + " " + user + " ==>> " + data_to_add[-1].get()
+        # print("Line 772", edited_data[-1][0:-1])
         # ================================= Προσθήκη id =================================================
         edited_data.append(selected_id)
         # print("Line 573 Edited data ", edited_data)
         # ====================================== ΑΥΤΟΜΑΤΗ ΕΝΗΜΕΡΩΣΗ ΣΥΝΟΛΟΥ =============================
         # ======================================= ΚΑΙ ΠΡΟΣΘΗΚΗ ΣΥΜΒΟΛΟΥ €    =============================
         if "ΣΥΝΟΛΟ=?" in edited_culumns:
-            # print("Συνολο == ", "ΣΥΝΟΛΟ=?" in edited_culumns)
             try:
-                edited_data[6] = edited_data[6].replace(",", ".") # Μετατροπή , σε . για πολλαπλασιασμό
+                # edited_data[6] == τιμή
+                edited_data[edited_culumns.index("ΤΙΜΗ=?")] = \
+                    edited_data[edited_culumns.index("ΤΙΜΗ=?")].replace(",", ".")  # Μετατροπή , σε . για πολλαπλασιασμό
+
                 # Αν ο χρήστης δεν βάλει τεμάχειο να γίνει αυτόματα 0
-                if edited_data[5] == "":
-                    edited_data[5] = 0
+                if edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")] == "":
+                    edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")] = "0"
                     # print("Line 604 edited_data[5] ", edited_data[5])
+
                 else:
                     pass
                 # Αν ο χρήστης δεν ορίσει τιμή να γίνει αυτόματα 0
-                if edited_data[6] == "":
-                    edited_data[6] = "0"   # 0 σε string γιατί ψάχνουμε αν έχει το € μέσα
+                if edited_data[edited_culumns.index("ΤΙΜΗ=?")] == "":
+                    edited_data[edited_culumns.index("ΤΙΜΗ=?")] = "0"  # 0 σε string γιατί ψάχνουμε αν έχει το € μέσα
                     # print("Line 610 edited_data[6] ", edited_data[6])
+
                 else:
                     pass
                 # {:0.2f} Για να εμφανίνζει την τιμή με 2 δεκαδικά πίσω απο την τιμή 10.00 € και οχι 10 €
 
-                if "€" in edited_data[6]:
-                    edited_data[7] = str("{:0.2f}".format(float(edited_data[6][:-1]) * float(edited_data[5]))) + " €"
-                    edited_data[5] = str(edited_data[5])
+                if "€" in edited_data[edited_culumns.index("ΤΙΜΗ=?")]:
+                    edited_data[edited_culumns.index("ΣΥΝΟΛΟ=?")] = \
+                        str("{:0.2f}".format(float(edited_data[edited_culumns.index("ΤΙΜΗ=?")][:-1]) *
+                                             float(edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")]))) + " €"
+                    edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")] = str(edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")])
 
                 else:
-                    edited_data[7] = str("{:0.2f}".format(float(edited_data[6]) * float(edited_data[5]))) + " €"
-                    edited_data[5] = str(edited_data[5])
+                    edited_data[edited_culumns.index("ΣΥΝΟΛΟ=?")] = \
+                        str("{:0.2f}".format(float(edited_data[edited_culumns.index("ΤΙΜΗ=?")]) *
+                                             float(edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")]))) + " €"
+                    edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")] = str(edited_data[edited_culumns.index("ΤΕΜΑΧΙΑ=?")])
 
-                if "€" not in str(edited_data[6]):
-                    edited_data[6] = str("{:0.2f}".format(float(edited_data[6]))) + " €"
+                if "€" not in str(edited_data[edited_culumns.index("ΤΙΜΗ=?")]):
+                    edited_data[edited_culumns.index("ΤΙΜΗ=?")] = \
+                        str("{:0.2f}".format(float(edited_data[edited_culumns.index("ΤΙΜΗ=?")]))) + " €"
 
                 else:
-                    edited_data[6] = str("{:0.2f}".format(float(edited_data[6][:-1]))) + " €"
+                    edited_data[edited_culumns.index("ΤΙΜΗ=?")] = \
+                        str("{:0.2f}".format(float(edited_data[edited_culumns.index("ΤΙΜΗ=?")][:-1]))) + " €"
 
             except ValueError as error:
                 messagebox.showwarning('ΠΡΟΣΟΧΉ ...',
-                                       "Σφάλμα {} \n1)Η Τιμή πρέπει να είναι αριθμός και με .(τελεία) όχι ,(κομμα) "
-                                       .format(error))
+                                       "Σφάλμα {} \n1)Ο Πίνακας δεν είναι σωστός".format(error))
+                print("Line 827 Σφάλμα {} \n1)Ο Πίνακας δεν είναι σωστός".format(error))
 
                 edit_window.destroy()
                 return None
@@ -788,7 +884,7 @@ def edit(root):
         print(50 * "*", "Το προΐον ενημερώθηκε με επιτυχία", 50 * "*")
         print(60 * "*")
         print("Γραμμη 701 Παλιά δεδομένα στον πίνακα ==> {}".format(table), "\n", headers, "\n", selected_data)
-        print("Γραμμη 702 Νέα δεδομένα στον πίνακα ==>{}".format(table), "\n", headers[1:], "\n", edited_data)
+        print("Γραμμη 702 Νέα δεδομένα στον πίνακα ==>{}".format(table), "\n", headers[1:], "\n", edited_data[:-1])
 
         # Ενημέρωση του tree με τα νέα δεδομένα
 
@@ -806,7 +902,7 @@ def edit(root):
     edit_window.bind('<Escape>', quit_app)
     update_button = Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", bg="red",
                            fg="white", bd=3)
-    update_button.grid(column=0, row=len(headers)+1)
+    update_button.grid(column=0, row=len(headers) + 1)
 
 
 # ========================================================================================
@@ -857,7 +953,7 @@ def backup():
         try:
             if back_conn:
                 back_conn.close()
-                print("Συνδεση με ", backup_file, " διακόπηκε")
+                print("Δημηουργεία αντιγράφου ασφαλείας στο αρχείο  ", backup_file, " ολοκληρώθηκε")
         except UnboundLocalError as error:
             print(f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 562 {error}")
             messagebox.showinfo(f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 771 {error}")
@@ -906,4 +1002,3 @@ def del_from_tree():
         return selected_item
     except TclError as error:
         print("ΣΦΑΛΜΑ Line 816", error)
-

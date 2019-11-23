@@ -40,10 +40,10 @@ from func import *
 
 root = Tk()
 root.geometry('800x600+100+100')
-root.title('ML Database V 0.9.1')
+root.title('ML Database V 1.0.0')
 root.config(bg="#C2C0BD")
-# root.withdraw()
-# root.resizable(width=1000, height=100)
+# root.withdraw()  # hide root
+root.resizable(True, True)
 # width = 1200
 # height = 600
 # screen_width = root.winfo_screenwidth()
@@ -81,10 +81,10 @@ style.configure("mystyle.Treeview", highlightthickness=0, width=width_of_tree-10
 
 # "map": {"background": [("selected", myred)],"expand": [("selected", [1, 1, 1, 0])]}
 # fieldbackground="black"
-style.configure("mystyle.Treeview.Heading", font=('Calibri', 12, 'bold'),  background="#657b83", foreground="black",
+style.configure("mystyle.Treeview.Heading", font=('San Serif', 12, 'bold'),  background="#657b83", foreground="black",
                 relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
 # style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
-style.configure("mystyle.Treeview", background="white", rowheight=40)
+style.configure("mystyle.Treeview", background="white", rowheight=round(width_of_tree / 40))
 # style.configure("mystyle.Treeview", background="#850664", foreground="#000000", fieldbackground="#FFFFFF")
 # style.theme_use("mystyle.Treeview")
 #         # -------------------------New Style--------------------------------
@@ -108,7 +108,7 @@ style.configure("mystyle.Treeview", background="white", rowheight=40)
 
 
 # Τίτλος προγράμματος
-app_title = Label(root, bg="brown", fg="white", text="MLShop Database", font=("Arial Bold", 15), bd=8)
+app_title = Label(root, bg="brown", fg="white", text="MLShop Database v1.0.0 ", font=("San Serif", 15), bd=8)
 # app_title.grid(column=0, row=0, sticky="we")
 
 
@@ -173,6 +173,6 @@ menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_m
 
 
 root.config(menu=menubar)
-
+open_file(root)
 if __name__ == "__main__":
     root.mainloop()
