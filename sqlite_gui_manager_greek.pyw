@@ -40,7 +40,7 @@ from func import *
 
 root = Tk()
 root.geometry('800x600+100+100')
-root.title('ML Database V 1.0.0')
+root.title('ML ΑΠΟΘΗΚΗ V 1.0.1')
 root.config(bg="#C2C0BD")
 # root.withdraw()  # hide root
 root.resizable(True, True)
@@ -108,7 +108,7 @@ style.configure("mystyle.Treeview", background="white", rowheight=round(width_of
 
 
 # Τίτλος προγράμματος
-app_title = Label(root, bg="brown", fg="white", text="MLShop Database v1.0.0 ", font=("San Serif", 15), bd=8)
+app_title = Label(root, bg="brown", fg="white", text="ML ΑΠΟΘΗΚΗ v1.0.1 ", font=("San Serif", 15), bd=8)
 # app_title.grid(column=0, row=0, sticky="we")
 
 
