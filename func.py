@@ -8,6 +8,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V1.0.2   | Διόρθωση προσθήκη προϊόντος χωρίς κωδικό στις παραγγελίες               | --------------24/11/2019
+
 Version V1.0.1   | Προσθήκη κουμπί "προσθήκη στις παραγγελίες στο παράθυρο  επεξεργρασίας | --------------24/11/2019
 
 Version V1.0.0   | Προσθήκη πίνακα παραγγελίες και ολα  παίζουν σωστά | ---------------------------------24/11/2019
@@ -703,6 +705,15 @@ def search(search_data):
 def add_to_orders(root, edit_window, data_to_add):
     # Προσθήκη κωδικού και περιγραφής στις παραγγελίες
     code_for_order = data_to_add[headers.index("ΚΩΔΙΚΟΣ")]
+    if not code_for_order:
+        answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
+                                        "Το προιόν δεν εχει κωδικό θέλετε να το  προσθέσετε;", icon='warning')
+        if answer == 'yes':
+            pass
+        else:
+            messagebox.showwarning("ΑΚΥΡΩΣΗ", "Το προιόν δεν προστέθηκε στις παραγγελίες")
+            edit_window.destroy()
+            return None
     perigrafi_for_order = data_to_add[headers.index("ΠΕΡΙΓΡΑΦΗ")]
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     data_to_orders = [code_for_order, now[:10], perigrafi_for_order, "", user]
@@ -741,6 +752,7 @@ def add_to_orders(root, edit_window, data_to_add):
                 messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
                 edit_window.destroy()
                 update_view(root, table)
+                return None
             else:
                 messagebox.showwarning("ΑΚΥΡΩΣΗ", "Ο κωδικός {} δεν προστέθηκε στις παραγγελίες".format(code_for_order))
                 edit_window.destroy()
