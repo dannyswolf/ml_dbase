@@ -4,7 +4,9 @@ Sqlite Γραφικό περιβάλλον με Python3
 ******************************************************************
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
-
+**************************************************************************************************************
+***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
+**************************************************************************************************************
 
 Version V1.0.1   | Προσθήκη κουμπί "προσθήκη στις παραγγελίες στο παράθυρο  επεξεργρασίας | --------------24/11/2019
 
@@ -182,9 +184,6 @@ def get_tables():
     return tables
 
 
-
-
-
 def select_table(root):
     """ Δημιουργια κουμπιών σύμφωνα με τους πίνακες της βασης """
 
@@ -301,23 +300,27 @@ def sort_by_culumn(tree, column, reverse):
 
 
 # -----------------------------  Αδειασμα παραγγελιών  -------------------------------------------
-def empty_table():
-    answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή όλων των παραγγελείων,\n \
-                                                Είστε σήγουρος για την διαγραφή τους", icon='warning')
+# ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
+def empty_table(root):
+    backup()
+    print("Λογος αντιγράφου ασφαλείας ==>> διαγραφή πίνακα {}".format(tables[-1]))
+    answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή του πίνακα {}, \
+                                                Είστε σήγουρος για την διαγραφή τους".format(tables[-1]), icon='warning')
     if answer == 'yes':
         empty_conn = sqlite3.connect(dbase)
         empty_cursor = empty_conn.cursor()
-        empty_cursor.execute("""SELECT * FROM Ω_ΠΑΡΑΓΓΕΛΙΕΣ""")
+        empty_cursor.execute("SELECT * FROM " + tables[-1] + ";")
         paraggelies = empty_cursor.fetchall()
         print("===============Παραγγελίες διαγράφικαν απο χρήστη {} ========".format(user))
         for paraggelia in paraggelies:
             print(paraggelia)
-        empty_cursor.execute("""DELETE FROM Ω_ΠΑΡΑΓΓΕΛΙΕΣ;""")
+        empty_cursor.execute("DELETE FROM " + tables[-1] + ";")
         empty_conn.commit()
         empty_cursor.execute("""VACUUM;""")
         empty_cursor.close()
         empty_conn.close()
-        messagebox.showwarning("ΠΡΟΣΟΧΗ ", "Ο πίνακας Ω_ΠΑΡΑΓΓΕΛΙΕΣ άδειασε")
+        messagebox.showwarning("ΠΡΟΣΟΧΗ ", "Ο πίνακας {} άδειασε".format(tables[-1]))
+        update_view(root, table)
 
     else:
         messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
@@ -451,9 +454,9 @@ def update_view(root, table_from_button):
 
     tree.bind("<Double-1>", double_click)
 
-    if table_from_button == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
-        empty_button = Button(data_frame, text="Αδειασμα παραγγελιών", command=empty_table, bg="red", fg="white",
-                              bd=3, padx=3, pady=10)
+    if table_from_button == tables[-1]:
+        empty_button = Button(data_frame, text="Αδειασμα παραγγελιών", command=lambda: empty_table(root),
+                              bg="red", fg="white", bd=3, padx=3, pady=10)
         tree.grid(column=0, row=0, columnspan=100)
         empty_button.grid(column=103, row=0, sticky="we")
 
@@ -571,7 +574,7 @@ def add_to(root):
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         # Ελεγχος αν ο πίνακας είναι παραγγελίες
-        if table == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
+        if table == tables[-1]:
             # Αν ο χρήστης είναι στον πίνακα παραγγελίες τότε προσθέτει την ημερωμηνία αυτόματα
             # now[:10] == ημερωμηνία χωρείς την ώρα
             data[headers.index("ΗΜΕΡΩΜΗΝΙΑ")-1] = now[:10]
@@ -693,20 +696,20 @@ def search(search_data):
 
 # ========================================================================================
 # ------------------------------------- ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ ----------------------------=
+# -----------------------****************** ΠΡΟΣΟΧΗ ************-------------------------=
+# Οι παραγγελίες γίνονται στον τελευταίο πίνακα της βάσης δεδωμένων ---------------------=
 # ========================================================================================
-# Δεχεται σαν όρισμα το edit_windows για να μππορέσουμε να το κλείσουμε όταν κάνουμε την προσθήκη παραγγελίας
-def add_to_orders(edit_window, data_to_add):
+# Δεχεται σαν όρισμα το edit_windows για να μπορέσουμε να το κλείσουμε όταν κάνουμε την προσθήκη παραγγελίας
+def add_to_orders(root, edit_window, data_to_add):
     # Προσθήκη κωδικού και περιγραφής στις παραγγελίες
     code_for_order = data_to_add[headers.index("ΚΩΔΙΚΟΣ")]
     perigrafi_for_order = data_to_add[headers.index("ΠΕΡΙΓΡΑΦΗ")]
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
     data_to_orders = [code_for_order, now[:10], perigrafi_for_order, "", user]
 
-    # print("Line 701 ", tuple(data_to_orders))
-
     order_conn = sqlite3.connect(dbase)
     order_cursos = order_conn.cursor()
-    order_cursos.execute("""SELECT * FROM Ω_ΠΑΡΑΓΓΕΛΙΕΣ;""")
+    order_cursos.execute("SELECT * FROM " + tables[-1] + ";")
 
     headers_of_orders = list(map(lambda x: x[0], order_cursos.description))
     culumns = ",".join(headers_of_orders)
@@ -720,11 +723,8 @@ def add_to_orders(edit_window, data_to_add):
     values = ",".join(values_var)
 
     data_from_paraggelies = order_cursos.fetchall()
-    print("line 722 code to find", code_for_order)
-    print("Line 723 data_from_paraggelies", data_from_paraggelies)
     found = False
     for data in data_from_paraggelies:
-        print("Line 719 data", data)
         if code_for_order in data:
             found = True    # Δηλαδή βρεθηκε ο κωδικός στις παραγγελίες
             answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
@@ -733,37 +733,54 @@ def add_to_orders(edit_window, data_to_add):
                                             icon='warning')
             # Αν ο χρήστης θέλει να το ξαναπροσθέσει
             if answer == "yes":
-                sql_insert = "INSERT INTO Ω_ΠΑΡΑΓΓΕΛΙΕΣ " + "(" + culumns + ")" + "VALUES(" + values + ");"
+                sql_insert = "INSERT INTO " + tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
                 order_cursos.execute(sql_insert, tuple(data_to_orders))
                 order_conn.commit()
                 order_cursos.close()
                 order_conn.close()
                 messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
                 edit_window.destroy()
+                update_view(root, table)
             else:
                 messagebox.showwarning("ΑΚΥΡΩΣΗ", "Ο κωδικός {} δεν προστέθηκε στις παραγγελίες".format(code_for_order))
                 edit_window.destroy()
+
                 return None
+        else:
+            found = False  # Δεν βρέθηκε ο κωδικός στις παραγγελίες
 
-    # Αν δεν βρέθηκε στις παραγγελίες
-    if not found:
-        sql_insert = "INSERT INTO Ω_ΠΑΡΑΓΓΕΛΙΕΣ " + "(" + culumns + ")" + "VALUES(" + values + ");"
+    # Αν δεν βρέθηκε στις παραγγελίες και υπάρχουν παραγγελίες
+    if not found and data_from_paraggelies:
+        order_conn = sqlite3.connect(dbase)
+        order_cursos = order_conn.cursor()
+        sql_insert = "INSERT INTO " + tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
         order_cursos.execute(sql_insert, tuple(data_to_orders))
         order_conn.commit()
         order_cursos.close()
         order_conn.close()
         messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
         edit_window.destroy()
-
-    # Αν Ο πίνακας παραγγελίες είναι άδειος
+        update_view(root, table)
+        return None
+    # Αν δεν υπάρχουν παραγγελίες
     if not data_from_paraggelies:
-        sql_insert = "INSERT INTO Ω_ΠΑΡΑΓΓΕΛΙΕΣ " + "(" + culumns + ")" + "VALUES(" + values + ");"
-        order_cursos.execute(sql_insert, tuple(data_to_orders))
-        order_conn.commit()
-        order_cursos.close()
-        order_conn.close()
-        messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
-        edit_window.destroy()
+        try:
+            sql_insert = "INSERT INTO " + tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
+            order_cursos.execute(sql_insert, tuple(data_to_orders))
+            order_conn.commit()
+            order_cursos.close()
+            order_conn.close()
+            messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
+            edit_window.destroy()
+            update_view(root, table)
+            return None
+        except sqlite3.ProgrammingError as error:
+            print("Σφάλμα. Line 768..sqlite3.ProgrammingError {}".format(error))
+            messagebox.showwarning("Σφάλμα...", "Line 768..sqlite3.ProgrammingError {} ".format(error))
+            edit_window.destroy()
+            update_view(root, table)
+            return None
+    else:
         return None
 
 
@@ -887,7 +904,7 @@ def edit(root):
         # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         # Aν ο πίνακας εχει περισσοτερα απο 7 κεφαλίδες τότε στο "ΠΑΡΑΤΗΡΗΣΕΙΣ" να βάλει μόνο ημερωμηνία και χρήστη
-        if table == "Ω_ΠΑΡΑΓΓΕΛΙΕΣ":
+        if table == tables[-1]:
             edited_data[-1] = data_to_add[-1].get()
         elif len(edited_culumns) > 7:
             edited_data[-1] = now + " " + user
@@ -984,7 +1001,7 @@ def edit(root):
 
     # print("Line 909 data to orders", selected_data)
     if table != tables[-1]:
-        order_button = Button(edit_window, command=lambda: add_to_orders(edit_window, selected_data),
+        order_button = Button(edit_window, command=lambda: add_to_orders(root, edit_window, selected_data),
                               text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
         order_button.grid(column=3, row=len(headers) + 1)
 
