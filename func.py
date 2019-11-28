@@ -107,7 +107,7 @@ import getpass
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dbase = "ΑΠΟΘΗΚΗ.db"
+dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 up_data = []  # Για να πάρουμε τα δεδομένα
 tree = ""
@@ -155,7 +155,7 @@ def open_file(root):
             continue
     # dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
     # filetypes=(("db files", "*.db"), ("all files", "*.*")))
-    dbase = "ΑΠΟΘΗΚΗ.db"
+    dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
     # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
@@ -340,7 +340,9 @@ def update_view(root, table_from_button):
         tree.destroy()
     else:
         pass
-    rows = int(root.winfo_screenheight() / 60)
+     # ΟΘΟΝΗ ΠΑΥΛΟΥ /65
+     # ΟΘΟΝΗ ΛΑΖΑΡΟΥ / 90
+    rows = int(root.winfo_screenheight() / 65)
     table = table_from_button
     tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=rows)
     # ================================ scrolls======================
@@ -413,14 +415,14 @@ def update_view(root, table_from_button):
     tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
     tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
     tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
-    tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="cyan", font=("San Serif", 10, "bold"))
-    tree.tag_configure('evenrowCYAN', background='white', foreground="cyan", font=("San Serif", 10, "bold"))
+    tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
+    tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
     tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta", font=("San Serif", 10, "bold"))
     tree.tag_configure('evenrowMAGENTA', background='white', foreground="magenta", font=("San Serif", 10, "bold"))
     tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
     tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
-    tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
-    tree.tag_configure("evenrowC/M/Y", background="white", foreground="green", font=("San Serif", 10, "bold"))
+    tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="#09eb45", font=("San Serif", 10, "bold"))
+    tree.tag_configure("evenrowC/M/Y", background="white", foreground="#09eb45", font=("San Serif", 10, "bold"))
 
     for n in range(len(up_data)):
         # Κατασκευή tree το up_index -1 == το τελος ("end")
@@ -665,14 +667,14 @@ def search(search_data):
         tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
         tree.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange", font=("San Serif", 10, "bold"))
         tree.tag_configure('evenrowYELLOW', background='white', foreground="orange", font=("San Serif", 10, "bold"))
-        tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="cyan", font=("San Serif", 10, "bold"))
-        tree.tag_configure('evenrowCYAN', background='white', foreground="cyan", font=("San Serif", 10, "bold"))
+        tree.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue", font=("San Serif", 10, "bold"))
+        tree.tag_configure('evenrowCYAN', background='white', foreground="blue", font=("San Serif", 10, "bold"))
         tree.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta", font=("San Serif", 10, "bold"))
         tree.tag_configure('evenrowMAGENTA', background='white', foreground="magenta", font=("San Serif", 10, "bold"))
         tree.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK", font=("San Serif", 10, "bold"))
         tree.tag_configure('evenrowBLACK', background="white", foreground="BLACK", font=("San Serif", 10, "bold"))
-        tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="green", font=("San Serif", 10, "bold"))
-        tree.tag_configure("evenrowC/M/Y", background="white", foreground="green", font=("San Serif", 10, "bold"))
+        tree.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="#09eb45", font=("San Serif", 10, "bold"))
+        tree.tag_configure("evenrowC/M/Y", background="white", foreground="#09eb45", font=("San Serif", 10, "bold"))
         odd_or_even = 0
         for data in fetch:
             # Κάνει αναζήτηση του color μόνο στην κεφαλίδα "ΠΕΙΓΡΑΦΉ"
@@ -857,7 +859,11 @@ def edit(root):
 
                     elif len(color) > 1 or "C/M/Y" in color:
                         perigrafi.insert('1.0', selected_data[index], "green")
-                        perigrafi.tag_config("green", foreground="green", font=("San Serif", 10, "bold"))
+                        perigrafi.tag_config("green", foreground="#09eb45", font=("San Serif", 10, "bold"))
+                    elif color[0] == "CYAN":
+                        perigrafi.insert('1.0', selected_data[index], "CYAN")
+                        perigrafi.tag_config(color, foreground="blue", font=("San Serif", 10, "bold"))
+                        
                     else:
 
                         perigrafi.insert('1.0', selected_data[index], color)
@@ -1015,7 +1021,7 @@ def edit(root):
     if table != tables[-1]:
         order_button = Button(edit_window, command=lambda: add_to_orders(root, edit_window, selected_data),
                               text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
-        order_button.grid(column=3, row=len(headers) + 1)
+        order_button.grid(column=1, row=len(headers) + 1, sticky="e")
 
 
 # ========================================================================================
