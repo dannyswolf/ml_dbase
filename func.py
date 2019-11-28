@@ -8,6 +8,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομενων | -----28/11/2019
+
 Version V1.0.2   | Διόρθωση προσθήκη προϊόντος χωρίς κωδικό στις παραγγελίες               | --------------24/11/2019
 
 Version V1.0.1   | Προσθήκη κουμπί "προσθήκη στις παραγγελίες στο παράθυρο  επεξεργρασίας | --------------24/11/2019
@@ -107,7 +109,7 @@ import getpass
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
-dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+dbase = "ΑΠΟΘΗΚΗ.db"
 tables = []
 up_data = []  # Για να πάρουμε τα δεδομένα
 tree = ""
@@ -153,9 +155,9 @@ def open_file(root):
         else:
             # print("list_of_frames root.grid.slaves  after deleted line 129", list_of_frames)
             continue
-    # dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
-    # filetypes=(("db files", "*.db"), ("all files", "*.*")))
-    dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
+                                       filetypes=(("db files", "*.db"), ("all files", "*.*")))
+    # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
     # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
@@ -330,6 +332,60 @@ def empty_table(root):
         return None
 
 
+def make_new_table(root):
+    new_table_window = Toplevel()
+    new_table_window.title("Δημιουργία νέου πίνακα")
+    title_label = Label(new_table_window, text="Δημιουργία νέου πίνακα", font=("San Serif", 15,"bold"), bg="brown", fg="white")
+    title_label.grid(columnspan=3, row=0)
+
+    title_name_label = Label(new_table_window, text="Όνομα πίνακα :  ", font=("San Serif", 12, "bold"))
+    title_name_label.grid(column=0, row=1)
+
+    table_name = StringVar()
+    table_name_entry = Entry(new_table_window, textvariable=table_name,)
+    table_name_entry.grid(column=1, row=1, ipady=2)
+    table_name_entry.focus()
+    fields = []      # Τα πεδία
+    for i in range(11):
+        title_name_label = Label(new_table_window, text="Πεδίο " + str(i+1) + " :  ", font=("San Serif", 12, "bold"))
+        title_name_label.grid(column=0, row=i+2)
+
+        column = StringVar()  #
+        table_name_entry = Entry(new_table_window, textvariable=column)
+        table_name_entry.grid(column=1, row=i+2, ipady=2)
+        fields.append(column)
+
+    def ad_table_to_db(root):
+        fields_to_add = []
+        for field in fields:
+            if field.get() != "":
+                fields_to_add.append(field.get())
+            else:
+                pass
+        fields_to_add = " TEXT,".join(fields_to_add)
+        name_of_table = table_name.get()
+        try:
+            conn = sqlite3.connect(dbase)
+            cursor = conn.cursor()
+
+            cursor.execute("CREATE TABLE IF NOT EXISTS " + name_of_table +
+                           "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " + fields_to_add + ");")
+            print("Line 371 Δημιουργία νέου πίνακα {} με πεδία {}".format(name_of_table, fields_to_add) )
+            conn.commit()
+            conn.close()
+        except sqlite3.OperationalError as error:
+            messagebox.showwarning("Σφάλμα", "Προσοχή τα πεδία δεν μπορούν να έχουν το ίδιο όνομα \n {}".format(error))
+            new_table_window.destroy()
+            return None
+        messagebox.showinfo('Εγινε προσθήκη Πίνακα', "Ο πίνακας {} δημιουργίθηκε ".format(name_of_table))
+
+        get_tables()
+        select_table(root)
+    enter_button = Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
+                          command=lambda: ad_table_to_db(root))
+    enter_button.grid(column=1, row=13)
+
+
 def update_view(root, table_from_button):
     """ Δέχεται τον πίνακα και εμφανίζει τα δεδομένα στο tree
     """
@@ -426,14 +482,14 @@ def update_view(root, table_from_button):
 
     for n in range(len(up_data)):
         # Κατασκευή tree το up_index -1 == το τελος ("end")
-        try:
+        if "ΠΕΡΙΓΡΑΦΗ" in headers:
             # up_data[n][columns.index("ΠΕΡΙΓΡΑΦΗ")] == Ψάχνει όπου είναι η ΚΕΦΑΛΙΔΑ "περιγραφή"
             color = [color for color in colors if color in up_data[n][headers.index("ΠΕΡΙΓΡΑΦΗ")]]
 
-        except TypeError as error:
-            # Αν δεν έχει πειργραφή μαλλον συνεχίζει
-            continue
-            # Οταν στον πίνακα το up_data[n][4] δεν είναι η περιγραφή
+        else:
+            # Αν δεν έχει πειργραφή  συνεχίζει
+            color = 0
+
         if int(up_data[n][0]) % 2 == 0 and color:
             # Αν το id διαιρείται με το δυο αλλάζουμε το background
 

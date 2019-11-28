@@ -6,17 +6,17 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομενων | -----28/11/2019
+
 
 Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
 
 Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
 Στην v0.7  έφτιαχνε συνεχεια frames στο root
-ΕΓΙΝΕ ΚΑΘΑΡΣΙΣΜΟΣ ΚΩΔΙΚΑ
-ΠΡΕΠΕΙ ΝΑ ΚΑΝΩ ΤΟ ΣΥΝΟΛΟ = TIMI * TEMAXIA
+ΕΓΙΝΕ ΚΑΘΑΡΙΣΜΟΣ ΚΩΔΙΚΑ
 
 
 Version v0.7 Για το μαγαζί δουλευουν ολα ----------------------------9/11/2019
-ΠΡΕΠΕΙ ΝΑ ΚΑΝΩ ΤΟ ΣΥΝΟΛΟ = TIMI * TEMAXIA
 
 Version Για το μαγαζί                                               8/11/2019
 Ολα δουλευουν
@@ -171,8 +171,19 @@ backup_menu = Menu(menubar, tearoff=0)
 backup_menu.add_command(label="===Αντίγραφο ασφαλείας!===", command=backup)
 menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_menu)
 
+table_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Πίνακες", menu=table_menu)
+table_menu.add_command(label="Δημιουργία νέου πίνακα", command=lambda: make_new_table(root))
+
+info_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Info", menu=info_menu)
+info_menu.add_command(label="Πληροφορίες")
+
 
 root.config(menu=menubar)
-open_file(root)
+
+get_tables()
+select_table(root)
+
 if __name__ == "__main__":
     root.mainloop()
