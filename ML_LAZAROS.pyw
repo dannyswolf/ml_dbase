@@ -6,6 +6,9 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
+Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
+
+
 
 Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
 
@@ -40,7 +43,7 @@ from func import *
 
 root = Tk()
 root.geometry('800x600+100+100')
-root.title('ML ΑΠΟΘΗΚΗ V 1.0.2')
+root.title('ML ΑΠΟΘΗΚΗ V 1.0.3')
 root.config(bg="#C2C0BD")
 # root.withdraw()  # hide root
 root.resizable(True, True)
@@ -171,8 +174,19 @@ backup_menu = Menu(menubar, tearoff=0)
 backup_menu.add_command(label="===Αντίγραφο ασφαλείας!===", command=backup)
 menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=backup_menu)
 
+table_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Πίνακες", menu=table_menu)
+table_menu.add_command(label="Δημιουργία νέου πίνακα", command=lambda: make_new_table(root))
+
+info_menu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Info", menu=info_menu)
+info_menu.add_command(label="Πληροφορίες")
+
 
 root.config(menu=menubar)
-open_file(root)
+
+get_tables()
+select_table(root)
+
 if __name__ == "__main__":
     root.mainloop()
