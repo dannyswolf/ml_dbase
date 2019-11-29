@@ -8,7 +8,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
-Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομενων | -----28/11/2019
+Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
 
 Version V1.0.2   | Διόρθωση προσθήκη προϊόντος χωρίς κωδικό στις παραγγελίες               | --------------24/11/2019
 
@@ -80,7 +80,7 @@ __author__ = "Jordanis Ntini"
 __copyright__ = "Copyright © 2019"
 __credits__ = ['Athanasia Tzampazi']
 __license__ = 'Gpl'
-__version__ = '1.0.0'
+__version__ = '1.0.3'
 __maintainer__ = "Jordanis Ntini"
 __email__ = "ntinisiordanis@gmail.com"
 __status__ = 'Development'
@@ -309,7 +309,8 @@ def empty_table(root):
     backup()
     print("Λογος αντιγράφου ασφαλείας ==>> διαγραφή πίνακα {}".format(tables[-1]))
     answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή του πίνακα {}, \
-                                                Είστε σήγουρος για την διαγραφή τους".format(tables[-1]), icon='warning')
+                                                Είστε σήγουρος για την διαγραφή του; ".format(tables[-1]),
+                                    icon='warning')
     if answer == 'yes':
         empty_conn = sqlite3.connect(dbase)
         empty_cursor = empty_conn.cursor()
@@ -327,6 +328,7 @@ def empty_table(root):
         update_view(root, table)
 
     else:
+        print('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
         messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
 
         return None
@@ -346,6 +348,7 @@ def make_new_table(root):
     table_name_entry.grid(column=1, row=1, ipady=2)
     table_name_entry.focus()
     fields = []      # Τα πεδία
+
     for i in range(11):
         title_name_label = Label(new_table_window, text="Πεδίο " + str(i+1) + " :  ", font=("San Serif", 12, "bold"))
         title_name_label.grid(column=0, row=i+2)
@@ -385,6 +388,13 @@ def make_new_table(root):
                           command=lambda: ad_table_to_db(root))
     enter_button.grid(column=1, row=13)
 
+    # ΕΞΩΔΟΣ
+    def quit_app(event):
+
+        new_table_window.destroy()
+
+    new_table_window.bind('<Escape>', quit_app)
+
 
 def update_view(root, table_from_button):
     """ Δέχεται τον πίνακα και εμφανίζει τα δεδομένα στο tree
@@ -396,8 +406,8 @@ def update_view(root, table_from_button):
         tree.destroy()
     else:
         pass
-     # ΟΘΟΝΗ ΠΑΥΛΟΥ /65
-     # ΟΘΟΝΗ ΛΑΖΑΡΟΥ / 90
+    # ΟΘΟΝΗ ΠΑΥΛΟΥ /65
+    # ΟΘΟΝΗ ΛΑΖΑΡΟΥ / 90
     rows = int(root.winfo_screenheight() / 65)
     table = table_from_button
     tree = ttk.Treeview(data_frame, selectmode="browse", style="mystyle.Treeview", show="headings", height=rows)

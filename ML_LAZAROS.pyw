@@ -111,7 +111,7 @@ style.configure("mystyle.Treeview", background="white", rowheight=round(width_of
 
 
 # Τίτλος προγράμματος
-app_title = Label(root, bg="brown", fg="white", text="ML ΑΠΟΘΗΚΗ v1.0.2 ", font=("San Serif", 15), bd=8)
+app_title = Label(root, bg="brown", fg="white", text="ML ΑΠΟΘΗΚΗ v1.0.3 ", font=("San Serif", 15), bd=8)
 # app_title.grid(column=0, row=0, sticky="we")
 
 

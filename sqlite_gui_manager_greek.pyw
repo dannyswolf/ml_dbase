@@ -6,7 +6,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ** Οι βάσεις πρέπει να έχουν Id ή id ή ID intiger και NOT NULL  **
 ******************************************************************
 
-Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομενων | -----28/11/2019
+Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
 
 
 Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
@@ -40,7 +40,7 @@ from func import *
 
 root = Tk()
 root.geometry('800x600+100+100')
-root.title('ML ΑΠΟΘΗΚΗ V 1.0.2')
+root.title('ML ΑΠΟΘΗΚΗ V 1.0.3')
 root.config(bg="#C2C0BD")
 # root.withdraw()  # hide root
 root.resizable(True, True)
