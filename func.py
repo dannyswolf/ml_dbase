@@ -8,7 +8,7 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
-Version V1.0.4   |Χρώματα στα κουμπιά και διόρθωση κάποιων σφαλμάτων στον κωδικα                     | -----30/11/2019
+Version V1.0.4   | Χρώματα στα κουμπιά και διόρθωση κάποιων σφαλμάτων στον κωδικα                     | -----30/11/2019
 
 Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
 
@@ -98,7 +98,6 @@ import sys
 
 # Για την τελευταια τροποποίηση απο ποιόν χρήστη
 import getpass
-
 
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
@@ -273,7 +272,7 @@ def select_table(root):
 
         buttons.append(btn)
         if len(buttons) >= 11:
-            btn.grid(row=1, column=index -10, ipadx=len(str(table_name)) + 10, ipady=20, sticky="ew")
+            btn.grid(row=1, column=index - 10, ipadx=len(str(table_name)) + 10, ipady=20, sticky="ew")
         else:
             btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
@@ -350,7 +349,6 @@ def empty_table(root):
 
 
 def make_new_table(root):
-
     new_table_window = Toplevel()
     # height = int(root.winfo_screenheight() / 2)
     width = int(root.winfo_screenwidth() / 2)
@@ -387,18 +385,18 @@ def make_new_table(root):
     title_name_label.grid(column=0, row=1)
 
     table_name = StringVar()
-    table_name_entry = Entry(new_table_window, textvariable=table_name,)
+    table_name_entry = Entry(new_table_window, textvariable=table_name, )
     table_name_entry.grid(column=1, row=1, ipady=2)
     table_name_entry.focus()
-    fields = []      # Τα πεδία
+    fields = []  # Τα πεδία
 
     for i in range(11):
-        title_name_label = Label(new_table_window, text="Πεδίο " + str(i+1) + " :  ", font=("San Serif", 12, "bold"))
-        title_name_label.grid(column=0, row=i+2)
+        title_name_label = Label(new_table_window, text="Πεδίο " + str(i + 1) + " :  ", font=("San Serif", 12, "bold"))
+        title_name_label.grid(column=0, row=i + 2)
 
         column = StringVar()  #
         table_name_entry = Entry(new_table_window, textvariable=column)
-        table_name_entry.grid(column=1, row=i+2, ipady=2)
+        table_name_entry.grid(column=1, row=i + 2, ipady=2)
         fields.append(column)
 
     def ad_table_to_db(root):
@@ -436,7 +434,7 @@ def make_new_table(root):
 
             cursor.execute("CREATE TABLE IF NOT EXISTS " + name_of_table +
                            "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " + fields_to_add + ");")
-            print("Line 371 Δημιουργία νέου πίνακα {} με πεδία {}".format(name_of_table, fields_to_add) )
+            print("Line 371 Δημιουργία νέου πίνακα {} με πεδία {}".format(name_of_table, fields_to_add))
             conn.commit()
             conn.close()
         except sqlite3.OperationalError as error:
@@ -447,6 +445,7 @@ def make_new_table(root):
         new_table_window.destroy()
         get_tables()
         select_table(root)
+
     enter_button = Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
                           command=lambda: ad_table_to_db(root))
     enter_button.grid(column=2, row=12)
@@ -700,17 +699,22 @@ def add_to(root):
         if "ΣΥΝΟΛΟ" in headers:
             # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
             # data[6]= 0 αν ο χρήστης δεν δόσει τιμή να δώσουμε 0 ------data[6] == ΤΙΜΗ
-            if data[data.index("ΤΙΜΗ")] == "":
-                data[data.index("ΤΙΜΗ")] = 0
+            print("Line 703", headers)
+            if data[headers.index("ΤΙΜΗ") - 1] == "":
+                data[headers.index("ΤΙΜΗ") - 1] = 0
+            if data[headers.index("ΤΕΜΑΧΙΑ") - 1] == "":
+                data[headers.index("ΤΕΜΑΧΙΑ") - 1] = 0
             else:
                 # Μετατροπή , σε . για πολλαπλασιασμό (να βρούμε το σύνολο)
-                data[data.index("ΤΙΜΗ")] = data[data.index("ΤΙΜΗ")].replace(",", ".")
+                data[headers.index("ΤΙΜΗ") - 1] = data[headers.index("ΤΙΜΗ") - 1].replace(",", ".")
             # Υπολογιστμός ΣΥΝΟΛΟ = ΤΕΜΑΧΙΑ * ΤΙΜΗ
 
-            data[data.index("ΣΥΝΟΛΟ")] = float(data[data.index("ΤΕΜΑΧΙΑ")]) * float(data[data.index("ΤΙΜΗ")])
-            data[data.index("ΣΥΝΟΛΟ")] = str("{:0.2f}".format(data[data.index("ΣΥΝΟΛΟ")])) + "€"
-            data[data.index("ΤΙΜΗ")] = str("{:0.2f}".format(float(data[data.index("ΤΙΜΗ")]))) + " €"
-            data[data.index("ΤΕΜΑΧΙΑ")] = str(data[data.index("ΤΕΜΑΧΙΑ")])
+            data[headers.index("ΣΥΝΟΛΟ") - 1] = float(data[headers.index("ΤΕΜΑΧΙΑ") - 1]) * \
+                                                float(data[headers.index("ΤΙΜΗ") - 1])
+
+            data[headers.index("ΣΥΝΟΛΟ") - 1] = str("{:0.2f}".format(data[headers.index("ΣΥΝΟΛΟ") - 1])) + "€"
+            data[headers.index("ΤΙΜΗ") - 1] = str("{:0.2f}".format(float(data[headers.index("ΤΙΜΗ") - 1]))) + " €"
+            data[headers.index("ΤΕΜΑΧΙΑ") - 1] = str(data[headers.index("ΤΕΜΑΧΙΑ") - 1])
 
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -719,7 +723,7 @@ def add_to(root):
         if table == tables[-1]:
             # Αν ο χρήστης είναι στον πίνακα παραγγελίες τότε προσθέτει την ημερωμηνία αυτόματα
             # now[:10] == ημερωμηνία χωρίς την ώρα
-            data[headers.index("ΗΜΕΡΩΜΗΝΙΑ")-1] = now[:10]
+            data[headers.index("ΗΜΕΡΩΜΗΝΙΑ") - 1] = now[:10]
             data[-1] = user
         elif len(headers) < 7:
             # Αν ο πίνακας έχει λιγότερα απο 7 πεδία τότε βάζει ημερωμηνία και τα σχόλια δεν βαζει χρηστη
@@ -885,8 +889,8 @@ def add_to_orders(root, edit_window, data_to_add):
     data_from_paraggelies = order_cursos.fetchall()
     found = False
     for data in data_from_paraggelies:
-        if code_for_order in data:
-            found = True    # Δηλαδή βρεθηκε ο κωδικός στις παραγγελίες
+        if code_for_order != "" and code_for_order in data:
+            found = True  # Δηλαδή βρεθηκε ο κωδικός στις παραγγελίες
             answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
                                             " Ο κωδικός {} υπαρχει ήδη στης παραγγελίες, "
                                             "θέλετε να το ξανα προσθέσετε;".format(code_for_order),
@@ -1010,7 +1014,7 @@ def edit(root):
                     elif color[0] == "CYAN":
                         perigrafi.insert('1.0', selected_data[index], "CYAN")
                         perigrafi.tag_config(color, foreground="blue", font=("San Serif", 10, "bold"))
-                        
+
                     else:
 
                         perigrafi.insert('1.0', selected_data[index], color)
@@ -1167,7 +1171,7 @@ def edit(root):
     update_button.grid(column=0, row=len(headers) + 1)
 
     # print("Line 909 data to orders", selected_data)
-    if table != tables[-1]:
+    if table != tables[-1] and "ΚΩΔΙΚΟΣ" in headers and "ΠΕΡΙΓΡΑΦΗ" in headers:
         order_button = Button(edit_window, command=lambda: add_to_orders(root, edit_window, selected_data),
                               text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
         order_button.grid(column=1, row=len(headers) + 1, sticky="e")
@@ -1270,4 +1274,3 @@ def del_from_tree():
         return selected_item
     except TclError as error:
         print("ΣΦΑΛΜΑ Line 816", error)
-
