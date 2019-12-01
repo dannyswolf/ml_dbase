@@ -9,7 +9,6 @@ Sqlite Γραφικό περιβάλλον με Python3
 Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
 
 
-
 Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/2019
 
 Version v0.8 + Log File added Για το μαγαζί δουλευουν ολα ----------------------------10/11/2019
@@ -43,7 +42,7 @@ from func import *
 
 root = Tk()
 root.geometry('800x600+100+100')
-root.title('ML ΑΠΟΘΗΚΗ V 1.0.3')
+root.title('ML ΑΠΟΘΗΚΗ V 1.0.4')
 root.config(bg="#C2C0BD")
 # root.withdraw()  # hide root
 root.resizable(True, True)
@@ -111,15 +110,8 @@ style.configure("mystyle.Treeview", background="white", rowheight=round(width_of
 
 
 # Τίτλος προγράμματος
-app_title = Label(root, bg="brown", fg="white", text="ML ΑΠΟΘΗΚΗ v1.0.3 ", font=("San Serif", 15), bd=8)
+app_title = Label(root, bg="brown", fg="white", text="ML ΑΠΟΘΗΚΗ v1.0.4 ", font=("San Serif", 15), bd=8)
 # app_title.grid(column=0, row=0, sticky="we")
-
-
-# -----------------------Buttons Frame-------------------------
-
-buttons_frame = Frame(root, bg="#C2C0BD", relief=RAISED)
-buttons_frame.grid(column=0, row=1)
-
 
 # ---------------------binds------------------------------
 # #ΑΝΑΝΕΩΣΗ
@@ -180,13 +172,12 @@ table_menu.add_command(label="Δημιουργία νέου πίνακα", comma
 
 info_menu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Info", menu=info_menu)
-info_menu.add_command(label="Πληροφορίες")
+info_menu.add_command(label="Πληροφορίες", command=get_info)
 
 
 root.config(menu=menubar)
 
 get_tables()
 select_table(root)
-
 if __name__ == "__main__":
     root.mainloop()

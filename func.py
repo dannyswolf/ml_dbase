@@ -8,6 +8,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V1.0.4   |Χρώματα στα κουμπιά και διόρθωση κάποιων σφαλμάτων στον κωδικα                     | -----30/11/2019
+
 Version V1.0.3   | Δημιουργία πίνακα απο τον χρήστη και δυνατότητα ανοίγματος άλλης βάσης δεδομένων  | -----28/11/2019
 
 Version V1.0.2   | Διόρθωση προσθήκη προϊόντος χωρίς κωδικό στις παραγγελίες               | --------------24/11/2019
@@ -32,7 +34,7 @@ Version V0.9.1   | Dynamic screen sizes |  | Cleaned code | ------------17/11/20
 Version V0.9    -----------------------------------------------------------------------------------------17/11/2019
                 1) Προσθήκη τελευταίας τροποποιήσης (ημερομηνία , ώρα και όνομα χρήστη που έκανε την τελευταία αλλαγή)
                 2) Το σύνολο το κάνει μόνο του
-                3) Ο χρήστης μπορεί να προσθέση κενό προίον
+                3) Ο χρήστης μπορεί να προσθέση κενό προϊόν
                 4) Ολοι οι πίνακες εμφανίζονται στο ιδιο πλάτος
 
 Version V0.8.4 Symbol € added to everything Db merged-----------------------------------------------------15/11/2019
@@ -76,15 +78,6 @@ TODO 10) Να βάλω στο μενοu RUN SQL
 TODO 11) Το sort δεν παίζει καλά με τα νούμερα -------------------------------------------------Eγινε 18/11/2019
 """
 
-__author__ = "Jordanis Ntini"
-__copyright__ = "Copyright © 2019"
-__credits__ = ['Athanasia Tzampazi']
-__license__ = 'Gpl'
-__version__ = '1.0.3'
-__maintainer__ = "Jordanis Ntini"
-__email__ = "ntinisiordanis@gmail.com"
-__status__ = 'Development'
-
 # Πρώτα αυτό για το Combobox
 from tkinter import ttk, Frame, Button, Tk, Label, Menu, StringVar, Entry, filedialog, messagebox, LEFT, FALSE, \
     TclError, Toplevel, font, PhotoImage, RAISED, END
@@ -103,14 +96,16 @@ import logging
 # Για τα directory - φακέλους
 import sys
 
-# Για την τελευταια τροποpoiήση απο ποιόν χρήστη
+# Για την τελευταια τροποποίηση απο ποιόν χρήστη
 import getpass
+
 
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
 # Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
 headers = []  # Για να περσνουμε της επικεφαλίδες καθε πίνκα
 dbase = "ΑΠΟΘΗΚΗ.db"
 tables = []
+# buttons = []
 up_data = []  # Για να πάρουμε τα δεδομένα
 tree = ""
 user = getpass.getuser()  # Για να πάρουμε το όνομα χρήστη απο τον υπολογιστή
@@ -137,6 +132,20 @@ sys.stderr.write = root_logger.error
 sys.stdout.write = root_logger.info
 
 
+# Εμφάνιση πληροφοριών
+def get_info():
+    messagebox.showinfo("Πληροφορίες", """ 
+     __author__ = "Jordanis Ntini"
+    __copyright__ = "Copyright © 2019"
+    __credits__ = ['Athanasia Tzampazi']
+    __license__ = 'Gpl'
+    __version__ = '1.0.4'
+    __maintainer__ = "Jordanis Ntini"
+    __email__ = "ntinisiordanis@gmail.com"
+    __status__ = 'Development' 
+""")
+
+
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file(root):
     """ Ανοιγμα αρχείου βάσης δεδομένων"""
@@ -146,7 +155,6 @@ def open_file(root):
     list_of_frames = root.grid_slaves()
     # print("list_of_frames root.grid.slaves line 78", list_of_frames)
     for i in list_of_frames:
-
         if len(list_of_frames) > 1:
             if ".!frame" in str(i):
                 i.destroy()
@@ -161,6 +169,7 @@ def open_file(root):
     # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     get_tables()
     select_table(root)
+
     return dbase
 
 
@@ -192,25 +201,30 @@ def select_table(root):
     """ Δημιουργια κουμπιών σύμφωνα με τους πίνακες της βασης """
 
     global tables
-    buttons = []
 
     def change_color(table_name):
 
         """ Αλλαγή χρώματος κουμπιου όταν το πατάμε
             Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
 
-            Το κάνουμε με έλνχω των θεσεων δλδ αν το κουμπί που πατάμε εχει την ίδια θέση με τον πίνακα
+            Το κάνουμε με έλγχω των θεσεων δλδ αν το κουμπί που πατάμε εχει την ίδια θέση με τον πίνακα
             που αντιπροσοπευει πατόντας το, τοτε να αλλάζει το χρώμα στο κουμπί σε πορτοκαλί
             και στα υπολειπα κουμπιά σε gray20
+
+            Αλλαγή 30/11/2019
+            ο ελεγχος γίνεται αν το όνομα του πίνακα που πατάμε είναι == με 'text' του κουμπιού
         """
         # print("btn_pressed Line 135", btn)
         # print("buttons line 136", buttons)
-        lazaros_tables = ["ΦΩΤΟΤΥΠΙΚΑ", "ΤΟΝΕΡ"]
+        lazaros_tables = ["ΦΩΤΟΤΥΠΙΚΑ", "ΤΟΝΕΡ", "ΜΕΛΛΑΝΑΚΙΑ", "ΧΧΧ", "ΜΕΛΑΝΟΤΑΙΝΙΕΣ"]
         for button in buttons:
+            btn_text = button.cget('text')
 
-            if tables.index(table_name) == buttons.index(button):
+            if table_name == btn_text:
 
                 button.configure(background="#EFA12C")
+            elif btn_text in lazaros_tables:
+                button.configure(background="#7cb30e")
             else:
                 button.configure(background="#657b83")
 
@@ -251,6 +265,7 @@ def select_table(root):
 
     # -----------------------------------------Κουμπιά -----------------------------------
     #  Δυνομική δημιουργια κουμπιών σύμφονα με του πίνακες της βάσης δεδομένων
+    buttons = []
     for index, table_name in enumerate(tables):
         btn = Button(buttons_frame, command=lambda x=table_name: [update_view(root, x), change_color(x)],
                      image="", compound=LEFT, text=table_name, font=('San Serif', '10', 'bold'),
@@ -258,12 +273,12 @@ def select_table(root):
 
         buttons.append(btn)
         if len(buttons) >= 11:
-            btn.grid(row=1, column=index - 10, ipadx=len(str(table_name)) + 10, ipady=20, sticky="ew")
+            btn.grid(row=1, column=index -10, ipadx=len(str(table_name)) + 10, ipady=20, sticky="ew")
         else:
             btn.grid(row=0, column=index, ipady=20, sticky="ew")
 
-    search_frame.grid(column=0, row=1)
     buttons_frame.grid(column=0, row=0)
+    search_frame.grid(column=0, row=1)
 
 
 def sort_by_culumn(tree, column, reverse):
@@ -293,7 +308,7 @@ def sort_by_culumn(tree, column, reverse):
 
         lista = sorted(lista, key=lambda x: float(x[0]), reverse=reverse)  # Ταξινόμηση για τιμές και σύνολα
     except ValueError as error:  # Αν δεν είναι αριθμοί βγάζει error για το float και το κάνει με το lista.sort()
-        print("Σφάλμα ", error)
+        print("Σφάλμα στην ταξηνόμιση γραμμη 296 ", error)
         lista = sorted(lista, reverse=reverse)
 
     # Εμφάνισει στο tree την ταξινομημένη lista
@@ -335,10 +350,38 @@ def empty_table(root):
 
 
 def make_new_table(root):
+
     new_table_window = Toplevel()
+    # height = int(root.winfo_screenheight() / 2)
+    width = int(root.winfo_screenwidth() / 2)
+    new_table_window.geometry(str(width) + "x" + "550")
     new_table_window.title("Δημιουργία νέου πίνακα")
-    title_label = Label(new_table_window, text="Δημιουργία νέου πίνακα", font=("San Serif", 15,"bold"), bg="brown", fg="white")
+    title_label = Label(new_table_window, text="Δημιουργία  πίνακα", font=("San Serif", 15, "bold"), bg="brown",
+                        fg="white")
     title_label.grid(columnspan=3, row=0)
+
+    info = """   *****  ΠΡΟΣΟΧΗ *****
+                1. Το όνομα του πίνακα δεν μπορεί να ξεκοινάει απο '{}'
+                και πρέπει να είναι χωρίς κενό (π.χ. 'ονομα_νεου_πινακα').\n
+                2. Τα πεδία πρέπει να είναι όλα διαφορετικά μεταξύ τους!\n
+                3. Στο τελευταίο πεδίο θα είναι πάντα η ημερομηνία 
+                4. Για να εμφανιστεί ο πίνακας στην πάνω σειρά θα πρέπει :
+                να ξεκοινάει το όνομα του με Αγγλικό γράμμα.\n
+                5. Για να εμφανιστεί ο πίνακας στην δεύτερη σειρά θα πρέπει 
+                να ξεκοινάει το όνομα του με Ελληνικό γράμμα.\n
+                6. Για αυτόματους υπολογισμούς (π.χ. σύνολο = τιμή * τεμάχια ) 
+                   θα πρέπει να ορίσετε τρία πεδία :  
+                 α. ένα πεδίο με όνομα 'ΤΕΜΑΧΙΑ' (Ελληνικά κεφαλαία).  
+                 β. ένα πεδίο με όνομα 'ΤΙΜΗ' (Ελληνικά κεφαλαία).
+                 γ. ένα πεδίο με όνομα 'ΣΥΝΟΛΟ' (Ελληνικά κεφαλαία).\n
+                7. Για να μπορείτε να κάνετε παραγγελίες : 
+                   α. Χρειάζεται ενα πεδίο με όνομα 'ΚΩΔΙΚΟΣ' (Ελληνικά κεφαλαία)
+                   β. Χρειάζεται ενα πεδίο με όνομα 'ΠΕΡΙΓΡΑΦΗ' (Ελληνικά κεφαλαία)\n
+                8. Για να αλλάξει χρώμα  ο πίνακας πάρτε με τηλ 
+            """.format(tables[-1][0])
+
+    info_label = Label(new_table_window, text=info, font=("San Serif", 12), fg="red")
+    info_label.grid(column=2, rowspan=11, sticky="e")
 
     title_name_label = Label(new_table_window, text="Όνομα πίνακα :  ", font=("San Serif", 12, "bold"))
     title_name_label.grid(column=0, row=1)
@@ -365,8 +408,28 @@ def make_new_table(root):
                 fields_to_add.append(field.get())
             else:
                 pass
-        fields_to_add = " TEXT,".join(fields_to_add)
+
         name_of_table = table_name.get()
+
+        # Αν ο νέος πίνακας ξεκοινάει με το γράμμα του τελευταίου πίνακα που είναι ο πίνακας για παραγγελίες
+        if name_of_table[0] == tables[-1][0]:
+            messagebox.showwarning("Σφάλμα", info)
+            new_table_window.destroy()
+            return None
+
+        # Αν ο χρήστης δεν ορίσει κανένα πεδίο
+        if not fields_to_add:
+            messagebox.showwarning("Σφάλμα", "Πρέπει να ορίσεται τουλάχιστον ένα πεδίο")
+            new_table_window.destroy()
+            return None
+
+        fields_to_add = " TEXT,".join(fields_to_add)
+
+        if name_of_table in tables:
+            messagebox.showwarning("Σφάλμα", "Ο πίνακας {} υπάρχει στους ήδη υπάρχοντες πίνακες {}"
+                                   .format(name_of_table, tables))
+            new_table_window.destroy()
+            return None
         try:
             conn = sqlite3.connect(dbase)
             cursor = conn.cursor()
@@ -381,12 +444,12 @@ def make_new_table(root):
             new_table_window.destroy()
             return None
         messagebox.showinfo('Εγινε προσθήκη Πίνακα', "Ο πίνακας {} δημιουργίθηκε ".format(name_of_table))
-
+        new_table_window.destroy()
         get_tables()
         select_table(root)
     enter_button = Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
                           command=lambda: ad_table_to_db(root))
-    enter_button.grid(column=1, row=13)
+    enter_button.grid(column=2, row=12)
 
     # ΕΞΩΔΟΣ
     def quit_app(event):
@@ -399,7 +462,9 @@ def make_new_table(root):
 def update_view(root, table_from_button):
     """ Δέχεται τον πίνακα και εμφανίζει τα δεδομένα στο tree
     """
+    # Frame για το το tree - δεδωμένα
     data_frame = Frame(root, bg="#C2C0BD")
+
     global tree, dbase, headers, table
     # Αν υπάρχει προηγούμενο tree το διαγράφει για να έχουμε μόνο ένα tree
     if tree:
@@ -420,15 +485,21 @@ def update_view(root, table_from_button):
     tree.configure(xscrollcommand=scrollx.set)
 
     # print("Γραμμη 236: Επιλεγμένος πίνακας -->> ", table)
+
+    # Αδιάζουμε πρώτα το tree
     for i in tree.get_children():
         # Εμφάνηση το τι σβήνηει
-        # print("DELETED ΑΠΟ ΤΟ TREE ", i)
+        print("DELETED ΑΠΟ ΤΟ TREE ", i)
         tree.delete(i)
     up_conn = sqlite3.connect(dbase)
     up_cursor = up_conn.cursor()
     up_cursor.execute("SELECT * FROM " + table)
     # print("Γραμμη 266: Επιλογή όλων απο τον πίνακα -->>", table)
     headers = list(map(lambda x: x[0], up_cursor.description))
+
+    up_data = up_cursor.fetchall()
+    # print("up_data line 247 ", up_data)
+    up_index = len(up_data)
 
     # print("Γραμμη 269: Κεφαλίδες -->> ", headers)
     columns = []
@@ -442,7 +513,11 @@ def update_view(root, table_from_button):
 
     width = root.winfo_screenwidth()
     alignment = ""
-    for head in headers:
+
+    # Λίστα για αναζήτηση ανα πεδίο τα παρακάτω είναι τα πεδία
+    search_list = ["ΕΤΑΙΡΕΙΑ", "ΠΟΙΟΤΗΤΑ", "ΑΝΑΛΩΣΙΜΟ", "ΠΕΡΙΓΡΑΦΗ"]
+    for index, head in enumerate(headers):
+
         # ==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
         if head == "ΤΙΜΗ" or head == "ΣΥΝΟΛΟ":  # ΣΤΟΙΧΗΣΗ ΔΕΞΙΑ
             alignment = "e"
@@ -470,12 +545,10 @@ def update_view(root, table_from_button):
         else:
             alignment = "center"
             platos = int(width / 17)
-        tree.column(head, anchor=alignment, width=platos, stretch="false")
+
+        tree.column(head, anchor=alignment, width=platos, stretch="True")
         tree.heading(head, text=head, command=lambda _col=head: sort_by_culumn(tree, _col, False))
 
-    up_data = up_cursor.fetchall()
-    # print("up_data line 247 ", up_data)
-    up_index = len(up_data)
     colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
     tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("San Serif", 10))
     tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
@@ -493,7 +566,7 @@ def update_view(root, table_from_button):
     for n in range(len(up_data)):
         # Κατασκευή tree το up_index -1 == το τελος ("end")
         if "ΠΕΡΙΓΡΑΦΗ" in headers:
-            # up_data[n][columns.index("ΠΕΡΙΓΡΑΦΗ")] == Ψάχνει όπου είναι η ΚΕΦΑΛΙΔΑ "περιγραφή"
+            # up_data[n][columns.index("ΠΕΡΙΓΡΑΦΗ")] == Ψάχνει όπου είναι η ΚΕΦΑΛΙΔΑ "ΠΕΡΙΓΡΑΦΗ"
             color = [color for color in colors if color in up_data[n][headers.index("ΠΕΡΙΓΡΑΦΗ")]]
 
         else:
@@ -541,7 +614,7 @@ def update_view(root, table_from_button):
 # ------------------------------------------------------------------------------------
 # --------------------------------Δημηουργία νεου παραθύρου---------------------------
 def add_to(root):
-    """ Προσθήκη προίοντος """
+    """ Προσθήκη προϊόντος """
     global table, dbase, headers
     height = int(root.winfo_screenheight() / 18 * len(headers))
     width = int(root.winfo_screenwidth() / 1.5)
@@ -624,32 +697,35 @@ def add_to(root):
         # data = tuple(data_to_add)
         # print("Line 406 data before €", data)
 
-        try:
-            if "ΣΥΝΟΛΟ" in headers:
-                # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
-                # data[6]= 0 αν ο χρήστης δεν δόσει τιμή να δώσουμε 0 ------data[6] == ΤΙΜΗ
-                if data[6] == "":
-                    data[6] = 0
-                else:
-                    data[6] = data[6].replace(",", ".")  # Μετατροπή , σε . για πολλαπλασιασμό (να βρούμε το σύνολο)
-                data[7] = float(data[5]) * float(data[6])
-                data[7] = str("{:0.2f}".format(data[7])) + "€"
-                data[6] = str("{:0.2f}".format(float(data[6]))) + " €"
-                data[5] = str(data[5])
-        except IndexError as error:
-            print("Δεν υπάρχει σύνολο στον πίνκα {} για υπολογισμό συνόλου τιμής * τεμάχια".format(table), error)
-        except ValueError as error:
-            print("H τιμή δεν μπορεί να είναι κενή", error)
-            pass
+        if "ΣΥΝΟΛΟ" in headers:
+            # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
+            # data[6]= 0 αν ο χρήστης δεν δόσει τιμή να δώσουμε 0 ------data[6] == ΤΙΜΗ
+            if data[data.index("ΤΙΜΗ")] == "":
+                data[data.index("ΤΙΜΗ")] = 0
+            else:
+                # Μετατροπή , σε . για πολλαπλασιασμό (να βρούμε το σύνολο)
+                data[data.index("ΤΙΜΗ")] = data[data.index("ΤΙΜΗ")].replace(",", ".")
+            # Υπολογιστμός ΣΥΝΟΛΟ = ΤΕΜΑΧΙΑ * ΤΙΜΗ
+
+            data[data.index("ΣΥΝΟΛΟ")] = float(data[data.index("ΤΕΜΑΧΙΑ")]) * float(data[data.index("ΤΙΜΗ")])
+            data[data.index("ΣΥΝΟΛΟ")] = str("{:0.2f}".format(data[data.index("ΣΥΝΟΛΟ")])) + "€"
+            data[data.index("ΤΙΜΗ")] = str("{:0.2f}".format(float(data[data.index("ΤΙΜΗ")]))) + " €"
+            data[data.index("ΤΕΜΑΧΙΑ")] = str(data[data.index("ΤΕΜΑΧΙΑ")])
+
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
         # Ελεγχος αν ο πίνακας είναι παραγγελίες
+
         if table == tables[-1]:
             # Αν ο χρήστης είναι στον πίνακα παραγγελίες τότε προσθέτει την ημερωμηνία αυτόματα
-            # now[:10] == ημερωμηνία χωρείς την ώρα
+            # now[:10] == ημερωμηνία χωρίς την ώρα
             data[headers.index("ΗΜΕΡΩΜΗΝΙΑ")-1] = now[:10]
-            data[-1] = data[-1]
+            data[-1] = user
+        elif len(headers) < 7:
+            # Αν ο πίνακας έχει λιγότερα απο 7 πεδία τότε βάζει ημερωμηνία και τα σχόλια δεν βαζει χρηστη
+            data[-1] = now[:10] + data[-1]
         else:
+            # Διαφορετικά βάζει ημερωμηνία χρηστη και σχολια
             data[-1] = now + " " + user + " ==>> " + data[-1]
         # print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
         # data_to_add = (toner.get(), model.get(), kodikos.get(),
@@ -726,8 +802,8 @@ def search(search_data):
         # ('%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
         #  '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%', '%' + str(search_data.get()) + '%',
         #  '%' + str(search_data.get()) + '%'))
-
         fetch = search_cursor.fetchall()
+
         colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
         tree.tag_configure('oddrow', background='#ece8de', foreground="black", font=("San Serif", 10))
         tree.tag_configure('evenrow', background='white', font=("San Serif", 10))
@@ -775,15 +851,20 @@ def add_to_orders(root, edit_window, data_to_add):
     code_for_order = data_to_add[headers.index("ΚΩΔΙΚΟΣ")]
     if not code_for_order:
         answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
-                                        "Το προιόν δεν εχει κωδικό θέλετε να το  προσθέσετε;", icon='warning')
+                                        "Το προϊόν δεν εχει κωδικό θέλετε να το  προσθέσετε;", icon='warning')
         if answer == 'yes':
             pass
         else:
-            messagebox.showwarning("ΑΚΥΡΩΣΗ", "Το προιόν δεν προστέθηκε στις παραγγελίες")
+            # messagebox.showwarning("ΑΚΥΡΩΣΗ", "Το προϊόν δεν προστέθηκε στις παραγγελίες")
             edit_window.destroy()
             return None
     perigrafi_for_order = data_to_add[headers.index("ΠΕΡΙΓΡΑΦΗ")]
     now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+    # code_for_order == κωδικός προϊόντος
+    # now[:10] == μόνο ημερομηνία όχι ώρα
+    # perigrafi_for_order == περιγραφή του προϊόντος
+    # "" == κενό για να βάζει χ στο πεδίο αποτέλεσμα αν το παρήγγειλε ή όχι
+    # user == ο χρήστης του υπολογιστή
     data_to_orders = [code_for_order, now[:10], perigrafi_for_order, "", user]
 
     order_conn = sqlite3.connect(dbase)
@@ -987,14 +1068,16 @@ def edit(root):
         # ================================ Προσθήκη τελευταίας τροποποιησης ============================
         # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-        # Aν ο πίνακας εχει περισσοτερα απο 7 κεφαλίδες τότε στο "ΠΑΡΑΤΗΡΗΣΕΙΣ" να βάλει μόνο ημερωμηνία και χρήστη
+
+        # Αν ο πίνακας είναι ο τελευταίος δλδ παραγγελιων
         if table == tables[-1]:
-            edited_data[-1] = data_to_add[-1].get()
+            edited_data[-1] = user
+        # Aν ο πίνακας εχει περισσοτερα απο 7 κεφαλίδες τότε στο "ΠΑΡΑΤΗΡΗΣΕΙΣ" να βάλει μόνο ημερωμηνία και χρήστη
         elif len(edited_culumns) > 7:
             edited_data[-1] = now + " " + user
-        # Διαφορετικά να βάλει και ότι γράφει ο χρήστης
+        # Διαφορετικά να βάλει μόνο ημερωμηνία όχι ώρα και ότι γράφει ο χρήστης
         else:
-            edited_data[-1] = now + " " + user + " ==>> " + data_to_add[-1].get()
+            edited_data[-1] = now[:10] + "  " + data_to_add[-1].get()
         # print("Line 772", edited_data[-1][0:-1])
         # ================================= Προσθήκη id =================================================
         edited_data.append(selected_id)
@@ -1045,8 +1128,8 @@ def edit(root):
 
             except ValueError as error:
                 messagebox.showwarning('ΠΡΟΣΟΧΉ ...',
-                                       "Σφάλμα {} \n1)Ο Πίνακας δεν είναι σωστός".format(error))
-                print("Line 827 Σφάλμα {} \n1)Ο Πίνακας δεν είναι σωστός".format(error))
+                                       "Σφάλμα {} \n1)Ο Πίνακας {} δεν είναι σωστός".format(error, table))
+                print("Line 827 Σφάλμα {} \n1)Ο Πίνακας {} δεν είναι σωστός".format(error, table))
 
                 edit_window.destroy()
                 return None
@@ -1128,7 +1211,7 @@ def backup():
             # tkinter.messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
     except FileNotFoundError as file_error:
         messagebox.showwarning("Σφάλμα...", "{}".format(file_error))
-        print("File Error Line 710", file_error)
+        print("File Error Line 1214", file_error)
         backup()
     except sqlite3.Error as error:
         if not os.path.exists(backup_file):
@@ -1187,3 +1270,4 @@ def del_from_tree():
         return selected_item
     except TclError as error:
         print("ΣΦΑΛΜΑ Line 816", error)
+
