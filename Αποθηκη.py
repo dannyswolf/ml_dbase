@@ -5,7 +5,7 @@
 #  in conjunction with Tcl version 8.6
 #    Dec 03, 2019 10:58:07 PM EET  platform: Windows NT
 
-import sys
+
 import sqlite3
 import os.path
 import tkinter.ttk as ttk
@@ -19,15 +19,11 @@ import Αποθηκη_support
 import platform
 py3 = True
 table = ""  # Για να ορίσουμε πιο κάτω τον πίνακα σαν global
-# Αδεία λίστα για να πάρουμε τα header απο τον πίνακα της βάσης δεδομένων
+
 
 dbase = "ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
-
-
-
-
 
 
 def get_tables():
@@ -53,9 +49,10 @@ def get_tables():
     return tables
 
 
-
 def vp_start_gui():
-    '''Starting point when module is the main routine.'''
+    """
+    Starting point when module is the main routine.
+    """
     global val, w, root
     root = tk.Tk()
     top = Toplevel1(root)
@@ -67,7 +64,10 @@ def vp_start_gui():
     root.bind('<Escape>', quit_app)
     root.mainloop()
 
+
 w = None
+
+
 def create_Toplevel1(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
     global w, w_win, rt
@@ -227,7 +227,6 @@ class Toplevel1:
 
     def update_view(self, table):
         """ Eμφάνησει δεδομέων στο Scrolledtreeview.
-
         """
         #  Αδιάζουμε πρώτα το tree
         for i in self.Scrolledtreeview.get_children():
@@ -237,7 +236,7 @@ class Toplevel1:
 
         """ 
         Δέχεται τον πίνακα και εμφανίζει τα δεδομένα στο tree
-                """
+        """
         # width = root.winfo_screenwidth()
         alignment = ""
         up_conn = sqlite3.connect(dbase)
@@ -401,31 +400,34 @@ class Toplevel1:
         edit_window.geometry(edit_window_geometry)
         edit_window.focus()
         edit_window.title("Επεξεργασία δεδομέμων")
-        edit_window_title = ttk.Label(edit_window, background="brown", foreground="white", text="Επεξεργασία δεδομέμων",
+        edit_window_title = ttk.Label(edit_window, background="orange", foreground="white", text="Επεξεργασία δεδομέμων",
                                       font=("San Serif Bold", 15),
                                       border=8)
-        edit_window_title.grid(column=0, row=0)
+        edit_window_title.place(relx=0.105, rely=0.001, relheight=0.055, relwidth=0.240)
         # Label(edit_window, text=tree.selection()).grid(column=0, row=0)
         # ===========================Εμφάνιση κεφαλίδων======================================
         count_headers = 0
         data_to_add = []
         colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
-
+        yspot = 0.080
+        small_entry = ["ΜΟΝΤΕΛΟ", "ΚΩΔΙΚΟΣ", "ΤΙΜΗ", "ΤΕΜΑΧΙΑ", "ΣΥΝΟΛΟΣ", ""]
         for index, header in enumerate(self.headers):
             if header == "ID" or header == "id" or header == "Id":
                 continue
             else:
 
                 count_headers += 1
-                ton_label = ttk.Label(edit_window, text=header, width=15, font=("San Serif", 12, "bold"),
+                ton_label = ttk.Label(edit_window, text=header, font=("San Serif", 12, "bold"),
                                       border=3)
-                ton_label.grid(row=index + 1)
+
+                ton_label.place(relx=0.035, rely=yspot, relheight=0.070, relwidth=0.100)
                 var = StringVar(edit_window, value=selected_data[index])
                 # Αν υπάρχει "περιγραφη" στις κεφαλίδες η εμφάνιση των δεδομένων της κεφαλίδας περιγραφή ειναι με scrolltext
                 if header == "ΠΕΡΙΓΡΑΦΗ":
+
                     color = [color for color in colors if color in selected_data[index]]
 
-                    perigrafi = ScrolledText(edit_window, height=3, width=80, border=2)
+                    perigrafi = ScrolledText(edit_window, height=3, border=2)
                     # Αν υπάρχει χρώμα να ελέγχει ποιο χρώμα και ανάλογα να τροποποιεί  το κείμενο
                     if color:
                         if color[0] == "YELLOW":
@@ -440,24 +442,30 @@ class Toplevel1:
                             perigrafi.tag_config(color, foreground="blue", font=("San Serif", 10, "bold"))
 
                         else:
-
                             perigrafi.insert('1.0', selected_data[index], color)
                             perigrafi.tag_config(color, foreground=color, font=("San Serif", 10, "bold"))
                     else:
                         perigrafi.insert('1.0', selected_data[index])
-
-                    perigrafi.grid(column=1, row=index + 1)
+                    yspot += 0.030
+                    perigrafi.place(relx=0.150, rely=yspot, relheight=0.100, relwidth=0.400)
 
                     data_to_add.append(perigrafi)
+                    yspot += 0.030
                 else:
-
+                    yspot += 0.020
                     # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
-                    ttk.Entry(edit_window, textvariable=var, width=len(var.get()) + 5) \
-                        .grid(column=1, row=index + 1, sticky="we")
-                    data_to_add.append(var)
+                    if header in small_entry:
+                        ttk.Entry(edit_window, textvariable=var) \
+                            .place(relx=0.150, rely=yspot, relheight=0.050, relwidth=0.080)
+                    else:
 
+                        ttk.Entry(edit_window, textvariable=var)\
+                            .place(relx=0.150, rely=yspot, relheight=0.050, relwidth=0.180)
+                    data_to_add.append(var)
+                yspot += 0.050
         # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
         # ---------------------- μετά την επεξεργασία   -------------------------------------
+
         def update_to_db():
             self.backup()
             print("Γραμμή 733: ---------------ΛΟΓΟΣ BACKUP --->>> ΕΠΕΞΕΡΓΑΣΙΑ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
@@ -594,9 +602,9 @@ class Toplevel1:
             edit_window.destroy()
 
         edit_window.bind('<Escape>', quit_app)
-        update_button = tk.Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", bg="red",
-                                  fg="white", bd=3)
-        update_button.grid(column=0, row=len(self.headers) + 1)
+        update_button = tk.Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", background="red",
+                                  foreground="white", border=3)
+        update_button.place(relx=0.150, rely=yspot, relheight=0.080, relwidth=0.140)
 
         # Πρέπει να κάνω το add_to_orders() συνάρτιση για τις παραγγελίες
         # print("Line 909 data to orders", selected_data)
@@ -727,8 +735,6 @@ class Toplevel1:
         # ======================Πληκτολόγιο=====================
     def double_click(self, event):
         self.edit()
-
-
 
     def search_event(self, event):  # Συντόμευση αναζήτησεις
         """ Οταν πατάμε enter στην αναζήτηση να εκτελεστεί το search(search_data)
