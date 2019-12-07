@@ -11,7 +11,7 @@ import os.path
 import tkinter.ttk as ttk
 import tkinter as tk
 from datetime import datetime
-from tkinter import RAISED, PhotoImage, StringVar, messagebox
+from tkinter import RAISED, PhotoImage, StringVar, messagebox, filedialog, TclError
 from tkinter.scrolledtext import ScrolledText
 # Για την τελευταια τροποποίηση απο ποιόν χρήστη
 import getpass
@@ -72,8 +72,8 @@ def create_Toplevel1(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
     global w, w_win, rt
     rt = root
-    w = tk.Toplevel (root)
-    top = Toplevel1 (w)
+    w = tk.Toplevel(root)
+    top = Toplevel1(w)
     Αποθηκη_support.init(w, top, *args, **kwargs)
     return (w, top)
 
@@ -82,6 +82,142 @@ def destroy_Toplevel1():
     global w
     w.destroy()
     w = None
+
+
+# Κουμπί να ανοιξει το αρχείο (βαση δεδομένων) Todo FIX
+def open_file():
+    """ Ανοιγμα αρχείου βάσης δεδομένων"""
+
+    global dbase
+    # Να σβήσουμε παλιά κουμπιά και tree αν ανοιξουμε αλη βαση δεδομένων
+    list_of_frames = root.grid_slaves()
+    # print("list_of_frames root.grid.slaves line 78", list_of_frames)
+    for i in list_of_frames:
+        if len(list_of_frames) > 1:
+            if ".!frame" in str(i):
+                i.destroy()
+            elif ".!scrollbar" in str(i):
+                i.destroy()
+        else:
+            # print("list_of_frames root.grid.slaves  after deleted line 129", list_of_frames)
+            continue
+    dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
+                                       filetypes=(("db files", "*.db"), ("all files", "*.*")))
+    # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+    # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
+
+    return dbase
+
+
+def make_new_table():
+    new_table_window = tk.Toplevel()
+    # height = int(root.winfo_screenheight() / 2)
+    width = int(root.winfo_screenwidth() / 2)
+    new_table_window.geometry(str(width) + "x" + "550")
+    new_table_window.title("Δημιουργία νέου πίνακα")
+    title_label = tk.Label(new_table_window, text="Δημιουργία  πίνακα", font=("San Serif", 15, "bold"), bg="brown",
+                        fg="white")
+    title_label.grid(columnspan=3, row=0)
+
+    info = """   *****  ΠΡΟΣΟΧΗ *****
+                1. Το όνομα του πίνακα δεν μπορεί να ξεκοινάει απο '{}'
+                και πρέπει να είναι χωρίς κενό (π.χ. 'ονομα_νεου_πινακα').\n
+                2. Τα πεδία πρέπει να είναι όλα διαφορετικά μεταξύ τους!\n
+                3. Στο τελευταίο πεδίο θα είναι πάντα η ημερομηνία 
+                4. Για να εμφανιστεί ο πίνακας στην πάνω σειρά θα πρέπει :
+                να ξεκοινάει το όνομα του με Αγγλικό γράμμα.\n
+                5. Για να εμφανιστεί ο πίνακας στην δεύτερη σειρά θα πρέπει 
+                να ξεκοινάει το όνομα του με Ελληνικό γράμμα.\n
+                6. Για αυτόματους υπολογισμούς (π.χ. σύνολο = τιμή * τεμάχια ) 
+                   θα πρέπει να ορίσετε τρία πεδία :  
+                 α. ένα πεδίο με όνομα 'ΤΕΜΑΧΙΑ' (Ελληνικά κεφαλαία).  
+                 β. ένα πεδίο με όνομα 'ΤΙΜΗ' (Ελληνικά κεφαλαία).
+                 γ. ένα πεδίο με όνομα 'ΣΥΝΟΛΟ' (Ελληνικά κεφαλαία).\n
+                7. Για να μπορείτε να κάνετε παραγγελίες : 
+                   α. Χρειάζεται ενα πεδίο με όνομα 'ΚΩΔΙΚΟΣ' (Ελληνικά κεφαλαία)
+                   β. Χρειάζεται ενα πεδίο με όνομα 'ΠΕΡΙΓΡΑΦΗ' (Ελληνικά κεφαλαία)\n
+                8. Για να αλλάξει χρώμα  ο πίνακας πάρτε με τηλ 
+            """.format(tables[-1][0])
+
+    info_label = tk.Label(new_table_window, text=info, font=("San Serif", 12), fg="red")
+    info_label.grid(column=2, rowspan=11, sticky="e")
+
+    title_name_label = tk.Label(new_table_window, text="Όνομα πίνακα :  ", font=("San Serif", 12, "bold"))
+    title_name_label.grid(column=0, row=1)
+
+    table_name = StringVar()
+    table_name_entry = tk.Entry(new_table_window, textvariable=table_name, )
+    table_name_entry.grid(column=1, row=1, ipady=2)
+    table_name_entry.focus()
+    fields = []  # Τα πεδία
+
+    for i in range(11):
+        title_name_label = tk.Label(new_table_window, text="Πεδίο " + str(i + 1) + " :  ",
+                                 font=("San Serif", 12, "bold"))
+        title_name_label.grid(column=0, row=i + 2)
+
+        column = StringVar()  #
+        table_name_entry = tk.Entry(new_table_window, textvariable=column)
+        table_name_entry.grid(column=1, row=i + 2, ipady=2)
+        fields.append(column)
+
+    def ad_table_to_db(root):
+        fields_to_add = []
+        for field in fields:
+            if field.get() != "":
+                fields_to_add.append(field.get())
+            else:
+                pass
+
+        name_of_table = table_name.get()
+
+        # Αν ο νέος πίνακας ξεκοινάει με το γράμμα του τελευταίου πίνακα που είναι ο πίνακας για παραγγελίες
+        if name_of_table[0] == tables[-1][0]:
+            messagebox.showwarning("Σφάλμα", info)
+            new_table_window.destroy()
+            return None
+
+        # Αν ο χρήστης δεν ορίσει κανένα πεδίο
+        if not fields_to_add:
+            messagebox.showwarning("Σφάλμα", "Πρέπει να ορίσεται τουλάχιστον ένα πεδίο")
+            new_table_window.destroy()
+            return None
+
+        fields_to_add = " TEXT,".join(fields_to_add)
+
+        if name_of_table in tables:
+            messagebox.showwarning("Σφάλμα", "Ο πίνακας {} υπάρχει στους ήδη υπάρχοντες πίνακες {}"
+                                   .format(name_of_table, tables))
+            new_table_window.destroy()
+            return None
+        try:
+            conn = sqlite3.connect(dbase)
+            cursor = conn.cursor()
+
+            cursor.execute("CREATE TABLE IF NOT EXISTS " + name_of_table +
+                           "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " + fields_to_add + ");")
+            print("Line 371 Δημιουργία νέου πίνακα {} με πεδία {}".format(name_of_table, fields_to_add))
+            conn.commit()
+            conn.close()
+        except sqlite3.OperationalError as error:
+            messagebox.showwarning("Σφάλμα",
+                                   "Προσοχή τα πεδία δεν μπορούν να έχουν το ίδιο όνομα \n {}".format(error))
+            new_table_window.destroy()
+            return None
+        messagebox.showinfo('Εγινε προσθήκη Πίνακα', "Ο πίνακας {} δημιουργίθηκε ".format(name_of_table))
+        new_table_window.destroy()
+        get_tables()
+
+    enter_button = tk.Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
+                          command=lambda: ad_table_to_db(root))
+    enter_button.grid(column=2, row=12)
+
+    # ΕΞΩΔΟΣ
+    def quit_app(event):
+
+        new_table_window.destroy()
+
+    new_table_window.bind('<Escape>', quit_app)
 
 
 class Toplevel1:
@@ -95,6 +231,7 @@ class Toplevel1:
         top.resizable(1, 1)
         top.title("Αποθήκη V 0.1")
         top.configure(background="#C2C0BD")
+        top.bind('<F1>', self.add_event)
 
         self.tables = get_tables()
         self.width_of_tree = top.winfo_screenwidth()
@@ -130,19 +267,43 @@ class Toplevel1:
         self.style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
         self.style.configure("mystyle.Treeview", background="white", rowheight=50)
 
+        # ---------------------------------------Menu-----------------------------------------
         self.menubar = tk.Menu(top, font="TkMenuFont", bg=_bgcolor, fg=_fgcolor)
+        # --------------------------------------   MENU   -----------------------------------------
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Ανοιγμα αρχείου", command=open_file)
+
+        self.filemenu.add_command(label="Προσθήκη --> F1", command=self.add_to)
+        self.filemenu.add_command(label="Επεξεργασία --> F3", command=self.edit)
+        self.filemenu.add_separator()
+        self.filemenu.add_command(label="Διαγραφή", command=self.del_from_tree)
+        self.filemenu.add_command(label="Εξωδος --> Esc", command=top.quit)
+        self.menubar.add_cascade(label="Αρχείο", menu=self.filemenu)
+
+        self.backup_menu = tk.Menu(self.menubar, tearoff=0)
+        self.backup_menu.add_command(label="Δημιουργία αντίγραφο ασφαλείας!", command=self.backup)
+        self.menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=self.backup_menu)
+
+        self.table_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Πίνακες", menu=self.table_menu)
+        self.table_menu.add_command(label="Δημιουργία νέου πίνακα", command=make_new_table)
+
+        self.info_menu = tk.Menu(self.menubar, tearoff=0)
+        self.menubar.add_cascade(label="Info", menu=self.info_menu)
+        self.info_menu.add_command(label="Πληροφορίες", command=self.get_info)
+
         top.configure(menu=self.menubar)
 
         # --------------------------- Πίνακες - Κουμπιά ------------------------------
-        xspot = 0.015
-        yspot = 0.025
+        self.xspot = 0.015
+        self.yspot = 0.025
 
         for index, table in enumerate(self.tables):
             if index == 10:
-                yspot = 0.125  # Υψως
-                xspot = 0.015  # Πλάτος
+                self.yspot = 0.125  # Υψως
+                self.xspot = 0.015  # Πλάτος
             self.btn = tk.Button(top)
-            self.btn.place(relx=xspot, rely=yspot, height=78, width=120)
+            self.btn.place(relx=self.xspot, rely=self.yspot, height=78, width=120)
             self.btn.configure(activebackground="#ececec")
             self.btn.configure(activeforeground="#000000")
             self.btn.configure(background="#657b83")
@@ -165,16 +326,16 @@ class Toplevel1:
                 self.btn.configure(image="")
                 pass
 
-            self.btn.configure(command=lambda x=table: [self.update_view(x), self.change_color(x)])
-            xspot += 0.080
+            self.btn.configure(command=lambda x=table: [self.change_color(x), self.update_view(x)])
+            self.xspot += 0.080
             self.buttons.append(self.btn)
 
-        yspot += 0.110
+        self.yspot += 0.110
         self.search_data = StringVar()
 
         # ---------------------Πεδίο Αναζήτησης ----------------------
         self.search_entry = tk.Entry(top, textvariable=self.search_data)
-        self.search_entry.place(relx=0.315, rely=yspot, height=24, relwidth=0.240)
+        self.search_entry.place(relx=0.315, rely=self.yspot, height=24, relwidth=0.240)
         self.search_entry.configure(background="white")
         self.search_entry.configure(disabledforeground="#a3a3a3")
         self.search_entry.configure(font="TkFixedFont")
@@ -184,7 +345,7 @@ class Toplevel1:
         self.search_entry.focus()
 
         self.search_btn = tk.Button(top)
-        self.search_btn.place(relx=0.571, rely=yspot, height=24, width=115)
+        self.search_btn.place(relx=0.571, rely=self.yspot, height=24, width=115)
         self.search_btn.configure(activebackground="#ececec")
         self.search_btn.configure(activeforeground="#000000")
         self.search_btn.configure(background="#7cb30e")
@@ -197,18 +358,37 @@ class Toplevel1:
         self.search_btn.configure(relief=RAISED)
         self.search_btn.configure(compound='left')
         self.search_btn.configure(command=lambda: self.search(self.search_data))
+        # Κουμπί για άδειασμα παραγγελίων
+        self.empty_button = tk.Button(top, text="Αδειασμα παραγγελιών", command=lambda: self.empty_table(),
+                                      bg="red", fg="white", bd=3, padx=3, pady=10, state="disabled")
 
+        self.empty_button.place(relx=0.701, rely=self.yspot, height=34, width=150)
         global _img0
         _img0 = PhotoImage(file="icons8-search-50.png")
         self.search_btn.configure(image=_img0)
 
         # ---------------------- Tree -------------------------------
-        yspot += 0.050
+        self.yspot += 0.050
         # self.style.configure('mystyle.Treeview', font="TkDefaultFont")
         self.Scrolledtreeview = ScrolledTreeView(top)
-        self.Scrolledtreeview.place(relx=0.015, rely=yspot, relheight=0.700, relwidth=0.964)
         self.Scrolledtreeview.configure(show="headings", style="mystyle.Treeview")
         self.Scrolledtreeview.bind("<Double-1>", self.double_click)
+        self.Scrolledtreeview.place(relx=0.015, rely=self.yspot, relheight=0.700, relwidth=0.964)
+
+
+
+    # Εμφάνιση πληροφοριών
+    def get_info(self):
+        messagebox.showinfo("Πληροφορίες", """ 
+         __author__ = "Jordanis Ntini"
+        __copyright__ = "Copyright © 2019"
+        __credits__ = ['Athanasia Tzampazi']
+        __license__ = 'Gpl'
+        __version__ = '1.0.4'
+        __maintainer__ = "Jordanis Ntini"
+        __email__ = "ntinisiordanis@gmail.com"
+        __status__ = 'Development' 
+    """)
 
     # ---------------------Fix -Of- Style------------------------------------
     def fixed_map(self, option):
@@ -223,6 +403,7 @@ class Toplevel1:
         return [elm for elm in self.style.map('Treeview', query_opt=option) if elm[:2] != ('!disabled', '!selected')]
 
     def update_view(self, table):
+
         """ Eμφάνησει δεδομέων στο Scrolledtreeview.
         """
         #  Αδιάζουμε πρώτα το tree
@@ -234,8 +415,8 @@ class Toplevel1:
         """ 
         Δέχεται τον πίνακα και εμφανίζει τα δεδομένα στο tree
         """
+
         # width = root.winfo_screenwidth()
-        alignment = ""
         up_conn = sqlite3.connect(dbase)
         up_cursor = up_conn.cursor()
         up_cursor.execute("SELECT * FROM " + table)
@@ -287,7 +468,7 @@ class Toplevel1:
 
             elif head == "ΠΕΡΙΓΡΑΦΗ":
                 alignment = "w"
-                if len(self.headers) < 8:
+                if len(self.headers) < 10:
                     platos = int((40 * self.width_of_tree) / 100)
                 else:
                     platos = int((30 * self.width_of_tree) / 100)
@@ -353,7 +534,16 @@ class Toplevel1:
                 self.Scrolledtreeview.insert("", up_index - 1, values=up_data[n], tags=("evenrow",))
 
     def change_color(self, table_name):
+        # Αν ο χρήστεις πατήσει στον τελευταίο πίνακα ενεργοποιείτε  το κουμπί
+        # Διαφορετικά  απενεργοποιειτε
+        if table_name == self.tables[-1]:
+            print(self.empty_button)
+            self.empty_button.configure(background="green", foreground="white", state="active")
+        else:
+            self.empty_button.configure(background="red", state="disabled")
+
         self.table = table_name  # Ορίζω τον πίνακα που βλεπει ο χρήστης
+
         """ Αλλαγή χρώματος κουμπιου όταν το πατάμε
                 Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
                 O ελεγχος γίνεται αν το όνομα του πίνακα που πατάμε είναι == με 'text' του κουμπιού
@@ -368,6 +558,191 @@ class Toplevel1:
                 button.configure(background="#7cb30e")
             else:
                 button.configure(background="#657b83")
+
+    # --------------------------------Προσθήκη προιόντος ---------------------------------
+    def add_to(self):
+        """ Προσθήκη προϊόντος
+        """
+
+        if len(self.headers) < 10:
+            height = int(root.winfo_screenheight() / 17 * len(self.headers))
+
+        else:
+            height = int(root.winfo_screenheight() / 20 * len(self.headers))
+
+        width = int(root.winfo_screenwidth() / 1.5)
+        add_window = tk.Toplevel()
+        add_window_geometry = str(width) + "x" + str(height) + "+100+100"
+        add_window.geometry(add_window_geometry)
+        add_window.focus()
+        add_window.title("Προσθήκη δεδομένων")
+        # Τίτλος παραθύρου
+        add_window_title = ttk.Label(add_window, background="orange", foreground="white", text="Προσθήκη προϊόντος",
+                                      font=("Calibri Bold", 15), anchor="center")
+        add_window_title.place(relx=0.100, rely=0.001, relheight=0.080, relwidth=0.200)
+
+        # ------------------------------Να πάρουμε τις κεφαλίδες---------------------------
+        try:
+            conn = sqlite3.connect(dbase)
+            cursor = conn.execute("SELECT * FROM " + self.table)
+            headers = list(map(lambda x: x[0], cursor.description))
+
+        except sqlite3.OperationalError as error:
+            messagebox.showwarning("Σφάλμα.....", "{} \nΠαρακαλώ πρώτα επιλέξτε πίνακα για να κάνετε προσθήκη δεδομένων"
+                                   .format(error),
+                                   icon='warning')
+            add_window.destroy()
+            return None
+
+        # ===========================Εμφάνιση κεφαλίδων======================================
+        # ΟΙ ΚΕΦΑΛΊΔΕΣ ΕΊΝΑΙ ΤΑ COLUMNS ΤΟΥ ΠΊΝΑΚΑ
+        # Nα μετρίσουμε πόσες κεφαλίδες έχει ο πίνακας χωρίς τα " ID " , μας χρειάζεται για τα entry που θα κάνει ο χρήστης
+        count_headers = 0
+        data_to_add = []
+        yspot = 0.080
+        for index, header in enumerate(self.headers):
+            if header == "ID" or header == "id" or header == "Id":
+                continue
+            else:
+
+                count_headers += 1
+                toner_label = ttk.Label(add_window, text=header, font=("Calibri", 12, "bold"),anchor="e")
+                if len(self.headers) < 10:
+                    yspot += 0.080
+                    toner_label.place(relx=0.005, rely=yspot, relheight=0.080, relwidth=0.120)
+                toner_label.place(relx=0.005, rely=yspot, relheight=0.080, relwidth=0.120)
+                yspot += 0.070
+                var = StringVar()
+                # Εμφάνισει περιγραφής σαν Scrolledtext και όχι σαν απλο Entry
+                if header == "ΠΕΡΙΓΡΑΦΗ":
+                    perigrafi = ScrolledText(add_window, height=3, border=2)
+                    data_to_add.append(perigrafi)
+                    if len(self.headers) < 10:
+
+                        perigrafi.place(relx=0.130, rely=yspot, relheight=0.130, relwidth=0.300)
+                    perigrafi.place(relx=0.130, rely=yspot-0.050, relheight=0.130, relwidth=0.300)
+                    yspot += 0.080
+                else:
+                    if len(self.headers) < 10:
+                        ttk.Entry(add_window, textvariable=var)\
+                            .place(relx=0.130, rely=yspot - 0.045, relheight=0.080, relwidth=0.130)
+                    else:
+                        ttk.Entry(add_window, textvariable=var)\
+                            .place(relx=0.130, rely=yspot-0.045, relheight=0.040, relwidth=0.130)
+                    data_to_add.append(var)
+
+        # ------------------------------------Προσθήκη δεδομένων στην βάση------------------
+        def add_to_db():
+            culumns = ",".join(self.headers)
+            # Να ορίσουμε τα VALUES ΤΗΣ SQL οσα είναι και τα culumns
+            # values είναι πόσα ? να έχει ανάλογα τα culumns
+            values_var = []
+
+            for head in self.headers:
+                if head == "ID" or head == "id" or head == "Id":
+                    values_var.append("null")
+                else:
+                    values_var.append('?')
+            values = ",".join(values_var)
+            # print("============values_var============line 371", values)
+            # print("==========culumns===========", culumns)
+            data = []
+            for i in range(len(data_to_add)):
+                # Ελενχος αν είναι απο το scrolledtext
+                # Το scrolledtext θελει get('1.0', 'end-1c') και οχι απλό get
+                # Ο Ελεγχος γίνεται με το αν το data_to_add[i] == με class scrolledtext
+                # Αν δεν ειναι scrolledtext τότε πέρνουμε τα δεδομένα με το var.get()
+                type_of_data_to_add = str(type(data_to_add[i]))
+                if "scrolledtext" in type_of_data_to_add:
+                    # print("Line 513 Data do add need .get", data_to_add[i].get('1.0', 'end-1c'))
+                    data.append(data_to_add[i].get('1.0', 'end-1c'))
+
+                else:
+                    data.append(data_to_add[i].get())
+            # data = tuple(data_to_add)
+            # print("Line 406 data before €", data)
+
+            if "ΣΥΝΟΛΟ" in self.headers:
+                # {: 0.2f}           Για εμφάνιση 2 δεκαδικών
+                # data[6]= 0 αν ο χρήστης δεν δόσει τιμή να δώσουμε 0 ------data[6] == ΤΙΜΗ
+                print("Line 703", headers)
+                if data[self.headers.index("ΤΙΜΗ") - 1] == "":
+                    data[self.headers.index("ΤΙΜΗ") - 1] = 0
+                if data[self.headers.index("ΤΕΜΑΧΙΑ") - 1] == "":
+                    data[self.headers.index("ΤΕΜΑΧΙΑ") - 1] = 0
+                else:
+                    # Μετατροπή , σε . για πολλαπλασιασμό (να βρούμε το σύνολο)
+                    data[self.headers.index("ΤΙΜΗ") - 1] = data[self.headers.index("ΤΙΜΗ") - 1].replace(",", ".")
+                # Υπολογιστμός ΣΥΝΟΛΟ = ΤΕΜΑΧΙΑ * ΤΙΜΗ
+
+                data[self.headers.index("ΣΥΝΟΛΟ") - 1] = float(data[self.headers.index("ΤΕΜΑΧΙΑ") - 1]) \
+                                                    * float(data[self.headers.index("ΤΙΜΗ") - 1])
+
+                data[self.headers.index("ΣΥΝΟΛΟ") - 1] = str("{:0.2f}".format(data[self.headers.index("ΣΥΝΟΛΟ") - 1])) + "€"
+                data[self.headers.index("ΤΙΜΗ") - 1] = str("{:0.2f}".format(float(data[self.headers.index("ΤΙΜΗ") - 1]))) + " €"
+                data[self.headers.index("ΤΕΜΑΧΙΑ") - 1] = str(data[self.headers.index("ΤΕΜΑΧΙΑ") - 1])
+
+            # ================================ Προσθήκη τελευταίας τροποποιησης ============================
+            now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+            # Ελεγχος αν ο πίνακας είναι παραγγελίες
+
+            if self.table == self.tables[-1]:
+                # Αν ο χρήστης είναι στον πίνακα παραγγελίες τότε προσθέτει την ημερωμηνία αυτόματα
+                # now[:10] == ημερωμηνία χωρίς την ώρα
+                data[self.headers.index("ΗΜΕΡΩΜΗΝΙΑ") - 1] = now[:10]
+                data[-1] = user
+            elif len(self.headers) < 7:
+                # Αν ο πίνακας έχει λιγότερα απο 7 πεδία τότε βάζει ημερωμηνία και τα σχόλια δεν βαζει χρηστη
+                data[-1] = now[:10] + data[-1]
+            else:
+                # Διαφορετικά βάζει ημερωμηνία χρηστη και σχολια
+                data[-1] = now + " " + user + " " + data[-1]
+            # print("===========DATA TO ADD AFTER LOOP =========LINE 377 ", data)
+            # data_to_add = (toner.get(), model.get(), kodikos.get(),
+            #               temaxia.get(), str(timi.get()) + " €", str(timi.get() * temaxia.get()) + " €", selides.get())
+
+            # ΒΑΖΟΥΜΕ ΤΟ ΠΡΩΤΟ NULL ΓΙΑ ΝΑ ΠΆΡΕΙ ΜΟΝΟ ΤΟΥ ΤΟ ID = PRIMARY KEY
+            # H ΣΥΝΤΑΞΗ ΕΙΝΑΙ ΑΥΤΉ
+            # INSERT INTO table(column1, column2,..)VALUES(value1, value2, ...);  TA  VALUES πρεπει να είναι tuple
+            # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
+            # values είναι πόσα ? να έχει ανάλογα τα culumns
+            sql_insert = "INSERT INTO  " + self.table + "(" + culumns + ")" + "VALUES(" + values + ");"
+            # print("===============sql_insert==========\n", sql_insert)
+            print("===========Προθήκη δεδομένων στο Πίνακα {} Line 483 =========".format(self.table), "\n", self.headers)
+            print(data)
+            add_to_db_conn = sqlite3.connect(dbase)
+            # print("conected ", 50 * ".")
+            add_to_db_cursor = add_to_db_conn.cursor()
+            # print("cursor done ", 50 * ".")
+            add_to_db_cursor.execute(sql_insert, tuple(data))
+            # print("sql executed  ", 50 * ".")
+
+            add_to_db_conn.commit()
+            # print("ΣΤΗΝ ΒΑΣΗ ΠΡΟΣΤΕΘΗΚΑΝ ", data)
+            add_to_db_cursor.close()
+            add_to_db_conn.close()
+            messagebox.showinfo('Εγινε προσθήκη δεδομένων',
+                                "Στην κατηγορία {} Προστέθηκε το {} ".format(self.table, str(data)))
+            # Ενημέρωση του tree με τα νέα δεδομένα
+
+            self.update_view(self.table)
+            add_window.destroy()
+            # print("Εγινε η προσθήκη")
+            # print(data)
+
+        # ----------------------------------Κουμπί για να γίνει η προσθήκη-------------------
+        enter_button = tk.Button(add_window, text="Προσθήκη", background="green", foreground="White", command=add_to_db)
+        if len(self.headers) < 10:
+            enter_button.place(relx=0.280, rely=yspot-0.050, relheight=0.090, relwidth=0.130)
+        else:
+            enter_button.place(relx=0.130, rely=yspot, relheight=0.050, relwidth=0.130)
+
+        # ΕΞΩΔΟΣ
+        def quit_app(event):
+
+            add_window.destroy()
+
+        add_window.bind('<Escape>', quit_app)
 
     def edit(self):  # Επεξεργασία δεδομένων
         """ Επεξεργασία δεδομένων
@@ -404,9 +779,8 @@ class Toplevel1:
                                       font=("Calibri Bold", 15), anchor="center")
 
         edit_window_title.place(relx=0.100, rely=0.001, relheight=0.080, relwidth=0.200)
-        # Label(edit_window, text=tree.selection()).grid(column=0, row=0)
-        # ===========================Εμφάνιση κεφαλίδων======================================
 
+        # ===========================Εμφάνιση κεφαλίδων======================================
         data_to_add = []
         colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
         yspot = 0.080
@@ -415,7 +789,7 @@ class Toplevel1:
             if header == "ID" or header == "id" or header == "Id":
                 continue
             else:
-                ton_label = ttk.Label(edit_window, text=header, font=("San Serif", 12, "bold"))
+                ton_label = ttk.Label(edit_window, text=header, font=("Calibri", 12, "bold"), anchor="e")
                 if len(self.headers) < 10:
                     yspot += 0.050
 
@@ -447,9 +821,12 @@ class Toplevel1:
 
                     else:
                         perigrafi.insert('1.0', selected_data[index])
-
-                    yspot += 0.030
-                    perigrafi.place(relx=0.160, rely=yspot, relheight=0.100, relwidth=0.400)
+                    if len(self.headers) < 10:
+                        yspot += 0.025
+                        perigrafi.place(relx=0.130, rely=yspot, relheight=0.130, relwidth=0.400)
+                    else:
+                        yspot += 0.030
+                        perigrafi.place(relx=0.130, rely=yspot, relheight=0.100, relwidth=0.400)
 
                     data_to_add.append(perigrafi)
                     yspot += 0.030
@@ -457,12 +834,19 @@ class Toplevel1:
                     yspot += 0.020
                     # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
                     if header not in big_entry:
-                        ttk.Entry(edit_window, textvariable=var) \
-                            .place(relx=0.160, rely=yspot, relheight=0.060, relwidth=0.080)
+                        if len(self.headers) < 10:
+                            ttk.Entry(edit_window, textvariable=var) \
+                                .place(relx=0.130, rely=yspot-0.010, relheight=0.080, relwidth=0.130)
+                        else:
+                            ttk.Entry(edit_window, textvariable=var) \
+                            .place(relx=0.130, rely=yspot, relheight=0.060, relwidth=0.130)
                     else:
-
-                        ttk.Entry(edit_window, textvariable=var)\
-                            .place(relx=0.160, rely=yspot, relheight=0.060, relwidth=0.320)
+                        if len(self.headers) < 10:
+                            ttk.Entry(edit_window, textvariable=var) \
+                                .place(relx=0.130, rely=yspot, relheight=0.080, relwidth=0.320)
+                        else:
+                            ttk.Entry(edit_window, textvariable=var)\
+                            .place(relx=0.130, rely=yspot, relheight=0.060, relwidth=0.320)
                     data_to_add.append(var)
                 yspot += 0.050
         # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
@@ -497,7 +881,7 @@ class Toplevel1:
             for data in data_to_add:
                 type_of_data = str(type(data))
                 # Ελεγχος εάν είναι scrolledtext τοτε η προσθήκη θελει (data.get('1.0', 'end-1c') και οχι σκετο data.get()
-                # το '1.0' το 1 είναι η πρώτη γραμμή  το 0 είναι ο πρώτος χαρακτήρας
+                # Στο '1.0' το 1 είναι η πρώτη γραμμή  το 0 είναι ο πρώτος χαρακτήρας
                 if "scrolledtext" in type_of_data:
                     edited_data.append(data.get('1.0', 'end-1c'))
                 else:
@@ -607,14 +991,14 @@ class Toplevel1:
         edit_window.bind('<Escape>', quit_app)
         update_button = tk.Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", background="red",
                                   foreground="white", border=3, anchor="center")
-        update_button.place(relx=0.180, rely=yspot, relheight=0.080, relwidth=0.140)
+        update_button.place(relx=0.160, rely=yspot, relheight=0.090, relwidth=0.140)
 
         # Πρέπει να κάνω το add_to_orders() συνάρτιση για τις παραγγελίες
         # print("Line 909 data to orders", selected_data)
-        # if table != tables[-1] and "ΚΩΔΙΚΟΣ" in headers and "ΠΕΡΙΓΡΑΦΗ" in headers:
-        #     order_button = tk.Button(edit_window, command=lambda: add_to_orders(root, edit_window, selected_data),
-        #                           text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
-        #     order_button.grid(column=1, row=len(headers) + 1, sticky="e")
+        if self.table != tables[-1] and "ΚΩΔΙΚΟΣ" in self.headers and "ΠΕΡΙΓΡΑΦΗ" in self.headers:
+            order_button = tk.Button(edit_window, command=lambda: self.add_to_orders(edit_window, selected_data),
+                                  text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
+            order_button.place(relx=0.340, rely=yspot, relheight=0.090, relwidth=0.160)
 
     def backup(self):
 
@@ -663,8 +1047,155 @@ class Toplevel1:
                 print(f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 653 {error}")
                 messagebox.showinfo(f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 654 {error}")
 
-    # =====================================ΑΝΑΖΗΤΗΣΗ=========================================
+    # ========================================================================================
+    # ------------------------------------- ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ ----------------------------=
+    # -----------------------****************** ΠΡΟΣΟΧΗ ************-------------------------=
+    # Οι παραγγελίες γίνονται στον τελευταίο πίνακα της βάσης δεδωμένων ---------------------=
+    # ========================================================================================
+    # Δεχεται σαν όρισμα το edit_windows για να μπορέσουμε να το κλείσουμε όταν κάνουμε την προσθήκη παραγγελίας
+    def add_to_orders(self, edit_window, data_to_add):
+        # Προσθήκη κωδικού και περιγραφής στις παραγγελίες
+        code_for_order = data_to_add[self.headers.index("ΚΩΔΙΚΟΣ")]
+        if not code_for_order:
+            answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
+                                            "Το προϊόν δεν εχει κωδικό θέλετε να το  προσθέσετε;", icon='warning')
+            if answer == 'yes':
+                pass
+            else:
+                # messagebox.showwarning("ΑΚΥΡΩΣΗ", "Το προϊόν δεν προστέθηκε στις παραγγελίες")
+                edit_window.destroy()
+                return None
+        perigrafi_for_order = data_to_add[self.headers.index("ΠΕΡΙΓΡΑΦΗ")]
+        now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        # code_for_order == κωδικός προϊόντος
+        # now[:10] == μόνο ημερομηνία όχι ώρα
+        # perigrafi_for_order == περιγραφή του προϊόντος
+        # "" == κενό για να βάζει χ στο πεδίο αποτέλεσμα αν το παρήγγειλε ή όχι
+        # user == ο χρήστης του υπολογιστή
+        data_to_orders = [code_for_order, now[:10], perigrafi_for_order, "", user]
 
+        order_conn = sqlite3.connect(dbase)
+        order_cursos = order_conn.cursor()
+        order_cursos.execute("SELECT * FROM " + tables[-1] + ";")
+
+        headers_of_orders = list(map(lambda x: x[0], order_cursos.description))
+        culumns = ",".join(headers_of_orders)
+
+        values_var = []
+        for head in headers_of_orders:
+            if head == "ID" or head == "id" or head == "Id":
+                values_var.append("null")
+            else:
+                values_var.append('?')
+        values = ",".join(values_var)
+
+        data_from_paraggelies = order_cursos.fetchall()
+        found = False
+        for data in data_from_paraggelies:
+            if code_for_order != "" and code_for_order in data:
+                found = True  # Δηλαδή βρεθηκε ο κωδικός στις παραγγελίες
+                answer = messagebox.askquestion("ΠΡΟΣΟΧΗ",
+                                                " Ο κωδικός {} υπαρχει ήδη στης παραγγελίες, "
+                                                "θέλετε να το ξανα προσθέσετε;".format(code_for_order),
+                                                icon='warning')
+                # Αν ο χρήστης θέλει να το ξαναπροσθέσει
+                if answer == "yes":
+                    sql_insert = "INSERT INTO " + self.tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
+                    order_cursos.execute(sql_insert, tuple(data_to_orders))
+                    order_conn.commit()
+                    order_cursos.close()
+                    order_conn.close()
+                    messagebox.showwarning("ΠΡΟΣΘΗΚΗ",
+                                           "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
+                    edit_window.destroy()
+                    self.update_view(self.table)
+                    return None
+                else:
+                    messagebox.showwarning("ΑΚΥΡΩΣΗ",
+                                           "Ο κωδικός {} δεν προστέθηκε στις παραγγελίες".format(code_for_order))
+                    edit_window.destroy()
+
+                    return None
+            else:
+                found = False  # Δεν βρέθηκε ο κωδικός στις παραγγελίες
+
+        # Αν δεν βρέθηκε στις παραγγελίες και υπάρχουν παραγγελίες
+        if not found and data_from_paraggelies:
+            order_conn = sqlite3.connect(dbase)
+            order_cursos = order_conn.cursor()
+            sql_insert = "INSERT INTO " + self.tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
+            order_cursos.execute(sql_insert, tuple(data_to_orders))
+            order_conn.commit()
+            order_cursos.close()
+            order_conn.close()
+            messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
+            edit_window.destroy()
+            self.update_view(self.table)
+            return None
+        # Αν δεν υπάρχουν παραγγελίες
+        if not data_from_paraggelies:
+            try:
+                sql_insert = "INSERT INTO " + self.tables[-1] + "(" + culumns + ")" + "VALUES(" + values + ");"
+                order_cursos.execute(sql_insert, tuple(data_to_orders))
+                order_conn.commit()
+                order_cursos.close()
+                order_conn.close()
+                messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
+                edit_window.destroy()
+                self.update_view(self.table)
+                return None
+            except sqlite3.ProgrammingError as error:
+                print("Σφάλμα. Line 768..sqlite3.ProgrammingError {}".format(error))
+                messagebox.showwarning("Σφάλμα...", "Line 768..sqlite3.ProgrammingError {} ".format(error))
+                edit_window.destroy()
+                self.update_view(self.table)
+                return None
+        else:
+            return None
+
+    # ================================Συνάρτηση για διαγραφή  =================
+    def del_from_tree(self):
+        selected_item = (self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), '#1'))
+
+        del_conn = sqlite3.connect(dbase)
+        del_cursor = del_conn.cursor()
+        del_cursor.execute("SELECT * FROM " + self.table + " WHERE ID = ?", (selected_item,))
+        selected_data = del_cursor.fetchall()
+        selected_data = list(selected_data[0])
+        print("Γραμμη 787: Επιλεγμένα για διαγραφή δεδομένα -->>", self.headers, selected_data)
+
+        # ======================ΕΠΙΒΕΒΑΙΩΣΗ ΔΙΑΓΡΑΦΗΣ============
+        answer = messagebox.askquestion("Θα πραγματοποιηθεί διαγραφή!",
+                                        " Είστε σήγουρος για την διαγραφή του {};".format(selected_data),
+                                        icon='warning')
+        # print('Γραμμή 792: ========ΔΙΑΓΡΑΦΗ=============', "Το {} επιλέχθηκε για διαγαφή !".format(selected_data))
+        if answer == 'yes':
+            messagebox.showwarning('Διαγραφή...', "Το {} διαγράφηκε!".format(selected_data))
+            # Αν ο χρήστης επιλεξει το "yes" παει στην γραμμή 804 ==>> del_cursor.execute("DEL............
+
+            pass
+        else:
+            messagebox.showinfo('Ακύρωση διαγραφής', " Τίποτα δεν διαγράφηκε  ")
+            print("Γραμμή 604: =================ΑΚΥΡΟΣΗ ΔΙΑΓΡΑΦΗΣ===============\n", selected_data)
+            print()
+            return None
+        print("Γραμμή 778: ---------------ΛΟΓΟΣ BACKUP --->>> ΔΙΑΓΡΑΦΗ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
+        self.backup()
+        del_cursor.execute("DELETE FROM " + self.table + " WHERE ID=?", (selected_item,))
+        del_conn.commit()
+        del_conn.close()
+        print()
+        print("Γραμμη 789:===============ΠΡΑΓΜΑΤΟΠΟΙΗΘΗΚΕ ΔΙΑΓΡΑΦΉ ΤΟΥ===============\n", self.headers, selected_data)
+        print()
+
+        try:
+            self.Scrolledtreeview.delete(self.Scrolledtreeview.selection())
+            # print("======ΕΓΙΝΕ ΔΙΑΓΡΑΦΗ ΑΠΟ ΤΟ TREE====================================line 600 ")
+            return selected_item
+        except TclError as error:
+            print("ΣΦΑΛΜΑ Line 1086", error)
+
+    # =====================================ΑΝΑΖΗΤΗΣΗ=========================================
     def search(self, search_data):
         """
         Αναζήτηση σε πίνακα για δεδομένω
@@ -735,7 +1266,11 @@ class Toplevel1:
             search_conn.close()
 
     # ----------------------------------Συντομέυσεις --------------------------------------
-        # ======================Πληκτολόγιο=====================
+    # ==================================Πληκτολόγιο=====================
+    # ΠΡΟΣΘΗΚΗ
+    def add_event(self, event):
+        self.add_to()
+
     def double_click(self, event):
         self.edit()
 
@@ -780,6 +1315,36 @@ class Toplevel1:
             tree.move(k, "", index)
 
         tree.heading(column, command=lambda: self.sort_by_culumn(tree, column, not reverse))
+
+    # -----------------------------  Αδειασμα παραγγελιών  -------------------------------------------
+    # ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
+    def empty_table(self):
+        self.backup()
+        print("Λογος αντιγράφου ασφαλείας ==>> διαγραφή πίνακα {}".format(self.tables[-1]))
+        answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή του πίνακα {}, \
+                                                    Είστε σήγουρος για την διαγραφή του; ".format(self.tables[-1]),
+                                        icon='warning')
+        if answer == 'yes':
+            empty_conn = sqlite3.connect(dbase)
+            empty_cursor = empty_conn.cursor()
+            empty_cursor.execute("SELECT * FROM " + self.tables[-1] + ";")
+            paraggelies = empty_cursor.fetchall()
+            print("===============Παραγγελίες διαγράφικαν απο χρήστη {} ========".format(user))
+            for paraggelia in paraggelies:
+                print(paraggelia)
+            empty_cursor.execute("DELETE FROM " + self.tables[-1] + ";")
+            empty_conn.commit()
+            empty_cursor.execute("""VACUUM;""")
+            empty_cursor.close()
+            empty_conn.close()
+            messagebox.showwarning("ΠΡΟΣΟΧΗ ", "Ο πίνακας {} άδειασε".format(self.tables[-1]))
+            self.update_view(self.table)
+
+        else:
+            print('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
+            messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
+
+            return None
 
 
 # The following code is added to facilitate the Scrolled widgets you specified.
