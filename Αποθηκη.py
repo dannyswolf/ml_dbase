@@ -89,7 +89,7 @@ class Toplevel1:
         """This class configures and populates the toplevel window.
                    top is the toplevel containing window.
         """
-        top.geometry("1000x700+200+70")
+        top.geometry("1024x700+200+70")
         top.minsize(300, 300)
         top.maxsize(1920, 1600)
         top.resizable(1, 1)
@@ -138,12 +138,9 @@ class Toplevel1:
         yspot = 0.025
 
         for index, table in enumerate(self.tables):
-            if index == 5:
-                xspot = 0.015
-                yspot = 0.125
             if index == 10:
-                yspot = 0.225
-                xspot = 0.015
+                yspot = 0.125  # Υψως
+                xspot = 0.015  # Πλάτος
             self.btn = tk.Button(top)
             self.btn.place(relx=xspot, rely=yspot, height=78, width=120)
             self.btn.configure(activebackground="#ececec")
@@ -169,7 +166,7 @@ class Toplevel1:
                 pass
 
             self.btn.configure(command=lambda x=table: [self.update_view(x), self.change_color(x)])
-            xspot += 0.120
+            xspot += 0.080
             self.buttons.append(self.btn)
 
         yspot += 0.110
@@ -209,7 +206,7 @@ class Toplevel1:
         yspot += 0.050
         # self.style.configure('mystyle.Treeview', font="TkDefaultFont")
         self.Scrolledtreeview = ScrolledTreeView(top)
-        self.Scrolledtreeview.place(relx=0.015, rely=yspot, relheight=0.600, relwidth=0.964)
+        self.Scrolledtreeview.place(relx=0.015, rely=yspot, relheight=0.700, relwidth=0.964)
         self.Scrolledtreeview.configure(show="headings", style="mystyle.Treeview")
         self.Scrolledtreeview.bind("<Double-1>", self.double_click)
 
@@ -257,7 +254,7 @@ class Toplevel1:
         for index, head in enumerate(self.headers):
             # ==================================== ΣΤΟΙΧΙΣΗ ΠΕΡΙΕΧΟΜΕΝΩΝ ===========================
 
-            if head == "id" or head == "ID":
+            if head == "id" or head == "ID" or head == "Id":
                 alignment = "e"
                 platos = 1
 
@@ -291,9 +288,9 @@ class Toplevel1:
             elif head == "ΠΕΡΙΓΡΑΦΗ":
                 alignment = "w"
                 if len(self.headers) < 8:
-                    platos = int((50 * self.width_of_tree) / 100)
-                else:
                     platos = int((40 * self.width_of_tree) / 100)
+                else:
+                    platos = int((30 * self.width_of_tree) / 100)
 
             elif head == "PARTS_NR":
                 alignment = "center"
@@ -392,7 +389,10 @@ class Toplevel1:
         # print("selected_data line 424 ", selected_data)
         # print("headers[0] γραμμή 425 = ", headers[0])
         edit_window = tk.Toplevel()
-        height = int(root.winfo_screenheight() / 20 * len(self.headers))
+        if len(self.headers) < 10:
+            height = int(root.winfo_screenheight() / 17 * len(self.headers))
+        else:
+            height = int(root.winfo_screenheight() / 20 * len(self.headers))
         width = int(root.winfo_screenwidth() / 1.5)
         x = "+200"
         y = "+200"
@@ -401,28 +401,28 @@ class Toplevel1:
         edit_window.focus()
         edit_window.title("Επεξεργασία δεδομέμων")
         edit_window_title = ttk.Label(edit_window, background="orange", foreground="white", text="Επεξεργασία δεδομέμων",
-                                      font=("San Serif Bold", 15),
-                                      border=8)
-        edit_window_title.place(relx=0.105, rely=0.001, relheight=0.055, relwidth=0.240)
+                                      font=("Calibri Bold", 15), anchor="center")
+
+        edit_window_title.place(relx=0.100, rely=0.001, relheight=0.080, relwidth=0.200)
         # Label(edit_window, text=tree.selection()).grid(column=0, row=0)
         # ===========================Εμφάνιση κεφαλίδων======================================
-        count_headers = 0
+
         data_to_add = []
         colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
         yspot = 0.080
-        small_entry = ["ΜΟΝΤΕΛΟ", "ΚΩΔΙΚΟΣ", "ΤΙΜΗ", "ΤΕΜΑΧΙΑ", "ΣΥΝΟΛΟΣ", ""]
+        big_entry = ["ΠΕΡΙΓΡΑΦΗ", "ΠΑΡΑΤΗΡΗΣΕΙΣ"]
         for index, header in enumerate(self.headers):
             if header == "ID" or header == "id" or header == "Id":
                 continue
             else:
+                ton_label = ttk.Label(edit_window, text=header, font=("San Serif", 12, "bold"))
+                if len(self.headers) < 10:
+                    yspot += 0.050
 
-                count_headers += 1
-                ton_label = ttk.Label(edit_window, text=header, font=("San Serif", 12, "bold"),
-                                      border=3)
-
-                ton_label.place(relx=0.035, rely=yspot, relheight=0.070, relwidth=0.100)
+                ton_label.place(relx=0.005, rely=yspot, relheight=0.080, relwidth=0.120)
                 var = StringVar(edit_window, value=selected_data[index])
-                # Αν υπάρχει "περιγραφη" στις κεφαλίδες η εμφάνιση των δεδομένων της κεφαλίδας περιγραφή ειναι με scrolltext
+                # Αν υπάρχει "περιγραφη" στις κεφαλίδες η εμφάνιση των δεδομένων της κεφαλίδας
+                # περιγραφή ειναι με scrolltext
                 if header == "ΠΕΡΙΓΡΑΦΗ":
 
                     color = [color for color in colors if color in selected_data[index]]
@@ -444,23 +444,25 @@ class Toplevel1:
                         else:
                             perigrafi.insert('1.0', selected_data[index], color)
                             perigrafi.tag_config(color, foreground=color, font=("San Serif", 10, "bold"))
+
                     else:
                         perigrafi.insert('1.0', selected_data[index])
+
                     yspot += 0.030
-                    perigrafi.place(relx=0.150, rely=yspot, relheight=0.100, relwidth=0.400)
+                    perigrafi.place(relx=0.160, rely=yspot, relheight=0.100, relwidth=0.400)
 
                     data_to_add.append(perigrafi)
                     yspot += 0.030
                 else:
                     yspot += 0.020
                     # print("------------ΜΗ ΕΠΕΞΕΡΓΑΣΜΈΝΑ ΔΕΔΟΜΈΝΑ------------", header, var.get())
-                    if header in small_entry:
+                    if header not in big_entry:
                         ttk.Entry(edit_window, textvariable=var) \
-                            .place(relx=0.150, rely=yspot, relheight=0.050, relwidth=0.080)
+                            .place(relx=0.160, rely=yspot, relheight=0.060, relwidth=0.080)
                     else:
 
                         ttk.Entry(edit_window, textvariable=var)\
-                            .place(relx=0.150, rely=yspot, relheight=0.050, relwidth=0.180)
+                            .place(relx=0.160, rely=yspot, relheight=0.060, relwidth=0.320)
                     data_to_add.append(var)
                 yspot += 0.050
         # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
@@ -601,10 +603,11 @@ class Toplevel1:
 
             edit_window.destroy()
 
+        yspot += 0.050
         edit_window.bind('<Escape>', quit_app)
         update_button = tk.Button(edit_window, command=update_to_db, text="Ενημέρωση προϊόντος", background="red",
-                                  foreground="white", border=3)
-        update_button.place(relx=0.150, rely=yspot, relheight=0.080, relwidth=0.140)
+                                  foreground="white", border=3, anchor="center")
+        update_button.place(relx=0.180, rely=yspot, relheight=0.080, relwidth=0.140)
 
         # Πρέπει να κάνω το add_to_orders() συνάρτιση για τις παραγγελίες
         # print("Line 909 data to orders", selected_data)
