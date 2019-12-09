@@ -296,7 +296,7 @@ def make_new_table():
     new_table_window.bind('<Escape>', quit_app)
 
 
-# Κουμπί να ανοιξει το αρχείο (βαση δεδομένων) Todo FIX
+# Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file():
     """ Ανοιγμα αρχείου βάσης δεδομένων"""
 
@@ -405,8 +405,8 @@ class Toplevel1:
         self.menubar.add_cascade(label="Αρχείο", menu=self.filemenu)
 
         self.backup_menu = tk.Menu(self.menubar, tearoff=0)
-        self.backup_menu.add_command(label="Δημιουργία αντίγραφο ασφαλείας!", command=self.backup)
         self.menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=self.backup_menu)
+        self.backup_menu.add_command(label="Δημιουργία αντίγραφο ασφαλείας!", command=self.backup)
 
         self.table_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Πίνακες", menu=self.table_menu)
@@ -456,8 +456,6 @@ class Toplevel1:
 
         self.yspot += 0.110
         self.search_data = StringVar()
-
-
 
         # ---------------------Πεδίο Αναζήτησης ----------------------
         self.search_entry = tk.Entry(top, textvariable=self.search_data)
@@ -654,8 +652,12 @@ class Toplevel1:
                 self.Scrolledtreeview.insert("", up_index - 1, values=up_data[n], tags=("evenrow",))
 
     def change_color(self, table_name):
+        """ Αλλαγή χρώματος κουμπιου όταν το πατάμε
+            Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
+            O ελεγχος γίνεται αν το όνομα του πίνακα που πατάμε είναι == με 'text' του κουμπιού
+        """
         show_table = ttk.Label(root, background="#7cb30e", foreground="white", text=table_name,
-                                    font=("Calibri Bold", 10), anchor="center")
+                               font=("Calibri Bold", 10), anchor="center")
         show_table.place(relx=0.100, rely=0.250, relheight=0.030, relwidth=0.100)
         # Αν ο χρήστεις πατήσει στον τελευταίο πίνακα ενεργοποιείτε  το κουμπί
         # Διαφορετικά  απενεργοποιειτε
@@ -667,11 +669,6 @@ class Toplevel1:
             self.empty_button.configure(background="red", state="disabled")
 
         self.table = table_name  # Ορίζω τον πίνακα που βλεπει ο χρήστης
-
-        """ Αλλαγή χρώματος κουμπιου όταν το πατάμε
-                Δεχεται σαν όρισμα το ονομα του πίνακα που αντιπροσωπευει το κουμπί
-                O ελεγχος γίνεται αν το όνομα του πίνακα που πατάμε είναι == με 'text' του κουμπιού
-        """
 
         lazaros_tables = ["ΦΩΤΟΤΥΠΙΚΑ", "ΤΟΝΕΡ", "ΜΕΛΛΑΝΑΚΙΑ", "ΧΧΧ", "ΜΕΛΑΝΟΤΑΙΝΙΕΣ"]
         for button in self.buttons:
@@ -688,7 +685,7 @@ class Toplevel1:
         """ Προσθήκη προϊόντος
         """
 
-        if len(self.headers) < 10:
+        if len(self.headers) < 11:
             height = int(root.winfo_screenheight() / 17 * len(self.headers))
 
         else:
@@ -701,9 +698,10 @@ class Toplevel1:
         add_window.focus()
         add_window.title("Προσθήκη δεδομένων")
         # Τίτλος παραθύρου
-        add_window_title = ttk.Label(add_window, background="orange", foreground="white", text="Προσθήκη προϊόντος",
+        add_window_title = ttk.Label(add_window, background="orange", foreground="white",
+                                     text="Προσθήκη προϊόντος στον πίνακα {}".format(self.table),
                                      font=("Calibri Bold", 15), anchor="center")
-        add_window_title.place(relx=0.100, rely=0.001, relheight=0.080, relwidth=0.200)
+        add_window_title.place(relx=0.100, rely=0.001, relheight=0.080, relwidth=0.400)
 
         # ------------------------------Να πάρουμε τις κεφαλίδες---------------------------
         try:
@@ -728,10 +726,12 @@ class Toplevel1:
             if header == "ID" or header == "id" or header == "Id":
                 continue
             else:
-
                 count_headers += 1
-                toner_label = ttk.Label(add_window, text=header, font=("Calibri", 12, "bold"), anchor="e")
                 if len(self.headers) < 10:
+                    toner_label = ttk.Label(add_window, text=header, font=("Calibri", 12, "bold"), anchor="se")
+                else:
+                    toner_label = ttk.Label(add_window, text=header, font=("Calibri", 12, "bold"), anchor="e")
+                if len(self.headers) < 9:
                     yspot += 0.080
                     toner_label.place(relx=0.005, rely=yspot, relheight=0.080, relwidth=0.120)
                 toner_label.place(relx=0.005, rely=yspot, relheight=0.080, relwidth=0.120)
