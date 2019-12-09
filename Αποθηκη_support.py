@@ -33,7 +33,6 @@ def destroy_window():
 
 
 
-
 if __name__ == '__main__':
     import Αποθηκη
     Αποθηκη.vp_start_gui()
