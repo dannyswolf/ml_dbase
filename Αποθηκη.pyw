@@ -130,7 +130,7 @@ def get_tables():
     """ Αποκόμιση  πινάκων απο την βάση δεδομένων """
 
     global tables
-    tables = []
+    tables = []  # Πρέπει να αδειάσουμε πρώτα την λίστα με τους πίνακες για να κάνουμε νέα σύμφονα με την βάση
     # =======================Ανάγνωριση πίνακα δεδομένων=============
     conn = sqlite3.connect(dbase)
     cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
@@ -190,7 +190,7 @@ def make_new_table():
     width = int(root.winfo_screenwidth() / 2)
     new_table_window.geometry(str(width) + "x" + "550")
     new_table_window.title("Δημιουργία νέου πίνακα")
-    title_label = tk.Label(new_table_window, text="Δημιουργία  πίνακα", font=("San Serif", 15, "bold"), bg="brown",
+    title_label = tk.Label(new_table_window, text="Δημιουργία  πίνακα", font=("Calibri", 15, "bold"), bg="brown",
                            fg="white")
     title_label.grid(columnspan=3, row=0)
 
@@ -214,10 +214,10 @@ def make_new_table():
                 8. Για να αλλάξει χρώμα  ο πίνακας πάρτε με τηλ 
             """.format(tables[-1][0])
 
-    info_label = tk.Label(new_table_window, text=info, font=("San Serif", 12), fg="red")
+    info_label = tk.Label(new_table_window, text=info, font=("Calibri", 12), fg="red")
     info_label.grid(column=2, rowspan=11, sticky="e")
 
-    title_name_label = tk.Label(new_table_window, text="Όνομα πίνακα :  ", font=("San Serif", 12, "bold"))
+    title_name_label = tk.Label(new_table_window, text="Όνομα πίνακα :  ", font=("Calibri", 12, "bold"))
     title_name_label.grid(column=0, row=1)
 
     table_name = StringVar()
@@ -228,7 +228,7 @@ def make_new_table():
 
     for i in range(11):
         title_name_label = tk.Label(new_table_window, text="Πεδίο " + str(i + 1) + " :  ",
-                                    font=("San Serif", 12, "bold"))
+                                    font=("Calibri", 12, "bold"))
         title_name_label.grid(column=0, row=i + 2)
 
         column = StringVar()  #
@@ -236,7 +236,7 @@ def make_new_table():
         table_name_entry.grid(column=1, row=i + 2, ipady=2)
         fields.append(column)
 
-    def ad_table_to_db(root):
+    def ad_table_to_db():
         fields_to_add = []
         for field in fields:
             if field.get() != "":
@@ -257,8 +257,8 @@ def make_new_table():
             messagebox.showwarning("Σφάλμα", "Πρέπει να ορίσεται τουλάχιστον ένα πεδίο")
             new_table_window.destroy()
             return None
-
-        fields_to_add = " TEXT,".join(fields_to_add)
+        else:  # Αν ο χρήστης ορίσει πεδία να προστεθει το TEXT για να δημιουργίσουμε νέο πίνακα
+            fields_to_add = " TEXT,".join(fields_to_add)  # πεδιο1 ΤΕΧΤ , πεδιο2 ΤΕΧΤ Κτλπ.
 
         if name_of_table in tables:
             messagebox.showwarning("Σφάλμα", "Ο πίνακας {} υπάρχει στους ήδη υπάρχοντες πίνακες {}"
@@ -268,7 +268,7 @@ def make_new_table():
         try:
             conn = sqlite3.connect(dbase)
             cursor = conn.cursor()
-
+            # fields_to_add == πεδιο1 ΤΕΧΤ, πεδιο2 ΤΕΧΤ Κτλπ...
             cursor.execute("CREATE TABLE IF NOT EXISTS " + name_of_table +
                            "(ID INTEGER PRIMARY KEY AUTOINCREMENT, " + fields_to_add + ");")
             print("Line 371 Δημιουργία νέου πίνακα {} με πεδία {}".format(name_of_table, fields_to_add))
@@ -281,10 +281,11 @@ def make_new_table():
             return None
         messagebox.showinfo('Εγινε προσθήκη Πίνακα', "Ο πίνακας {} δημιουργίθηκε ".format(name_of_table))
         new_table_window.destroy()
-        get_tables()
-
+        # Επανεκκίνηση προγράμματος
+        root.destroy()
+        vp_start_gui()
     enter_button = tk.Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
-                             command=lambda: ad_table_to_db(root))
+                             command=ad_table_to_db)
     enter_button.grid(column=2, row=12)
 
     # ΕΞΩΔΟΣ
@@ -299,7 +300,7 @@ def make_new_table():
 def open_file():
     """ Ανοιγμα αρχείου βάσης δεδομένων"""
 
-    global dbase
+    global dbase, tables
     # Να σβήσουμε παλιά κουμπιά και tree αν ανοιξουμε αλη βαση δεδομένων
 
     # print("list_of_frames root.grid.slaves line 78", list_of_frames)
@@ -317,6 +318,7 @@ def open_file():
                                        filetypes=(("db files", "*.db"), ("all files", "*.*")))
     # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
     # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
+    tables = get_tables()
     root.destroy()
     vp_start_gui()
 
@@ -334,6 +336,8 @@ def get_info():
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
+    Language   : Python 3.8
+    tkinter    : 8.6
 """)
 
 
@@ -375,13 +379,13 @@ class Toplevel1:
 
         # # # Modify the font of the body
         self.style.theme_create("mystyle.Treeview", parent="vista")
-        # style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
+        # self.style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
         self.style.map('mystyle.Treeview', foreground=self.fixed_map('foreground'),
                        background=self.fixed_map('background'))
 
         # ==================================== Εμφάνηση δεδομένων ==============================================
-        self.style.configure("mystyle.Treeview", highlightthickness=1, width=100, font=('San Serif', 11))
-        self.style.configure("mystyle.Treeview.Heading", font=('San Serif', 12, 'bold'), background="#657b83",
+        self.style.configure("mystyle.Treeview", highlightthickness=1, font=('Calibri', 11))
+        self.style.configure("mystyle.Treeview.Heading", font=('Calibri', 12, 'bold'), background="#657b83",
                              foreground="black",
                              relief=[('active', 'groove'), ('pressed', 'sunken')])  # Modify the font of the headings
         self.style.layout("mystyle.Treeview", [('mystyle.Treeview.treearea', {'sticky': 'nswe'})])  # Remove the borders
@@ -436,7 +440,7 @@ class Toplevel1:
             self.btn.configure(text=table)
             self.btn.configure(relief=RAISED)
             self.btn.configure(bd=2)
-            self.btn.configure(font=('San Serif', '10', 'bold'))
+            self.btn.configure(font=('Calibri', '10', 'bold'))
             try:
                 self.img = PhotoImage(file="icons/" + table + ".png")
                 self.btn.configure(image=self.img)
@@ -596,28 +600,28 @@ class Toplevel1:
             self.Scrolledtreeview.column(head, width=platos, minwidth="30", stretch="1", anchor=alignment)
 
         colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
-        self.Scrolledtreeview.tag_configure('oddrow', background='#ece8de', foreground="black", font=("San Serif", 10))
-        self.Scrolledtreeview.tag_configure('evenrow', background='white', font=("San Serif", 10))
+        self.Scrolledtreeview.tag_configure('oddrow', background='#ece8de', foreground="black", font=("Calibri", 10))
+        self.Scrolledtreeview.tag_configure('evenrow', background='white', font=("Calibri", 10))
         self.Scrolledtreeview.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('evenrowYELLOW', background='white', foreground="orange",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('evenrowCYAN', background='white', foreground="blue",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('evenrowMAGENTA', background='white', foreground="magenta",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure('evenrowBLACK', background="white", foreground="BLACK",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="#09eb45",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
         self.Scrolledtreeview.tag_configure("evenrowC/M/Y", background="white", foreground="#09eb45",
-                                            font=("San Serif", 10, "bold"))
+                                            font=("Calibri", 10, "bold"))
 
         for n in range(len(up_data)):
             # Κατασκευή tree το up_index -1 == το τελος ("end")
@@ -931,18 +935,18 @@ class Toplevel1:
                     if color:
                         if color[0] == "YELLOW":
                             perigrafi.insert('1.0', selected_data[index], "YELLOW")
-                            perigrafi.tag_config(color, foreground="orange", font=("San Serif", 10, "bold"))
+                            perigrafi.tag_config(color, foreground="orange", font=("Calibri", 10, "bold"))
 
                         elif len(color) > 1 or "C/M/Y" in color:
                             perigrafi.insert('1.0', selected_data[index], "green")
-                            perigrafi.tag_config("green", foreground="#09eb45", font=("San Serif", 10, "bold"))
+                            perigrafi.tag_config("green", foreground="#09eb45", font=("Calibri", 10, "bold"))
                         elif color[0] == "CYAN":
                             perigrafi.insert('1.0', selected_data[index], "CYAN")
-                            perigrafi.tag_config(color, foreground="blue", font=("San Serif", 10, "bold"))
+                            perigrafi.tag_config(color, foreground="blue", font=("Calibri", 10, "bold"))
 
                         else:
                             perigrafi.insert('1.0', selected_data[index], color)
-                            perigrafi.tag_config(color, foreground=color, font=("San Serif", 10, "bold"))
+                            perigrafi.tag_config(color, foreground=color, font=("Calibri", 10, "bold"))
 
                     else:
                         try:
@@ -1011,7 +1015,8 @@ class Toplevel1:
 
             for data in data_to_add:
                 type_of_data = str(type(data))
-                # Ελεγχος εάν είναι scrolledtext τοτε η προσθήκη θελει (data.get('1.0', 'end-1c') και οχι σκετο data.get()
+                # Ελεγχος εάν είναι scrolledtext τοτε η προσθήκη θελει (data.get('1.0', 'end-1c')
+                # και οχι σκετο data.get()
                 # Στο '1.0' το 1 είναι η πρώτη γραμμή  το 0 είναι ο πρώτος χαρακτήρας
                 if "scrolledtext" in type_of_data:
                     edited_data.append(data.get('1.0', 'end-1c'))
@@ -1022,7 +1027,7 @@ class Toplevel1:
             # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
             now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
-            # Αν ο πίνακας είναι ο τελευταίος δλδ παραγγελιων
+            # Αν ο πίνακας είναι ο τελευταίος δλδ παραγγελιων να εισάγει μόνο τον χρήστη
             if self.table == self.tables[-1]:
                 edited_data[-1] = user
             # Aν ο πίνακας εχει περισσοτερα απο 7 κεφαλίδες τότε στο "ΠΑΡΑΤΗΡΗΣΕΙΣ" να βάλει μόνο ημερωμηνία και χρήστη
@@ -1361,28 +1366,28 @@ class Toplevel1:
 
             colors = ["MAGENTA", "YELLOW", "CYAN", "BLACK", "C/M/Y"]
             self.Scrolledtreeview.tag_configure('oddrow', background='#ece8de', foreground="black",
-                                                font=("San Serif", 10))
-            self.Scrolledtreeview.tag_configure('evenrow', background='white', font=("San Serif", 10))
+                                                font=("Calibri", 10))
+            self.Scrolledtreeview.tag_configure('evenrow', background='white', font=("Calibri", 10))
             self.Scrolledtreeview.tag_configure('oddrowYELLOW', background='#ece8de', foreground="orange",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('evenrowYELLOW', background='white', foreground="orange",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('oddrowCYAN', background='#ece8de', foreground="blue",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('evenrowCYAN', background='white', foreground="blue",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('oddrowMAGENTA', background='#ece8de', foreground="magenta",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('evenrowMAGENTA', background='white', foreground="magenta",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('oddrowBLACK', background="#ece8de", foreground="BLACK",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure('evenrowBLACK', background="white", foreground="BLACK",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure("oddrowC/M/Y", background="#ece8de", foreground="#09eb45",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             self.Scrolledtreeview.tag_configure("evenrowC/M/Y", background="white", foreground="#09eb45",
-                                                font=("San Serif", 10, "bold"))
+                                                font=("Calibri", 10, "bold"))
             odd_or_even = 0
             for data in fetch:
                 # Κάνει αναζήτηση του color μόνο στην κεφαλίδα "ΠΕΙΓΡΑΦΉ"
