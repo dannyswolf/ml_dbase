@@ -15,6 +15,9 @@ Sqlite Γραφικό περιβάλλον με Python3
 **************************************************************************************************************
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
+
+Version V2.0.5   | Νεος πίνακας Πελάτες και δυνατότητα διαγραφη επιλεγμένων παραγγελιών  --------------------31/12/2019
+
 Version V2.0.4   | Δημιουργία Class με βοήθεια απο το Page και αλλαγή απο grid σε place  --------------------9/12/2019
 
 Version V1.0.4   | Χρώματα στα κουμπιά και διόρθωση κάποιων σφαλμάτων στον κωδικα                     | -----30/11/2019
@@ -98,7 +101,7 @@ import platform
 
 py3 = True
 
-
+# dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
@@ -211,7 +214,9 @@ def make_new_table():
                 7. Για να μπορείτε να κάνετε παραγγελίες : 
                    α. Χρειάζεται ενα πεδίο με όνομα 'ΚΩΔΙΚΟΣ' (Ελληνικά κεφαλαία)
                    β. Χρειάζεται ενα πεδίο με όνομα 'ΠΕΡΙΓΡΑΦΗ' (Ελληνικά κεφαλαία)\n
-                8. Για να αλλάξει χρώμα  ο πίνακας πάρτε με τηλ 
+                8. Για να μπορείτε να κάνετε αναζήτηση :
+                   α. Χρειάζεται ενα πεδίο με όνομα 'ΠΕΡΙΓΡΑΦΗ' (Ελληνικά κεφαλαία)\n
+                9. Για να αλλάξει χρώμα  ο πίνακας πάρτε με τηλ 
             """.format(tables[-1][0])
 
     info_label = tk.Label(new_table_window, text=info, font=("Calibri", 12), fg="red")
@@ -332,7 +337,7 @@ def get_info():
     Copyright  : "Copyright © 2019"
     Credits    : ['Athanasia Tzampazi']
     License    : 'Gpl'
-    Version    : '2.0.4'
+    Version    : '2.0.5'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -351,7 +356,7 @@ class Toplevel1:
         top.minsize(300, 300)
         top.maxsize(2560, 1080)
         top.resizable(1, 1)
-        top.title("Αποθήκη V2.0.4")
+        top.title("Αποθήκη V2.0.5")
         top.configure(background="#C2C0BD")
         top.bind('<F1>', self.add_event)
         top.bind('<F3>', self.double_click)
@@ -423,7 +428,7 @@ class Toplevel1:
         self.yspot = 0.025
 
         for index, table in enumerate(self.tables):
-            if index == 10:
+            if index == 11:
                 self.yspot = 0.125  # Υψως
                 self.xspot = 0.015  # Πλάτος
             self.btn = tk.Button(top)
@@ -487,6 +492,19 @@ class Toplevel1:
                                       bg="red", fg="white", bd=3, padx=3, pady=10, state="disabled")
 
         self.empty_button.place(relx=0.701, rely=self.yspot, height=34, width=180)
+
+        # Κουμπί για διαγραφή παραγγελίων
+        self.del_button = tk.Button(top,  bg="red", fg="white", bd=3, padx=3, pady=10, state="disabled")
+        self.del_button.configure(pady="0")
+        self.del_button.configure(command=self.del_orders)
+        self.del_button.configure(text="Διαγραφή παραγγελιών")
+        # self.del_button_img = PhotoImage(file="icons/delete_order.png")
+        # self.del_button.configure(image=self.del_button_img)
+        self.del_button.configure(compound="left")
+        self.del_button.configure(state="disabled")
+
+        self.del_button.place(relx=0.880, rely=self.yspot, height=34, width=150)
+
         global _img0
         _img0 = PhotoImage(file="icons8-search-50.png")
         self.search_btn.configure(image=_img0)
@@ -495,7 +513,7 @@ class Toplevel1:
         self.yspot += 0.050
         # self.style.configure('mystyle.Treeview', font="TkDefaultFont")
         self.Scrolledtreeview = ScrolledTreeView(top)
-        self.Scrolledtreeview.configure(show="headings", style="mystyle.Treeview")
+        self.Scrolledtreeview.configure(show="headings", style="mystyle.Treeview", selectmode="extended")
         self.Scrolledtreeview.bind("<Double-1>", self.double_click)
         self.Scrolledtreeview.place(relx=0.015, rely=self.yspot, relheight=0.700, relwidth=0.964)
 
@@ -664,9 +682,15 @@ class Toplevel1:
         if table_name == self.tables[-1]:
 
             self.empty_button.configure(activebackground="green", activeforeground="white")
+            self.empty_button.configure(background="green")
             self.empty_button.configure(state="active")
+
+            self.del_button.configure(background="green", activebackground="green", activeforeground="white")
+            self.del_button.configure(state="active")
+
         else:
             self.empty_button.configure(background="red", state="disabled")
+            self.del_button.configure(background="red", state="disabled")
 
         self.table = table_name  # Ορίζω τον πίνακα που βλεπει ο χρήστης
 
@@ -1355,6 +1379,7 @@ class Toplevel1:
                     search_headers.append(header + " LIKE ?")
                     operators.append('%' + str(search_data.get()) + '%')
             search_headers = " OR ".join(search_headers)
+
             # ΕΤΑΙΡΕΙΑ LIKE ? OR ΜΟΝΤΕΛΟ LIKE ? OR ΚΩΔΙΚΟΣ LIKE ? OR TEMAXIA LIKE ? OR ΤΙΜΗ LIKE ? etc...
 
             # search_cursor.execute("SELECT * FROM " + table + " WHERE \
@@ -1390,7 +1415,7 @@ class Toplevel1:
                                                 font=("Calibri", 10, "bold"))
             odd_or_even = 0
             for data in fetch:
-                # Κάνει αναζήτηση του color μόνο στην κεφαλίδα "ΠΕΙΓΡΑΦΉ"
+                # Κάνει αναζήτηση του color μόνο στην κεφαλίδα "ΠΕΡΙΓΡΑΦΗ"
                 color = [color for color in colors if color in data[self.headers.index("ΠΕΡΙΓΡΑΦΗ")]]
                 # color = [color for color in colors if color in data[4]]  # up_data[n][4] == ΠΕΡΙΓΡΑΦΗ
                 odd_or_even += 1
@@ -1494,6 +1519,48 @@ class Toplevel1:
 
             return None
 
+# -----------------------------  Αδειασμα μόνο επιλεγμένων παραγγελιών   -------------------------------------------
+    # ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
+    def del_orders(self):
+        self.backup()
+        id_orders_to_del = []
+        codes_of_orders = []
+        orders = []
+        selected_item = self.Scrolledtreeview.selection()
+
+        for item in selected_item:
+            # info ==> Dictionary  {'ID': '89', 'ΚΩΔΙΚΟΣ': '19002', 'ΗΜΕΡΩΜΗΝΙΑ': '31/12/2019', }
+            info = self.Scrolledtreeview.set(item)
+            orders.append(info)  # Ολες οι πληροφορίες της παραγγελίας
+            codes_of_orders.append(info['ΚΩΔΙΚΟΣ'])  # Πέρνουμε μόνο το value απο το key 'ΚΩΔΙΚΟΣ'
+            id_orders_to_del.append(info['ID'])  # Πέρνουμε μόνο το value απο το key 'ID'
+
+        print("Λογος αντιγράφου ασφαλείας ==>> Διαγραφή παραγγελιών απο τον πίνακα {}".format(self.tables[-1]))
+        answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή των κωδικών  {}, "
+                                                   "\nΕίστε σήγουρος για την διαγραφή τους; ".format(codes_of_orders),
+                                        icon='warning')
+        if answer == 'yes':
+            empty_conn = sqlite3.connect(dbase)
+            empty_cursor = empty_conn.cursor()
+            for order_id in id_orders_to_del:
+                empty_cursor.execute("DELETE FROM " + self.tables[-1] + " WHERE ID =?", (order_id,))
+
+            print("===============Παραγγελίες διαγράφικαν απο χρήστη {} ========".format(user))
+            for order in orders:
+                print(order)
+
+            empty_conn.commit()
+            empty_cursor.execute("""VACUUM;""")
+            empty_cursor.close()
+            empty_conn.close()
+            messagebox.showwarning("ΠΡΟΣΟΧΗ ", "Οι κωδικοί \n {} διαγράφικαν".format(codes_of_orders))
+            self.update_view(self.table)
+
+        else:
+            print('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
+            messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
+
+            return None
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
