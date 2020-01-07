@@ -104,7 +104,8 @@ import platform
 py3 = True
 
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
-dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+# qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+dbase = "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 
@@ -490,22 +491,24 @@ class Toplevel1:
         self.search_btn.configure(compound='left')
         self.search_btn.configure(command=lambda: self.search(self.search_data))
         # Κουμπί για άδειασμα παραγγελίων
-        self.empty_button = tk.Button(top, text="Αδειασμα παραγγελιών", command=lambda: self.empty_table(),
-                                      bg="red", fg="white", bd=3, padx=3, pady=10, state="disabled")
+        self.empty_button = tk.Button(top, text="ΔΙΑΓΡΑΦΗ ΟΛΩΝ", command=lambda: self.empty_table(),
+                                      bg="red", fg="white", bd=3, padx=3, pady=10)
+        
 
-        self.empty_button.place(relx=0.701, rely=self.yspot, height=34, width=180)
+        
+        self.empty_button.place_forget()
 
         # Κουμπί για διαγραφή παραγγελίων
-        self.del_button = tk.Button(top,  bg="red", fg="white", bd=3, padx=3, pady=10, state="disabled")
+        self.del_button = tk.Button(top,  bg="red", fg="white", bd=3, padx=3, pady=10)
         self.del_button.configure(pady="0")
         self.del_button.configure(command=self.del_orders)
-        self.del_button.configure(text="Διαγραφή παραγγελιών")
+        self.del_button.configure(text="Διαγραφή επιλεγμένων")
         # self.del_button_img = PhotoImage(file="icons/delete_order.png")
         # self.del_button.configure(image=self.del_button_img)
         self.del_button.configure(compound="left")
-        self.del_button.configure(state="disabled")
+        self.del_button.place_forget()
 
-        self.del_button.place(relx=0.880, rely=self.yspot, height=34, width=150)
+        
 
         global _img0
         _img0 = PhotoImage(file="icons8-search-50.png")
@@ -683,16 +686,16 @@ class Toplevel1:
         # Διαφορετικά  απενεργοποιειτε
         if table_name == self.tables[-1]:
 
-            self.empty_button.configure(activebackground="green", activeforeground="white")
-            self.empty_button.configure(background="green")
-            self.empty_button.configure(state="active")
 
-            self.del_button.configure(background="green", activebackground="green", activeforeground="white")
-            self.del_button.configure(state="active")
+            self.empty_button.configure(background="red", foreground="white")
+            self.empty_button.place(relx=0.701, rely=0.250, height=34, width=180)
+
+            self.del_button.configure(background="red", foreground="white")
+            self.del_button.place(relx=0.880, rely=0.250, height=34, width=150)
 
         else:
-            self.empty_button.configure(background="red", state="disabled")
-            self.del_button.configure(background="red", state="disabled")
+            self.empty_button.place_forget()
+            self.del_button.place_forget()
 
         self.table = table_name  # Ορίζω τον πίνακα που βλεπει ο χρήστης
 
