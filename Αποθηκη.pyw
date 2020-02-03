@@ -16,6 +16,14 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.2   | Διαφορετικές εικόνες στις παραγγελίες ---------------------------------------------------03/02/2020
+Οι εικόνες που έχουν τα προιόντα φένονται στις παραγγελίες
+Οι εικόνες που έχουν οι παραγγελίες δεν φενονται στα προιόντα
+Οταν διαγράφουμε τις παραγελίες διαγράφονται και οι εικόνες που έχουν σαν παραγγελίες όχι σαν προιόντα
+Ετσι μπορούμε να προσθέτουμε εικόνες στις παραγγελίες που σχετίζονται μόνο με την παραγγελία και όχι με το προιόν
+
+Version V2.1.1   | Εικόνες και στις παραγγελίες  -----------------------------------------------------------03/02/2020
+
 Version V2.1.0   | Δυνατότητα εισαγωγεις εικόνων -----------------------------------------------------------01/02/2020
 Διαχωρισμός backup σε διαφορετικό αρχείο
 Νέο αρχείο image_viewer και backup.py
@@ -112,13 +120,13 @@ py3 = True
 
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
-dbase = "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 
 # -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
 today = datetime.today().strftime("%d %m %Y")
-log_dir = "logs" + "\\" + today + "\\"
+log_dir = "logs" + "/" + today + "/"
 
 if not os.path.exists(log_dir):
     os.makedirs(log_dir)
@@ -158,6 +166,9 @@ def open_file():
     #         continue
     dbase = filedialog.askopenfilename(initialdir=os.getcwd(), title="Επιλογή βάσης δεδομένων",
                                        filetypes=(("db files", "*.db"), ("all files", "*.*")))
+    if dbase == "":
+        root.destroy()
+        return
     # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
     # print("Γραμμή 112: Επιλεγμένη βάση δεδομένων -->>", dbase)
     tables = get_tables()
@@ -173,6 +184,7 @@ def get_tables():
     tables = []  # Πρέπει να αδειάσουμε πρώτα την λίστα με τους πίνακες για να κάνουμε νέα σύμφονα με την βάση
     # =======================Ανάγνωριση πίνακα δεδομένων=============
     if not os.path.isfile(dbase):
+        messagebox.showerror("Σφάλμα", "H βάση δεδομένων δεν βρέθηκε")
         open_file()
     conn = sqlite3.connect(dbase)
     cursor = conn.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
@@ -382,6 +394,7 @@ class Toplevel1:
         self.len_images = ""  # Σύνολο αρχείων
         self.id = ""    # Ονομα πίνακα και ID προιόντος ειναι το ID των αρχείων που προσθέτουμε
         self.code = ""  # Επιλεγμένος κωδικός προιόντος
+        self.edit_window = ""  # Παράθυρο επεξεργασίας
         _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
         _fgcolor = '#000000'  # X11 color: 'black'
         _compcolor = '#d9d9d9'  # X11 color: 'gray85'
@@ -932,6 +945,7 @@ class Toplevel1:
         # print("selected_data line 424 ", selected_data)
         # print("headers[0] γραμμή 425 = ", headers[0])
         edit_window = tk.Toplevel()
+        self.edit_window = edit_window
         if len(self.headers) < 11:
             self.code = selected_data[3]
             height = int(root.winfo_screenheight() / 17 * len(self.headers))
@@ -1240,13 +1254,20 @@ class Toplevel1:
 
     # Ελεγχος αν υπάρχουν αρχεία για προβολή
     def check_if_files_exists(self):
-        self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
-
         con = sqlite3.connect(dbase)
         cursor = con.cursor()
-        cursor.execute("SELECT * FROM Images WHERE ID =?", (self.id,))
-        images = cursor.fetchall()
+        if self.table != tables[-1]:  # Αν δεν είναι ο πίνακας παραγγελιών
+            self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
+            cursor.execute("SELECT * FROM Images WHERE ID =?", (self.id,))
+        elif self.table == tables[-1]:  # Αν είναι ο πίνακας παραγγελιών
+            self.code = str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#2"))
+            cursor.execute("SELECT * FROM Images WHERE ΚΩΔΙΚΟΣ =?", (self.code,))
+        else:
+            messagebox.showerror("Σφάλμα!", "Παρακαλώ επιλέξτε πρώτα πίνακα")
+            con.close()
+            return
 
+        images = cursor.fetchall()
         self.len_images = len(images)
         self.show_files_btn.configure(text=f'Προβολή {self.len_images}\nαρχείων')
         cursor.close()
@@ -1257,10 +1278,15 @@ class Toplevel1:
         elif not images:  # αδεια λιστα δλδ δεν υπάρχουν αρχεια και απενεργοποιουμε το κουμπί προβολή αρχείων
             self.show_files_btn.place_forget()
 
-
     # Προβολή αρχείων
     def show_files(self):
-        image_viewer.create_Toplevel1(w, self.id, dbase)
+        self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
+
+        if self.table != self.tables[-1]:  # Αν προσπαθούμε να δούμε τις εικόνες οχι απο τον πίνακα παραγγελιών
+            image_viewer.create_Toplevel1(w, self.id, dbase)
+
+        else:  # Αν προσπαθούμε να δούμε τις εικόνες  απο τον πίνακα παραγγελιών
+            image_viewer.create_Toplevel1(w, self.id, dbase, self.code)
     # Προσθήκη αρχείων
     def add_files(self):
 
@@ -1279,6 +1305,7 @@ class Toplevel1:
     def add_files_to_db(self):
         if self.files == "":
             return
+        self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
         con = sqlite3.connect(dbase)
         cursor = con.cursor()
         cursor.execute("SELECT Filename FROM Images WHERE ID =?", (self.id,))
@@ -1315,6 +1342,7 @@ class Toplevel1:
 
         con.commit()
         con.close()
+        self.edit_window.focus()
 
     def backup(self):
         backup.backup(dbase)
@@ -1617,6 +1645,9 @@ class Toplevel1:
             for paraggelia in paraggelies:
                 print(paraggelia)
             empty_cursor.execute("DELETE FROM " + self.tables[-1] + ";")
+            # Διαγραφεί εικόνων που έχουν προστεθεί στις παραγγελίες
+            empty_cursor.execute(f"DELETE FROM Images WHERE ID LIKE '{self.tables[-1]}%'")
+
             empty_conn.commit()
             empty_cursor.execute("""VACUUM;""")
             empty_cursor.close()
@@ -1655,7 +1686,9 @@ class Toplevel1:
             empty_cursor = empty_conn.cursor()
             for order_id in id_orders_to_del:
                 empty_cursor.execute("DELETE FROM " + self.tables[-1] + " WHERE ID =?", (order_id,))
-
+                # Διαγραφή εικόνων που είχαν οι παραγγελίες
+                image_id_to_del = str(self.tables[-1] + "_" + order_id)
+                empty_cursor.execute("DELETE FROM Images  WHERE ID =?", (image_id_to_del,))
             print("===============Παραγγελίες διαγράφικαν απο χρήστη {} ========".format(user))
             for order in orders:
                 print(order)

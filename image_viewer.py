@@ -20,18 +20,24 @@ import sys
 from datetime import datetime
 
 
-
 dbase = ""
-# -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE  ------------------
+# -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
+# -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
 today = datetime.today().strftime("%d %m %Y")
-log_dir = "logs" + "\\" + today + "\\"
+log_dir = "logs" + "/" + today + "/"
+
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+else:
+    pass
+
 log_file_name = "ml_database_log" + datetime.now().strftime("%d %m %Y %H %M %S") + ".log"
 log_file = os.path.join(log_dir, log_file_name)
 
 # log_format = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 root_logger = logging.getLogger()
 root_logger.setLevel(logging.DEBUG)  # or whatever
-handler = logging.FileHandler(log_file, 'w', 'utf-8')  # or whatever
+handler = logging.FileHandler(log_file, 'a', 'utf-8')  # or whatever
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')  # or whatever
 handler.setFormatter(formatter)  # Pass handler as a parameter, not assign
 root_logger.addHandler(handler)
@@ -50,15 +56,21 @@ def vp_start_gui():
 
 
 w = None
-
+code = None
+selected_service_ID = None
+images_path = None
 
 def create_Toplevel1(root, *args, **kwargs):
     '''Starting point when module is imported by another program.'''
-    global w, w_win, rt, selected_service_ID, images_path, dbase
+    global w, w_win, rt, selected_service_ID, images_path, dbase, code
     selected_service_ID = args[0]
     # Δημιουργία φακέλου για τις εικόνες
     images_path = "images/" + str(selected_service_ID) + "/"
     dbase = args[1]
+    try:
+        code = args[2]  # όταν θέλουμε να δούμε τις εικόνες απο τον πίνακα παραγγελιών
+    except IndexError:  # όταν θέλουμε να δούμε τις εικόνες ΟΧΙ απο τον πίνακα παραγγελιών
+        pass
     if not os.path.exists(images_path):
         os.makedirs(images_path)
     rt = root
@@ -69,10 +81,22 @@ def create_Toplevel1(root, *args, **kwargs):
 
 
 def get_images_from_db():
+    global code, selected_service_ID  # πρέπει να τα μηδενίσω για να πάρει τα νέα στοιχεία την επωμενη φορά που θα ανοιξουμε για να δουμε τις εικόνες
     con = sqlite3.connect(dbase)
     cursor = con.cursor()
-    cursor.execute("SELECT * FROM Images WHERE ID =?", (selected_service_ID,))
-    images = cursor.fetchall()
+    if code:  # όταν θέλουμε να δούμε τις εικόνες απο τον πίνακα παραγγελιών
+        cursor.execute("SELECT * FROM Images WHERE ΚΩΔΙΚΟΣ =?", (code,))
+        images_from_orders = cursor.fetchall()
+        cursor.execute("SELECT * FROM Images WHERE ID =?", (selected_service_ID,))
+        images_from_code = cursor.fetchall()
+        images = images_from_orders + images_from_code
+        # messagebox.showinfo("images", f'{images}')
+        code = None
+    else:
+        cursor.execute("SELECT * FROM Images WHERE ID =?", (selected_service_ID,))
+        images = cursor.fetchall()
+        selected_service_ID = None
+
     cursor.close()
     con.close()
 
@@ -120,7 +144,7 @@ class Toplevel1:
         self.image_size = ""  # Μέγεθος αρχείου
         self.images_path = images_path
         self.filenames = os.listdir(self.images_path)
-
+        self.code = code
         self.index = 0
         self.new_size = (800, 600)
         self.top = top
@@ -167,15 +191,15 @@ class Toplevel1:
         self.image_label.configure(text="")
         try:
             file = self.images_path + self.filenames[0]
+            if file[-3:] != "pdf":
+                self.image = self.filenames[0][:-4]
+                self.selected_image = PIL.Image.open(file)
+                image = self.selected_image.resize(self.new_size)
+                photo = ImageTk.PhotoImage(image)
+                self.image_label.configure(image=photo)
+                self.image_label.image = photo
         except IndexError:  # list index out of range
             pass
-        if file[-3:] != "pdf":
-            self.image = self.filenames[0][:-4]
-            self.selected_image = PIL.Image.open(file)
-            image = self.selected_image.resize(self.new_size)
-            photo = ImageTk.PhotoImage(image)
-            self.image_label.configure(image=photo)
-            self.image_label.image = photo
 
         else:
             subprocess.Popen(self.images_path + self.filenames[self.index], shell=True)
@@ -222,7 +246,11 @@ class Toplevel1:
 
     def get_size_of_files(self):
         # Μέγεθος αρχείου
-        self.image = self.filenames[self.index][:-4]
+        try:
+            self.image = self.filenames[self.index][:-4]
+        except IndexError as error:
+            messagebox.showerror("Error", f'{error} {self.filenames[self.index]}')
+            pass
         con = sqlite3.connect(dbase)
         c = con.cursor()
         c.execute("SELECT File_size FROM Images WHERE Filename =?", (self.image,))
