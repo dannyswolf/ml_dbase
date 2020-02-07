@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.3   | Fix bugs on image_viewer  ---------- ---------------------------------------------------06/02/2020
+
 Version V2.1.2   | Διαφορετικές εικόνες στις παραγγελίες ---------------------------------------------------03/02/2020
 Οι εικόνες που έχουν τα προιόντα φένονται στις παραγγελίες
 Οι εικόνες που έχουν οι παραγγελίες δεν φενονται στα προιόντα
@@ -361,7 +363,7 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2019"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.0'
+    Version    : '2.1.3'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -379,7 +381,7 @@ class Toplevel1:
         top.minsize(300, 300)
         top.maxsize(2560, 1080)
         top.resizable(1, 1)
-        top.title("Αποθήκη V2.1.0")
+        top.title("Αποθήκη V2.1.3")
         top.configure(background="#C2C0BD")
         top.bind('<F1>', self.add_event)
         top.bind('<F3>', self.double_click)
