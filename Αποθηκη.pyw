@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.4   | Save to Excel         ---------- -------------------------------------------------------16/02/2020
+
 Version V2.1.3   | Fix bugs on image_viewer  ---------- ---------------------------------------------------06/02/2020
 
 Version V2.1.2   | Διαφορετικές εικόνες στις παραγγελίες ---------------------------------------------------03/02/2020
@@ -101,6 +103,10 @@ TODO: 11) Το sort δεν παίζει καλά με τα νούμερα ------
 """
 
 import sqlite3
+import subprocess
+
+import xlsxwriter  # Για εξαγωγή σε excel
+import pandas as pd
 import os.path
 import tkinter.ttk as ttk
 import tkinter as tk
@@ -354,16 +360,13 @@ def make_new_table():
     new_table_window.bind('<Escape>', quit_app)
 
 
-
-
-
 # Εμφάνιση πληροφοριών
 def get_info():
     messagebox.showinfo("Πληροφορίες", """ 
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2019"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.3'
+    Version    : '2.1.4'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -381,7 +384,7 @@ class Toplevel1:
         top.minsize(300, 300)
         top.maxsize(2560, 1080)
         top.resizable(1, 1)
-        top.title("Αποθήκη V2.1.3")
+        top.title("Αποθήκη V2.1.4")
         top.configure(background="#C2C0BD")
         top.bind('<F1>', self.add_event)
         top.bind('<F3>', self.double_click)
@@ -442,6 +445,7 @@ class Toplevel1:
         self.backup_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Αντίγραφο ασφαλείας", menu=self.backup_menu)
         self.backup_menu.add_command(label="Δημιουργία αντίγραφο ασφαλείας!", command=self.backup)
+        self.backup_menu.add_command(label="Εξαγωγή σε Excel", command=self.to_excel)
 
         self.table_menu = tk.Menu(self.menubar, tearoff=0)
         self.menubar.add_cascade(label="Πίνακες", menu=self.table_menu)
@@ -1349,7 +1353,46 @@ class Toplevel1:
     def backup(self):
         backup.backup(dbase)
 
+    def to_excel(self):
+        con = sqlite3.connect(dbase)
+        c = con.cursor()
+        c.execute("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;")
+        tables_name = c.fetchall()
 
+        c.close()
+        con.close()
+        not_used_tables = ["AA_ΠΕΛΑΤΕΣ", "sqlite_master", "sqlite_sequence", "sqlite_temp_master", "Images"]
+        needed_tables = []
+        data_frames = []
+        for table in tables_name:
+            if table[0] not in not_used_tables:
+                needed_tables.append(table[0])
+                data_frames.append(table[0])
+        options = {}
+        options['defaultextension'] = ".xlsx"
+        options['filetypes'] = [('Excel', '.xlsx')]
+        options['title'] = "Αποθήκευση αποθήκης"
+        options['initialfile'] = f'Αποθήκη {today}.xlsx'
+        save_file = filedialog.asksaveasfile(mode='w', **options)
+        if save_file is None:  # ask saveasfile return `None` if dialog closed with "cancel".
+            return
+
+        # new_exc = xlsxwriter.Workbook(save_file.name)
+        # Create a Pandas Excel writer using XlsxWriter as the engine.
+        writer = pd.ExcelWriter(save_file.name, engine="xlsxwriter")
+
+        con = sqlite3.connect(dbase)
+
+        for table in needed_tables:
+            sql = "SELECT * FROM " + table
+            df = pd.read_sql_query(sql, con)
+
+            df.to_excel(writer, sheet_name=table, index=False)
+        writer.save()
+        writer.close()
+        save_file.close()
+        con.close()
+        os.startfile(save_file.name)
     # ========================================================================================
     # ------------------------------------- ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ ----------------------------=
     # -----------------------****************** ΠΡΟΣΟΧΗ ************-------------------------=
