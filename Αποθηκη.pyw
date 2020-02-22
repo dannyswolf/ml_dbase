@@ -16,12 +16,14 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.5   | Baclup to file and backup every time edit items and delete orders  --------------------22/02/2020
+
 Version V2.1.4   | Save to Excel         ---------- -------------------------------------------------------16/02/2020
 
 Version V2.1.3   | Fix bugs on image_viewer  ---------- ---------------------------------------------------06/02/2020
 
 Version V2.1.2   | Διαφορετικές εικόνες στις παραγγελίες ---------------------------------------------------03/02/2020
-Οι εικόνες που έχουν τα προιόντα φένονται στις παραγγελίες
+Οι εικόνες που έχουν τα προιόντα φαίνονται στις παραγγελίες
 Οι εικόνες που έχουν οι παραγγελίες δεν φενονται στα προιόντα
 Οταν διαγράφουμε τις παραγελίες διαγράφονται και οι εικόνες που έχουν σαν παραγγελίες όχι σαν προιόντα
 Ετσι μπορούμε να προσθέτουμε εικόνες στις παραγγελίες που σχετίζονται μόνο με την παραγγελία και όχι με το προιόν
@@ -310,7 +312,7 @@ def make_new_table():
 
         name_of_table = table_name.get()
 
-        # Αν ο νέος πίνακας ξεκοινάει με το γράμμα του τελευταίου πίνακα που είναι ο πίνακας για παραγγελίες
+        # Αν ο νέος πίνακας ξεκινάει με το γράμμα του τελευταίου πίνακα που είναι ο πίνακας για παραγγελίες
         if name_of_table[0] == tables[-1][0]:
             messagebox.showwarning("Σφάλμα", info)
             new_table_window.destroy()
@@ -366,7 +368,7 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2019"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.4'
+    Version    : '2.1.5'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -384,7 +386,7 @@ class Toplevel1:
         top.minsize(300, 300)
         top.maxsize(2560, 1080)
         top.resizable(1, 1)
-        top.title("Αποθήκη V2.1.4")
+        top.title("Αποθήκη V2.1.5")
         top.configure(background="#C2C0BD")
         top.bind('<F1>', self.add_event)
         top.bind('<F3>', self.double_click)
@@ -941,7 +943,8 @@ class Toplevel1:
                                    icon='warning')
 
             return None
-
+        # Backup before edit
+        self.backup_before_edit()
         selected_item = (self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), '#1'))
         edit_conn = sqlite3.connect(dbase)
         edit_cursor = edit_conn.cursor()
@@ -1353,6 +1356,53 @@ class Toplevel1:
     def backup(self):
         backup.backup(dbase)
 
+    def backup_before_edit(self):
+        def progress_to_file(status, remainig, total):
+            print(f"{status} Αντιγράφηκαν {total - remainig} απο {total} σελίδες...")
+
+        try:
+            now = datetime.now().strftime("%d %m %Y %H %M %S")
+            today = datetime.today().strftime("%d %m %Y")
+            back_dir = "backups" + "/" + today + "/"
+            backup_file = os.path.join(back_dir, os.path.basename(dbase[:-3]) + " " + now + ".db")
+
+            print("============BACKUP FILE===========Line 1366=\n", backup_file, "\n")
+            if not os.path.exists(back_dir):
+                os.makedirs(back_dir)
+            else:
+                pass
+            # Υπάρχουσα βάση
+            conn = sqlite3.connect(dbase)
+            print("===========Υπάρχουσα βάση===========Line 1373\n ", dbase, "\n")
+
+            # Δημιουργία νέας βάσης και αντίγραφο ασφαλείας
+            back_conn = sqlite3.connect(backup_file)
+            with back_conn:
+                conn.backup(back_conn, pages=10, progress=progress_to_file)
+                back_conn.close()
+                text = "Η βάση αντιγράφηκε :  "
+                result = text + os.path.realpath(backup_file)
+                print("=====Αποτέλεσμα ====Line 1382\n", result)
+                # Ειναι ενοχλητικο να εμφανιζει καθε φορα μηνυμα οτι εγινε backup
+                # messagebox.showinfo('Αποτέλεσμα αντιγράφου ασφαλείας', result)
+
+        except FileNotFoundError as file_error:
+            messagebox.showwarning("Σφάλμα...", "{}".format(file_error))
+            print("File Error Line 1388", file_error)
+
+        except sqlite3.Error as error:
+            if not os.path.exists(backup_file):
+                result = "Σφάλμα κατα την αντιγραφή : ", error
+                messagebox.showwarning("Σφάλμα...", "{}".format(result))
+        finally:
+            try:
+                if back_conn:
+                    back_conn.close()
+                    print("Δημιουργία αντιγράφου ασφαλείας στο αρχείο  ", backup_file, " ολοκληρώθηκε")
+            except UnboundLocalError as error:
+                print(f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 1074 {error}")
+                messagebox.showerror("Σφάλμα", f"Η σύνδεση με {backup_file} δεν έγινε ποτέ Line 1075 {error}")
+
     def to_excel(self):
         con = sqlite3.connect(dbase)
         c = con.cursor()
@@ -1368,6 +1418,7 @@ class Toplevel1:
             if table[0] not in not_used_tables:
                 needed_tables.append(table[0])
                 data_frames.append(table[0])
+
         options = {}
         options['defaultextension'] = ".xlsx"
         options['filetypes'] = [('Excel', '.xlsx')]
@@ -1508,7 +1559,7 @@ class Toplevel1:
         del_cursor.execute("SELECT * FROM " + self.table + " WHERE ID = ?", (selected_item,))
         selected_data = del_cursor.fetchall()
         selected_data = list(selected_data[0])
-        print("Γραμμη 787: Επιλεγμένα για διαγραφή δεδομένα -->>", self.headers, selected_data)
+        print("Γραμμη 1560: Επιλεγμένα για διαγραφή δεδομένα -->>", self.headers, selected_data)
 
         # ======================ΕΠΙΒΕΒΑΙΩΣΗ ΔΙΑΓΡΑΦΗΣ============
         answer = messagebox.askquestion("Θα πραγματοποιηθεί διαγραφή!",
@@ -1526,8 +1577,10 @@ class Toplevel1:
             print()
             return None
         print("Γραμμή 778: ---------------ΛΟΓΟΣ BACKUP --->>> ΔΙΑΓΡΑΦΗ ΔΕΔΟΜΕΝΩΝ ------------------------- ")
-        self.backup()
+        self.backup_before_edit()
         del_cursor.execute("DELETE FROM " + self.table + " WHERE ID=?", (selected_item,))
+        # Delete image from dbase from selected item
+        del_cursor.execute("DELETE FROM Images WHERE ID =?", (self.table + "_" + selected_item,))
         del_conn.commit()
         del_conn.close()
         print()
@@ -1539,7 +1592,7 @@ class Toplevel1:
             # print("======ΕΓΙΝΕ ΔΙΑΓΡΑΦΗ ΑΠΟ ΤΟ TREE====================================line 600 ")
             return selected_item
         except TclError as error:
-            print("ΣΦΑΛΜΑ Line 1206", error)
+            print("ΣΦΑΛΜΑ Line 1591", error)
 
     # =====================================ΑΝΑΖΗΤΗΣΗ=========================================
     def search(self, search_data):
@@ -1676,12 +1729,13 @@ class Toplevel1:
     # -----------------------------  Αδειασμα παραγγελιών  -------------------------------------------
     # ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
     def empty_table(self):
-        self.backup()
-        print("Λογος αντιγράφου ασφαλείας ==>> διαγραφή πίνακα {}".format(self.tables[-1]))
+
         answer = messagebox.askquestion("ΠΡΟΣΟΧΗ", "Θα πραγματοποιηθεί διαγραφή του πίνακα {}, \
                                                     Είστε σήγουρος για την διαγραφή του; ".format(self.tables[-1]),
                                         icon='warning')
         if answer == 'yes':
+            print("Λογος αντιγράφου ασφαλείας ==>> διαγραφή πίνακα {}".format(self.tables[-1]))
+            self.backup_before_edit()
             empty_conn = sqlite3.connect(dbase)
             empty_cursor = empty_conn.cursor()
             empty_cursor.execute("SELECT * FROM " + self.tables[-1] + ";")
@@ -1709,7 +1763,7 @@ class Toplevel1:
 # -----------------------------  Αδειασμα μόνο επιλεγμένων παραγγελιών   -------------------------------------------
     # ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
     def del_orders(self):
-        # self.backup() # αργεί πολύ todo πρεπει να μπουν οι εικόνες σε άλλη βάση
+        self.backup_before_edit()  # αργεί πολύ todo πρεπει να μπουν οι εικόνες σε άλλη βάση
         id_orders_to_del = []
         codes_of_orders = []
         orders = []
