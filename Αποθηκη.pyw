@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.6   | Linux Fixed and change top to self.top ------------------------------------------------23/02/2020
+
 Version V2.1.5   | Baclup to file and backup every time edit items and delete orders  --------------------22/02/2020
 
 Version V2.1.4   | Save to Excel         ---------- -------------------------------------------------------16/02/2020
@@ -137,7 +139,7 @@ else:
 
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
-# dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 
@@ -375,7 +377,7 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2019"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.5'
+    Version    : '2.1.6'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -388,18 +390,18 @@ class Toplevel1:
         """This class configures and populates the toplevel window.
                    top is the toplevel containing window.
         """
-        # self.top = root
-        top.geometry("1024x700+200+70")
-        top.minsize(300, 300)
-        top.maxsize(2560, 1080)
-        top.resizable(1, 1)
-        top.title("Αποθήκη V2.1.5")
-        top.configure(background="#C2C0BD")
-        top.bind('<F1>', self.add_event)
-        top.bind('<F3>', self.double_click)
+        self.top = top
+        self.top.geometry("1024x700+200+70")
+        self.top.minsize(300, 300)
+        self.top.maxsize(2560, 1080)
+        self.top.resizable(1, 1)
+        self.top.title("Αποθήκη V2.1.6")
+        self.top.configure(background="#C2C0BD")
+        self.top.bind('<F1>', self.add_event)
+        self.top.bind('<F3>', self.double_click)
 
         self.tables = get_tables()
-        self.width_of_tree = top.winfo_screenwidth()
+        self.width_of_tree = self.top.winfo_screenwidth()
         self.buttons = []  # Για εισαγωγεί κουμπιών [btn1,btn2....]
         self.table = ""  # Mε το πάτιμα του κουμπιου αλλάζει ο πίνακας
         self.headers = []  # Για να περνουμε της επικεφαλίδες καθε πίνακα
@@ -416,16 +418,22 @@ class Toplevel1:
         _ana2color = '#ececec'  # Closest X11 color: 'gray92'
         self.style = ttk.Style()
 
+        if sys.platform == "win32":
         # style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
-        self.style.theme_use('vista')
+            self.style.theme_use('vista')
+        else:
+            self.style.theme_use('clam')
 
         # Εικονίδιο για resize το παράθυρο
         self.style.configure('TSizegrip', background=_bgcolor)
-        self.TSizegrip1 = ttk.Sizegrip(top)
+        self.TSizegrip1 = ttk.Sizegrip(self.top)
         self.TSizegrip1.place(anchor='se', relx=1.0, rely=1.0)
 
         # # # Modify the font of the body
-        self.style.theme_create("mystyle.Treeview", parent="vista")
+        if sys.platform == "win32":
+            self.style.theme_create("mystyle.Treeview", parent="vista")
+        else:
+            self.style.theme_create("mystyle.Treeview", parent="clam")
         # self.style.configure("mystyle.Treeview.Heading", background="gray", foreground="white", relief="flat")
         self.style.map('mystyle.Treeview', foreground=self.fixed_map('foreground'),
                        background=self.fixed_map('background'))
@@ -439,7 +447,7 @@ class Toplevel1:
         self.style.configure("mystyle.Treeview", background="white", rowheight=50)
 
         # ---------------------------------------Menu-----------------------------------------
-        self.menubar = tk.Menu(top, font="TkMenuFont", bg=_bgcolor, fg=_fgcolor)
+        self.menubar = tk.Menu(self.top, font="TkMenuFont", bg=_bgcolor, fg=_fgcolor)
         # --------------------------------------   MENU   -----------------------------------------
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Ανοιγμα αρχείου", command=open_file)
@@ -464,7 +472,7 @@ class Toplevel1:
         self.menubar.add_cascade(label="Info", menu=self.info_menu)
         self.info_menu.add_command(label="Πληροφορίες", command=get_info)
 
-        top.configure(menu=self.menubar)
+        self.top.configure(menu=self.menubar)
 
         # --------------------------- Πίνακες - Κουμπιά ------------------------------
         self.xspot = 0.015
@@ -474,7 +482,7 @@ class Toplevel1:
             if index == 11:
                 self.yspot = 0.125  # Υψως
                 self.xspot = 0.015  # Πλάτος
-            self.btn = tk.Button(top)
+            self.btn = tk.Button(self.top)
             self.btn.place(relx=self.xspot, rely=self.yspot, height=78, width=120)
             self.btn.configure(activebackground="#ececec")
             self.btn.configure(activeforeground="#000000")
@@ -506,7 +514,7 @@ class Toplevel1:
         self.search_data = StringVar()
 
         # ---------------------Πεδίο Αναζήτησης ----------------------
-        self.search_entry = tk.Entry(top, textvariable=self.search_data)
+        self.search_entry = tk.Entry(self.top, textvariable=self.search_data)
         self.search_entry.place(relx=0.315, rely=self.yspot, height=24, relwidth=0.240)
         self.search_entry.configure(background="white")
         self.search_entry.configure(disabledforeground="#a3a3a3")
@@ -516,7 +524,7 @@ class Toplevel1:
         self.search_entry.bind('<Return>', self.search_event)
         self.search_entry.focus()
 
-        self.search_btn = tk.Button(top)
+        self.search_btn = tk.Button(self.top)
         self.search_btn.place(relx=0.571, rely=self.yspot, height=24, width=115)
         self.search_btn.configure(activebackground="#ececec")
         self.search_btn.configure(activeforeground="#000000")
@@ -531,7 +539,7 @@ class Toplevel1:
         self.search_btn.configure(compound='left')
         self.search_btn.configure(command=lambda: self.search(self.search_data))
         # Κουμπί για άδειασμα παραγγελίων
-        self.empty_button = tk.Button(top, text="ΔΙΑΓΡΑΦΗ ΟΛΩΝ", command=lambda: self.empty_table(),
+        self.empty_button = tk.Button(self.top, text="ΔΙΑΓΡΑΦΗ ΟΛΩΝ", command=lambda: self.empty_table(),
                                       bg="red", fg="white", bd=3, padx=3, pady=10)
 
         self.empty_button_img = PhotoImage(file="icons/delete_all.png")
@@ -540,7 +548,7 @@ class Toplevel1:
         self.empty_button.place_forget()
 
         # Κουμπί για διαγραφή παραγγελίων
-        self.del_button = tk.Button(top,  bg="red", fg="white", bd=3, padx=3, pady=10)
+        self.del_button = tk.Button(self.top,  bg="red", fg="white", bd=3, padx=3, pady=10)
         self.del_button.configure(pady="0")
         self.del_button.configure(command=self.del_orders)
         self.del_button.configure(text="Διαγραφή επιλεγμένων")
@@ -558,7 +566,7 @@ class Toplevel1:
         # ---------------------- Tree -------------------------------
         self.yspot += 0.050
         # self.style.configure('mystyle.Treeview', font="TkDefaultFont")
-        self.Scrolledtreeview = ScrolledTreeView(top)
+        self.Scrolledtreeview = ScrolledTreeView(self.top)
         self.Scrolledtreeview.configure(show="headings", style="mystyle.Treeview", selectmode="extended")
         self.Scrolledtreeview.bind("<Double-1>", self.double_click)
         self.Scrolledtreeview.place(relx=0.015, rely=self.yspot, relheight=0.700, relwidth=0.964)
@@ -960,7 +968,7 @@ class Toplevel1:
         selected_data = list(selected_data[0])
         # print("selected_data line 424 ", selected_data)
         # print("headers[0] γραμμή 425 = ", headers[0])
-        edit_window = tk.Toplevel()
+        edit_window = tk.Toplevel(self.top)
         self.edit_window = edit_window
         if len(self.headers) < 11:
             self.code = selected_data[3]
@@ -1299,10 +1307,10 @@ class Toplevel1:
         self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
 
         if self.table != self.tables[-1]:  # Αν προσπαθούμε να δούμε τις εικόνες οχι απο τον πίνακα παραγγελιών
-            image_viewer.create_Toplevel1(w, self.id, dbase)
+            image_viewer.create_Toplevel1(self.top, self.id, dbase)
 
         else:  # Αν προσπαθούμε να δούμε τις εικόνες  απο τον πίνακα παραγγελιών
-            image_viewer.create_Toplevel1(w, self.id, dbase, self.code)
+            image_viewer.create_Toplevel1(self.top, self.id, dbase, self.code)
     # Προσθήκη αρχείων
     def add_files(self):
 
@@ -1430,8 +1438,9 @@ class Toplevel1:
         options['defaultextension'] = ".xlsx"
         options['filetypes'] = [('Excel', '.xlsx')]
         options['title'] = "Αποθήκευση αποθήκης"
-        options['initialfile'] = f'Αποθήκη {today}.xlsx'
+        options['initialfile'] = "Αποθήκη_" + f"{today}".replace(" ", "_") + ".xlsx"
         save_file = filedialog.asksaveasfile(mode='w', **options)
+
         if save_file is None:  # ask saveasfile return `None` if dialog closed with "cancel".
             return
 
@@ -1450,7 +1459,12 @@ class Toplevel1:
         writer.close()
         save_file.close()
         con.close()
-        os.startfile(save_file.name)
+        if sys.platform == "win32":
+            os.startfile(save_file.name)
+        else:
+            file_to_open = str(save_file.name)
+            print("file_to_open", file_to_open)
+            subprocess.Popen(['libreoffice', file_to_open])
     # ========================================================================================
     # ------------------------------------- ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ ----------------------------=
     # -----------------------****************** ΠΡΟΣΟΧΗ ************-------------------------=
