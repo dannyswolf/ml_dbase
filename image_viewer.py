@@ -69,7 +69,7 @@ def create_Toplevel1(root, *args, **kwargs):
     # Δημιουργία φακέλου για τις εικόνες
     if sys.platform == "win32":
         images_path = "/images/" + str(selected_service_ID) + "/"
-        print()
+
     elif sys.platform == "linux":
         images_path = "images/" + str(selected_service_ID) + "/"
     dbase = args[1]
@@ -319,7 +319,7 @@ class Toplevel1:
                 c = con.cursor()
                 c.execute("SELECT File_size FROM Images WHERE Filename =?", (self.image,))
                 size = c.fetchall()
-                print("self.image", self.image, size)
+
                 con.close()
                 self.image_size = convert_bytes(float(size[0][0]))
                 self.image_name_label.configure(text="Αρχείο : " + self.filenames[self.index] +
@@ -335,7 +335,7 @@ class Toplevel1:
                 c = con.cursor()
                 c.execute("SELECT File_size FROM Images WHERE Filename =?", (self.image,))
                 size = c.fetchall()
-                print("self.image", self.image, size)
+
                 con.close()
                 self.image_size = convert_bytes(float(size[0][0]))
 
@@ -377,7 +377,7 @@ class Toplevel1:
                 c = con.cursor()
                 c.execute("SELECT File_size FROM Images WHERE Filename =?", (self.image,))
                 size = c.fetchall()
-                print("self.image", self.image, size)
+
                 con.close()
                 self.image_size = convert_bytes(float(size[0][0]))
 
@@ -393,7 +393,7 @@ class Toplevel1:
                 c = con.cursor()
                 c.execute("SELECT File_size FROM Images WHERE Filename =?", (self.image,))
                 size = c.fetchall()
-                print("self.image", self.image, size)
+
                 con.close()
                 self.image_size = convert_bytes(float(size[0][0]))
 
