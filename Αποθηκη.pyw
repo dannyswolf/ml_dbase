@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.1.9   | Fixed Delete Images     --------------------------------------------------------------01/05/2020
+
 Version V2.1.8   | Fixed Images on edit window ----------------------------------------------------------26/02/2020
 
 Version V2.1.7   | Images on edit window    -------------------------------------------------------------25/02/2020
@@ -144,7 +146,8 @@ else:
 
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
-# dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+
+dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 
@@ -169,6 +172,7 @@ handler.setFormatter(formatter)  # Pass handler as a parameter, not assign
 root_logger.addHandler(handler)
 sys.stderr.write = root_logger.error
 sys.stdout.write = root_logger.info
+
 
 # Κουμπί να ανοιξει το αρχείο (βαση δεδομένων)
 def open_file():
@@ -200,6 +204,7 @@ def open_file():
     vp_start_gui()
 
     return None
+
 
 def get_tables():
     """ Αποκόμιση  πινάκων απο την βάση δεδομένων """
@@ -364,6 +369,7 @@ def make_new_table():
         # Επανεκκίνηση προγράμματος
         root.destroy()
         vp_start_gui()
+
     enter_button = tk.Button(new_table_window, text="Προσθήκη Πίνακα", bg="green", fg="White", bd=8, padx=5, pady=8,
                              command=ad_table_to_db)
     enter_button.grid(column=2, row=12)
@@ -380,9 +386,9 @@ def make_new_table():
 def get_info():
     messagebox.showinfo("Πληροφορίες", """ 
     Αuthor     : "Jordanis Ntini"
-    Copyright  : "Copyright © 2019"
+    Copyright  : "Copyright © 2020"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.8'
+    Version    : '2.1.9'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -432,7 +438,6 @@ def get_images_from_db(selected_service_ID, code=None):
     return images, images_path
 
 
-
 def convert_bytes(size):
     for x in ['bytes', 'KB', 'MB', 'GB', 'TB']:
         if size < 1024.0:
@@ -440,6 +445,7 @@ def convert_bytes(size):
         size /= 1024.0
 
     return size
+
 
 class Toplevel1:
     def __init__(self, top=None):
@@ -462,9 +468,9 @@ class Toplevel1:
         self.table = ""  # Mε το πάτιμα του κουμπιου αλλάζει ο πίνακας
         self.headers = []  # Για να περνουμε της επικεφαλίδες καθε πίνακα
         self.images = []  # Εικόνες Κουμιών
-        self.files = ""   # Αρχεία (εικόνες και pdf στην βάση)
+        self.files = ""  # Αρχεία (εικόνες και pdf στην βάση)
         self.len_images = ""  # Σύνολο αρχείων
-        self.id = ""    # Ονομα πίνακα και ID προιόντος ειναι το ID των αρχείων που προσθέτουμε
+        self.id = ""  # Ονομα πίνακα και ID προιόντος ειναι το ID των αρχείων που προσθέτουμε
         self.code = ""  # Επιλεγμένος κωδικός προιόντος
         self.edit_window = ""  # Παράθυρο επεξεργασίας
         _bgcolor = '#d9d9d9'  # X11 color: 'gray85'
@@ -475,7 +481,7 @@ class Toplevel1:
         self.style = ttk.Style()
 
         if sys.platform == "win32":
-        # style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
+            # style.theme_names()-->> ('winnative', 'clam', 'alt', 'default', 'classic', 'vista', 'xpnative')
             self.style.theme_use('vista')
         else:
             self.style.theme_use('clam')
@@ -604,7 +610,7 @@ class Toplevel1:
         self.empty_button.place_forget()
 
         # Κουμπί για διαγραφή παραγγελίων
-        self.del_button = tk.Button(self.top,  bg="red", fg="white", bd=3, padx=3, pady=10)
+        self.del_button = tk.Button(self.top, bg="red", fg="white", bd=3, padx=3, pady=10)
         self.del_button.configure(pady="0")
         self.del_button.configure(command=self.del_orders)
         self.del_button.configure(text="Διαγραφή επιλεγμένων")
@@ -612,8 +618,6 @@ class Toplevel1:
         self.del_button.configure(image=self.del_button_img)
         self.del_button.configure(compound="left")
         self.del_button.place_forget()
-
-        
 
         # global _img0
         _img0 = PhotoImage(file="icons8-search-50.png")
@@ -790,7 +794,6 @@ class Toplevel1:
         # Αν ο χρήστεις πατήσει στον τελευταίο πίνακα ενεργοποιείτε  το κουμπί
         # Διαφορετικά  απενεργοποιειτε
         if table_name == self.tables[-1]:
-
 
             self.empty_button.configure(background="red", foreground="white")
             self.empty_button.place(relx=0.701, rely=0.240, height=34, width=180)
@@ -1175,11 +1178,15 @@ class Toplevel1:
 
                 if file_ext != "pdf":  # Αν δεν είναι pdf
                     self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
-                    self.image = self.filenames[self.index][:-4]
+                    base = os.path.basename(self.selected_image)
+                    filename, ext = os.path.splitext(base)
+                    self.image = filename
 
                 else:  # Αν είναι pdf
                     self.selected_image = PIL.Image.open("icons/pdf.png")
-                    self.image = self.filenames[self.index][:-4]
+                    base = os.path.basename(self.selected_image)
+                    filename, ext = os.path.splitext(base)
+                    self.image = filename
 
                     if sys.platform == "win32":
                         subprocess.Popen([self.images_path + self.filenames[self.index]], shell=True)
@@ -1210,11 +1217,15 @@ class Toplevel1:
 
                 if file_ext != "pdf":
                     self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
-                    self.image = self.filenames[self.index][:-4]
+                    base = os.path.basename(self.selected_image)
+                    filename, ext = os.path.splitext(base)
+                    self.image = filename
 
                 else:
                     self.selected_image = PIL.Image.open("icons/pdf.png")
-                    self.image = self.filenames[self.index][:-4]
+                    base = os.path.basename(self.selected_image)
+                    filename, ext = os.path.splitext(base)
+                    self.image = filename
 
                     if sys.platform == "win32":
                         subprocess.Popen([self.images_path + self.filenames[self.index]], shell=True)
@@ -1236,9 +1247,11 @@ class Toplevel1:
 
         # Διαγραφή αρχείου απο την βαση
         def del_images_from_db():
+            self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
             con = sqlite3.connect(dbase)
             cur = con.cursor()
-            cur.execute("DELETE FROM Images WHERE Filename =?", (self.image,))
+            sql = "DELETE FROM Images WHERE Filename =? AND ID =?"
+            cur.execute(sql, (self.image, self.id))
             con.commit()
             cur.close()
             con.close()
@@ -1248,18 +1261,21 @@ class Toplevel1:
 
             self.filenames.remove(self.filenames[self.index])
             return
+
             # Αποθήκευση επιλεγμένης εικόνας
+
         def save_img():
             ext = self.filenames[self.index][-4:]
+            initialfile = f'{self.filenames[self.index]}'
 
             if ext != ".pdf":
 
                 files = [('Εικόνα', ext),
-                        ('All Files', '*.*')]
-                initialfile = f'{self.filenames[self.index]}'
+                         ('All Files', '*.*')]
 
                 im = PIL.Image.open(self.images_path + self.filenames[self.index])
-                file = filedialog.asksaveasfile(mode='wb', filetypes=files, defaultextension=files, initialfile=initialfile)
+                file = filedialog.asksaveasfile(mode='wb', filetypes=files, defaultextension=files,
+                                                initialfile=initialfile)
                 if file:
                     im.save(file)
                 edit_window.focus()
@@ -1270,7 +1286,8 @@ class Toplevel1:
                 # pdf_file => το αρχείο για save
                 pdf_file = self.images_path + self.filenames[self.index]
                 files = [('Pdf', '*.pdf*')]
-                file = filedialog.asksaveasfile(mode='wb', filetypes=files, defaultextension=files)
+                file = filedialog.asksaveasfile(mode='wb', filetypes=files, defaultextension=files,
+                                                initialfile=initialfile)
                 # get binary from pdf file
                 with open(pdf_file, "rb") as pdf_reader:  # opening for [r]eading as [b]inary
                     data = pdf_reader.read()
@@ -1278,6 +1295,7 @@ class Toplevel1:
                 with open(file.name, 'wb') as new_pdf_file:  # Εγραφή στο αρχείο
                     new_pdf_file.write(data)
                 edit_window.focus()
+
         # Αρχεία
         # Αποθύκευση
         self.save_btn = tk.Button(edit_window)
@@ -1336,8 +1354,11 @@ class Toplevel1:
         self.new_size = (500, 500)
         try:
             file = self.images_path + self.images_from_products[0]
-            if file[-3:] != "pdf":
-                self.image = self.images_from_products[0][:-4]
+            base = os.path.basename(file)
+            filename, ext = os.path.splitext(base)
+            self.image = filename
+            if ext != "pdf":
+                # self.image = self.images_from_products[0][:-4]
                 self.selected_image = PIL.Image.open(file)
                 image = self.selected_image.resize(self.new_size, resample=3)
                 photo = ImageTk.PhotoImage(image)
@@ -1350,7 +1371,6 @@ class Toplevel1:
                     os.system("okular " + str(self.images_path + self.images_from_products[self.index]))
         except IndexError:  # list index out of range
             pass
-
 
         # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
         # ---------------------- μετά την επεξεργασία   -------------------------------------
@@ -1395,7 +1415,6 @@ class Toplevel1:
             # ================================ Προσθήκη τελευταίας τροποποιησης ============================
             # edited_data[-1] ==>> Ειναι η ΠΑΡΑΤΗΡΗΣΗΣ
             now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-
 
             # Αν ο πίνακας είναι ο τελευταίος δλδ παραγγελιων να εισάγει μόνο τον χρήστη
             if self.table == self.tables[-1]:
@@ -1504,14 +1523,11 @@ class Toplevel1:
                                   foreground="white", border=3, anchor="center")
         update_button.place(relx=0.080, rely=0.950, relheight=0.060, relwidth=0.200)
 
-
         # print("Line 909 data to orders", selected_data)
         if self.table != tables[-1] and "ΚΩΔΙΚΟΣ" in self.headers and "ΠΕΡΙΓΡΑΦΗ" in self.headers:
             order_button = tk.Button(edit_window, command=lambda: self.add_to_orders(edit_window, selected_data),
                                      text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
             order_button.place(relx=0.300, rely=0.950, relheight=0.060, relwidth=0.220)
-
-
 
     # Προβολή αρχείων
     def show_files(self):
@@ -1522,18 +1538,18 @@ class Toplevel1:
 
         else:  # Αν προσπαθούμε να δούμε τις εικόνες  απο τον πίνακα παραγγελιών
             image_viewer.create_Toplevel1(self.top, self.id, dbase, self.code)
+
     # Προσθήκη αρχείων
     def add_files(self):
 
         self.files = filedialog.askopenfilenames(initialdir=os.getcwd(), title="Επιλογή αρχείων για προσθήκη",
-                                                     filetypes=[("Υπ. αρχεία", "*.jpg *.png *.pdf")])
+                                                 filetypes=[("Υπ. αρχεία", "*.jpg *.png *.jpeg *.pdf")])
 
         if self.files == "":  # αν ο χρήστης επιλεξει ακυρο
 
             return
         else:
             self.add_files_to_db()
-
 
     # Προσθήκη αρχείων στην βάση
     def add_files_to_db(self):
@@ -1560,19 +1576,18 @@ class Toplevel1:
             # Ελεγχος αν το αρχείο υπάρχει σε αυτο το προιόν
             try:
                 if filename in images[0]:
-
-                    messagebox.showerror("img!",
-                                     f'Το αρχείο {filename} υπάρχει.\nΠαρακαλώ αλλάξτε όνομα ή επιλεξτε διαφορετικό αρχείο')
+                    messagebox.showerror("Σφάλμα",
+                                         f'Το αρχείο {filename} υπάρχει.\nΠαρακαλώ αλλάξτε όνομα ή επιλεξτε διαφορετικό αρχείο')
                     return
-            except IndexError: # Όταν δεν υπάρχουν αρχεία
+            except IndexError:  # Όταν δεν υπάρχουν αρχεία
                 pass
             with open(img, 'rb') as f:
                 file = f.read()  # Εισαγωγη αρχείων
                 file_size = len(file)  # μεγεθος σε bytes
 
                 cu.execute("INSERT INTO Images(ID, Filename, Type, File_size, File, ΚΩΔΙΚΟΣ)"
-                               "VALUES(?,?,?,?,?,?)", (self.id, filename, ext, file_size, sqlite3.Binary(file),
-                                                       self.code))
+                           "VALUES(?,?,?,?,?,?)", (self.id, filename, ext, file_size, sqlite3.Binary(file),
+                                                   self.code))
 
         con.commit()
         con.close()
@@ -1675,6 +1690,7 @@ class Toplevel1:
             file_to_open = str(save_file.name)
             # print("file_to_open", file_to_open)
             subprocess.Popen(['libreoffice', file_to_open])
+
     # ========================================================================================
     # ------------------------------------- ΠΡΟΣΘΗΚΗ ΠΑΡΑΓΓΕΛΙΑΣ ----------------------------=
     # -----------------------****************** ΠΡΟΣΟΧΗ ************-------------------------=
@@ -1897,7 +1913,7 @@ class Toplevel1:
                 if odd_or_even % 2 == 0 and color:
                     self.Scrolledtreeview.insert("", "end", values=data,
                                                  tags=(
-                                                 "oddrow" + color[0] if len(color) < 2 else "oddrow" + color[-1],))
+                                                     "oddrow" + color[0] if len(color) < 2 else "oddrow" + color[-1],))
 
                 elif odd_or_even % 2 == 0 and not color:
                     self.Scrolledtreeview.insert("", "end", values=data, tags=("oddrow",))
@@ -1905,7 +1921,8 @@ class Toplevel1:
                 elif odd_or_even % 2 != 0 and color:
                     self.Scrolledtreeview.insert("", "end", values=data,
                                                  tags=(
-                                                 "evenrow" + color[0] if len(color) < 2 else "evenrow" + color[-1],))
+                                                     "evenrow" + color[0] if len(color) < 2 else "evenrow" + color[
+                                                         -1],))
                 else:
                     self.Scrolledtreeview.insert("", 'end', values=data, tags=("evenrow",))
 
@@ -1951,7 +1968,7 @@ class Toplevel1:
                     if lista[index][0] == "":  # Αφαίρεση "" αν είναι κενό δλδ
                         lista[index][0] = 0.00
                     if lista[index][0] == 'None':  # Αφαίρεση  αν είναι 'None'
-                        lista[index][0] = 0        # Αντικατάσταση με 0
+                        lista[index][0] = 0  # Αντικατάσταση με 0
 
             lista = sorted(lista, key=lambda x: float(x[0]), reverse=reverse)  # Ταξινόμηση για τιμές και σύνολα
         except ValueError as error:  # Αν δεν είναι αριθμοί βγάζει error για το float και το κάνει με το lista.sort()
@@ -1998,7 +2015,7 @@ class Toplevel1:
 
             return None
 
-# -----------------------------  Αδειασμα μόνο επιλεγμένων παραγγελιών   -------------------------------------------
+    # -----------------------------  Αδειασμα μόνο επιλεγμένων παραγγελιών   -------------------------------------------
     # ------------------Προσοχή διαγραφή του τελευταίου πίνακα (με αλφαβητική σειρά)------------------
     def del_orders(self):
 
@@ -2043,6 +2060,7 @@ class Toplevel1:
             messagebox.showinfo('Ακύρωση διαγραφής παραγγελιών', " Τίποτα δεν διαγράφηκε  ")
 
             return None
+
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
