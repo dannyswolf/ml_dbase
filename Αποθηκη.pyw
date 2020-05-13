@@ -16,6 +16,10 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.2.1   | Fixed edit table AA_ΠΕΛΑΤΕΣ                 ------------------------------------------13/05/2020
+
+Version V2.2.0   | Fixed Dont close edite window after order   ------------------------------------------06/05/2020
+
 Version V2.1.9   | Fixed Delete Images     --------------------------------------------------------------01/05/2020
 
 Version V2.1.8   | Fixed Images on edit window ----------------------------------------------------------26/02/2020
@@ -147,7 +151,7 @@ else:
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 
-dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+# dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 
@@ -388,11 +392,11 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2020"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.1.9'
+    Version    : '2.2.0'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
-    
+
 """)
 
 
@@ -457,7 +461,7 @@ class Toplevel1:
         self.top.minsize(300, 300)
         self.top.maxsize(2560, 1080)
         self.top.resizable(1, 1)
-        self.top.title("Αποθήκη V2.1.8")
+        self.top.title("Αποθήκη V2.2.0")
         self.top.configure(background="#C2C0BD")
         self.top.bind('<F1>', self.add_event)
         self.top.bind('<F3>', self.double_click)
@@ -1037,7 +1041,11 @@ class Toplevel1:
         self.selected_image = ""  # Εικόνα που προβάλεται PIL instance
         # self.selected_service_ID = self.id
         self.id = self.table + "_" + selected_item
-        self.code = selected_data[self.headers.index("ΚΩΔΙΚΟΣ")]
+        try:
+            self.code = selected_data[self.headers.index("ΚΩΔΙΚΟΣ")]
+        except ValueError as err:  # Οταν ο πίνακας δεν έχει πεδίο 'ΚΩΔΙΚΟΣ'
+            pass
+
         self.images_from_products, self.images_path = get_images_from_db(self.id, self.code)
         self.filenames = os.listdir(self.images_path)
         self.image = ""  # Ονομα αρχείου που προβάλεται "icon_resized.jpg"  "icon.png"
@@ -1709,7 +1717,7 @@ class Toplevel1:
             else:
                 # messagebox.showwarning("ΑΚΥΡΩΣΗ", "Το προϊόν δεν προστέθηκε στις παραγγελίες")
                 shutil.rmtree(images_path, ignore_errors=True)
-                edit_window.destroy()
+                edit_window.focus()
                 return None
         perigrafi_for_order = data_to_add[self.headers.index("ΠΕΡΙΓΡΑΦΗ")]
         now = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
@@ -1754,14 +1762,14 @@ class Toplevel1:
                     messagebox.showwarning("ΠΡΟΣΘΗΚΗ",
                                            "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
                     shutil.rmtree(images_path, ignore_errors=True)
-                    edit_window.destroy()
+                    edit_window.focus()
                     self.update_view(self.table)
                     return None
                 else:
                     messagebox.showwarning("ΑΚΥΡΩΣΗ",
                                            "Ο κωδικός {} δεν προστέθηκε στις παραγγελίες".format(code_for_order))
                     shutil.rmtree(images_path, ignore_errors=True)
-                    edit_window.destroy()
+                    edit_window.focus()
 
                     return None
             else:
@@ -1778,7 +1786,7 @@ class Toplevel1:
             order_conn.close()
             messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
             shutil.rmtree(images_path, ignore_errors=True)
-            edit_window.destroy()
+            edit_window.focus()
             self.update_view(self.table)
             return None
         # Αν δεν υπάρχουν παραγγελίες
