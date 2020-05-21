@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.2.2   | Separated images from DB                   ------------------------------------------21/05/2020
+
 Version V2.2.1   | Fixed edit table AA_ΠΕΛΑΤΕΣ                 ------------------------------------------13/05/2020
 
 Version V2.2.0   | Fixed Dont close edite window after order   ------------------------------------------06/05/2020
@@ -151,9 +153,12 @@ else:
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 
-# dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
+db_path = os.path.basename(os.path.abspath(dbase))
+
+
 
 # -------------ΔΗΜΗΟΥΡΓΕΙΑ LOG FILE------------------
 today = datetime.today().strftime("%d %m %Y")
@@ -403,43 +408,20 @@ def get_info():
 images_path = ""
 
 
-def get_images_from_db(selected_service_ID, code=None):
-    global images_path
-    con = sqlite3.connect(dbase)
-    cursor = con.cursor()
-    if code:  # όταν θέλουμε να δούμε τις εικόνες απο τον πίνακα παραγγελιών
-        cursor.execute("SELECT * FROM Images WHERE ΚΩΔΙΚΟΣ =?", (code,))
-        images_from_orders = cursor.fetchall()
-        cursor.execute("SELECT * FROM Images WHERE ID =?", (selected_service_ID,))
-        images_from_code = cursor.fetchall()
-        images = images_from_orders + images_from_code
-        # messagebox.showinfo("images", f'{images}')
-        # code = None
+def get_images_from_db(table, spare_part_id):
+    BASE_DIR = os.path.dirname(os.path.abspath(dbase))
+    SPARE_PARTS_ROOT = os.path.join(BASE_DIR, "SpareParts_images/")
+    files = None
+    images_path = os.path.join(SPARE_PARTS_ROOT, f"{table}/{spare_part_id}/")
+    try:
+        files = os.listdir(images_path)
 
-    else:
-        cursor.execute("SELECT * FROM Images WHERE ID =?", (selected_service_ID,))
-        images = cursor.fetchall()
-        # selected_service_ID = None
+    except NotADirectoryError:  # Not a directory
+        pass
+    except FileNotFoundError:  # [Errno 2] No such file or directory
+        pass
 
-    cursor.close()
-    con.close()
-
-    if sys.platform == "win32":
-        images_path = "/images/" + str(selected_service_ID) + "/"
-    elif sys.platform == "linux":
-        images_path = "images/" + str(selected_service_ID) + "/"
-
-    if not os.path.exists(images_path):
-        os.makedirs(images_path)
-    # Δημιουργεία εικόνων
-    # images[num][4] ==> Η εικόνα σε sqlite3.Binary
-    # images[num][2 ] =>> Ονομα αρχείου
-    for num, i in enumerate(images):
-        with open(images_path + images[num][1] + images[num][2], 'wb') as image_file:
-            image_file.write(images[num][4])
-    images = os.listdir(images_path)
-
-    return images, images_path
+    return files, images_path
 
 
 def convert_bytes(size):
@@ -472,6 +454,7 @@ class Toplevel1:
         self.table = ""  # Mε το πάτιμα του κουμπιου αλλάζει ο πίνακας
         self.headers = []  # Για να περνουμε της επικεφαλίδες καθε πίνακα
         self.images = []  # Εικόνες Κουμιών
+        self.images_path = None
         self.files = ""  # Αρχεία (εικόνες και pdf στην βάση)
         self.len_images = ""  # Σύνολο αρχείων
         self.id = ""  # Ονομα πίνακα και ID προιόντος ειναι το ID των αρχείων που προσθέτουμε
@@ -540,9 +523,12 @@ class Toplevel1:
 
         self.top.configure(menu=self.menubar)
 
+
+
         # --------------------------- Πίνακες - Κουμπιά ------------------------------
         self.xspot = 0.015
         self.yspot = 0.025
+
 
         for index, table in enumerate(self.tables):
             if index == 11:
@@ -602,8 +588,11 @@ class Toplevel1:
         # self.search_btn.configure(pady="15")
         self.search_btn.configure(text='''Αναζήτηση''')
         self.search_btn.configure(relief=RAISED)
+        self.search_btn_img = PhotoImage(file="icons8-search-50.png")
+        self.search_btn.configure(image=self.search_btn_img)
         self.search_btn.configure(compound='left')
         self.search_btn.configure(command=lambda: self.search(self.search_data))
+
         # Κουμπί για άδειασμα παραγγελίων
         self.empty_button = tk.Button(self.top, text="ΔΙΑΓΡΑΦΗ ΟΛΩΝ", command=lambda: self.empty_table(),
                                       bg="red", fg="white", bd=3, padx=3, pady=10)
@@ -623,9 +612,6 @@ class Toplevel1:
         self.del_button.configure(compound="left")
         self.del_button.place_forget()
 
-        # global _img0
-        _img0 = PhotoImage(file="icons8-search-50.png")
-        self.search_btn.configure(image=_img0)
 
         # ---------------------- Tree -------------------------------
         self.yspot += 0.050
@@ -1033,11 +1019,6 @@ class Toplevel1:
         edit_window = tk.Toplevel(self.top)
         self.edit_window = edit_window
 
-        def del_files(edit_window_top):
-            shutil.rmtree(self.images_path, ignore_errors=True)
-            edit_window_top.destroy()
-
-        self.edit_window.protocol("WM_DELETE_WINDOW", lambda x=self.edit_window: del_files(x))
         self.selected_image = ""  # Εικόνα που προβάλεται PIL instance
         # self.selected_service_ID = self.id
         self.id = self.table + "_" + selected_item
@@ -1046,8 +1027,7 @@ class Toplevel1:
         except ValueError as err:  # Οταν ο πίνακας δεν έχει πεδίο 'ΚΩΔΙΚΟΣ'
             pass
 
-        self.images_from_products, self.images_path = get_images_from_db(self.id, self.code)
-        self.filenames = os.listdir(self.images_path)
+        self.filenames, self.images_path = get_images_from_db(self.table, selected_item)
         self.image = ""  # Ονομα αρχείου που προβάλεται "icon_resized.jpg"  "icon.png"
         self.image_size = ""  # Μέγεθος αρχείου
         self.index = 0
@@ -1180,26 +1160,34 @@ class Toplevel1:
         # Εμφάνηση επόμενης
         def show_next():
             self.index = self.index + 1
-
+            try:
+                file = os.path.join(self.images_path, self.filenames[self.index])
+            except IndexError: # list index out of range
+                messagebox.showerror("Προσοχή", f"Υπάρχουν μόνο {len(self.filenames)} αρχεία")
+                return
             try:
                 file_ext = self.filenames[self.index][-3:]
 
                 if file_ext != "pdf":  # Αν δεν είναι pdf
-                    self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
-                    base = os.path.basename(self.selected_image)
+                    self.selected_image = PIL.Image.open(os.path.join(self.images_path, self.filenames[self.index]))
+                    # self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
+                    self._image = os.path.join(self.images_path, self.filenames[self.index])
+                    base = os.path.basename(self._image)
                     filename, ext = os.path.splitext(base)
                     self.image = filename
 
                 else:  # Αν είναι pdf
                     self.selected_image = PIL.Image.open("icons/pdf.png")
-                    base = os.path.basename(self.selected_image)
-                    filename, ext = os.path.splitext(base)
-                    self.image = filename
 
-                    if sys.platform == "win32":
-                        subprocess.Popen([self.images_path + self.filenames[self.index]], shell=True)
-                    elif sys.platform == "linux":
-                        os.system("okular " + str(self.images_path + self.filenames[self.index]))
+                    if sys.platform == "linux":
+
+                        file_to_open = str(file).replace(" ", '\\ ')
+                        # file_to_open = os.path.join(self.images_path + self.filenames[self.index])
+                        os.system(f'okular {file_to_open}')
+                    else:
+                        file_to_open = str(file)
+
+                        subprocess.Popen(file_to_open, shell=True)
 
             except FileNotFoundError:
                 messagebox.showinfo("Προσοχή", "Το αρχείο δεν βρέθηκε")
@@ -1215,30 +1203,39 @@ class Toplevel1:
 
         # Εμφάνηση προηγούμενης
         def show_previous():
+
             try:
                 if self.index > 0:
                     self.index = self.index - 1
                 else:
-                    raise IndexError
+                    messagebox.showerror("Προσοχή", f"Υπάρχουν μόνο {len(self.filenames)} αρχεία")
+                    return
 
                 file_ext = self.filenames[self.index][-3:]
 
                 if file_ext != "pdf":
-                    self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
-                    base = os.path.basename(self.selected_image)
+                    self.selected_image = PIL.Image.open(os.path.join(self.images_path, self.filenames[self.index]))
+                    self._image = os.path.join(self.images_path, self.filenames[self.index])
+                    # self.selected_image = PIL.Image.open(self.images_path + self.filenames[self.index])
+                    base = os.path.basename(self._image)
                     filename, ext = os.path.splitext(base)
                     self.image = filename
 
                 else:
-                    self.selected_image = PIL.Image.open("icons/pdf.png")
-                    base = os.path.basename(self.selected_image)
-                    filename, ext = os.path.splitext(base)
-                    self.image = filename
 
-                    if sys.platform == "win32":
-                        subprocess.Popen([self.images_path + self.filenames[self.index]], shell=True)
-                    elif sys.platform == "linux":
-                        os.system("okular " + str(self.images_path + self.filenames[self.index]))
+                    file = os.path.join(self.images_path, self.filenames[self.index])
+
+                    self.selected_image = PIL.Image.open("icons/pdf.png")
+
+                    if sys.platform == "linux":
+
+                        file_to_open = str(file).replace(" ", '\\ ')
+                        # file_to_open = os.path.join(self.images_path + self.filenames[self.index])
+                        os.system(f'okular {file_to_open}')
+                    else:
+                        file_to_open = str(file)
+
+                        subprocess.Popen(file_to_open, shell=True)
 
             except FileNotFoundError:
                 messagebox.showinfo("Προσοχή", "Το αρχείο δεν βρέθηκε")
@@ -1256,13 +1253,7 @@ class Toplevel1:
         # Διαγραφή αρχείου απο την βαση
         def del_images_from_db():
             self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
-            con = sqlite3.connect(dbase)
-            cur = con.cursor()
-            sql = "DELETE FROM Images WHERE Filename =? AND ID =?"
-            cur.execute(sql, (self.image, self.id))
-            con.commit()
-            cur.close()
-            con.close()
+
             messagebox.showinfo("Προσοχή", f"Το {self.image} διαγράφηκε")
 
             os.remove(self.images_path + self.filenames[self.index])
@@ -1361,11 +1352,11 @@ class Toplevel1:
 
         self.new_size = (500, 500)
         try:
-            file = self.images_path + self.images_from_products[0]
+            file = os.path.join(self.images_path, self.filenames[self.index])
             base = os.path.basename(file)
             filename, ext = os.path.splitext(base)
             self.image = filename
-            if ext != "pdf":
+            if ext != ".pdf":
                 # self.image = self.images_from_products[0][:-4]
                 self.selected_image = PIL.Image.open(file)
                 image = self.selected_image.resize(self.new_size, resample=3)
@@ -1373,13 +1364,26 @@ class Toplevel1:
                 self.image_label.configure(image=photo)
                 self.image_label.image = photo
             else:
-                if sys.platform == "win32":
-                    subprocess.Popen(self.images_path + self.images_from_products[self.index], shell=True)
-                elif sys.platform == "linux":
-                    os.system("okular " + str(self.images_path + self.images_from_products[self.index]))
+                self.selected_image = PIL.Image.open("icons/pdf.png")
+                image = self.selected_image.resize(self.new_size, resample=3)
+                photo = ImageTk.PhotoImage(image)
+                self.image_label.configure(image=photo)
+                self.image_label.image = photo
+
+                if sys.platform == "linux":
+
+                    file_to_open = str(file).replace(" ", '\\ ')
+                    # file_to_open = os.path.join(self.images_path + self.filenames[self.index])
+                    os.system(f'okular {file_to_open}')
+                else:
+                    file_to_open = str(file)
+
+                    subprocess.Popen(file_to_open, shell=True)
+
         except IndexError:  # list index out of range
             pass
-
+        except TypeError:  # 'NoneType' object is not subscriptable Οταν δεν έχει εικόνες
+            pass
         # --------------------   Προσθήκη δεδομένων στην βάση -------------------------------
         # ---------------------- μετά την επεξεργασία   -------------------------------------
 
@@ -1537,15 +1541,6 @@ class Toplevel1:
                                      text="Προσθήκη στις παραγγελίες", bg="blue", fg="white", bd=3)
             order_button.place(relx=0.300, rely=0.950, relheight=0.060, relwidth=0.220)
 
-    # Προβολή αρχείων
-    def show_files(self):
-        self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
-
-        if self.table != self.tables[-1]:  # Αν προσπαθούμε να δούμε τις εικόνες οχι απο τον πίνακα παραγγελιών
-            image_viewer.create_Toplevel1(self.top, self.id, dbase)
-
-        else:  # Αν προσπαθούμε να δούμε τις εικόνες  απο τον πίνακα παραγγελιών
-            image_viewer.create_Toplevel1(self.top, self.id, dbase, self.code)
 
     # Προσθήκη αρχείων
     def add_files(self):
@@ -1563,42 +1558,35 @@ class Toplevel1:
     def add_files_to_db(self):
         if self.files == "":
             return
-        self.id = self.table + "_" + str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
-        con = sqlite3.connect(dbase)
-        cursor = con.cursor()
-        cursor.execute("SELECT Filename FROM Images WHERE ID =?", (self.id,))
-        # υπάρχοντα αρχεία
-        images = cursor.fetchall()
+        self.id =  str(self.Scrolledtreeview.set(self.Scrolledtreeview.selection(), "#1"))
+        BASE_DIR = os.path.dirname(os.path.abspath(dbase))
+        SPARE_PARTS_ROOT = os.path.join(BASE_DIR, "SpareParts_images/")
 
-        cursor.close()
-        con.close()
+        images_path = os.path.join(SPARE_PARTS_ROOT, f"{self.table}/{self.id}/")
+        if not os.path.exists(images_path):
+            os.makedirs(images_path)
 
-        con = sqlite3.connect(dbase)
-        cu = con.cursor()
+        files = os.listdir(images_path)
 
         # Εισαγωγη αρχείων
         for img in self.files:
-
-            base = os.path.basename(img)
-            filename, ext = os.path.splitext(base)
             # Ελεγχος αν το αρχείο υπάρχει σε αυτο το προιόν
-            try:
-                if filename in images[0]:
-                    messagebox.showerror("Σφάλμα",
-                                         f'Το αρχείο {filename} υπάρχει.\nΠαρακαλώ αλλάξτε όνομα ή επιλεξτε διαφορετικό αρχείο')
-                    return
-            except IndexError:  # Όταν δεν υπάρχουν αρχεία
-                pass
-            with open(img, 'rb') as f:
-                file = f.read()  # Εισαγωγη αρχείων
-                file_size = len(file)  # μεγεθος σε bytes
+            file_name = os.path.basename(img)
+            if file_name in files:
 
-                cu.execute("INSERT INTO Images(ID, Filename, Type, File_size, File, ΚΩΔΙΚΟΣ)"
-                           "VALUES(?,?,?,?,?,?)", (self.id, filename, ext, file_size, sqlite3.Binary(file),
-                                                   self.code))
+                messagebox.showerror("Σφάλμα",
+                                         f'Το αρχείο {file_name} υπάρχει.\nΠαρακαλώ αλλάξτε όνομα ή επιλεξτε διαφορετικό αρχείο')
+                return
+            else:
 
-        con.commit()
-        con.close()
+                # Εισαγωγη αρχείων
+                # shutil.copyfile(src, dst, *, follow_symlinks=True)
+                if not os.path.exists(images_path):
+                    os.makedirs(images_path, exist_ok=True)
+                shutil.copy(img, images_path, follow_symlinks=False)
+                messagebox.showinfo("Επιτυχεία",
+                                     f'Το αρχείο {file_name} προστέθηκε επιτυχώς')
+
         self.edit_window.focus()
 
     def backup(self):
