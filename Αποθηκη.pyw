@@ -16,6 +16,8 @@ Sqlite Γραφικό περιβάλλον με Python3
 ***********************  ΠΡΟΣΟΧΗ Ο ΤΕΛΕΥΤΑΙΟΣ ΠΙΝΑΚΑΣ ΠΡΕΠΕΙ ΝΑ ΕΙΝΑΙ Η ΠΑΡΑΓΓΕΛΙΕΣ **************************
 **************************************************************************************************************
 
+Version V2.2.3   | Fixed update product after add to orders   ------------------------------------------16/06/2020
+
 Version V2.2.2   | Separated images from DB                   ------------------------------------------21/05/2020
 
 Version V2.2.1   | Fixed edit table AA_ΠΕΛΑΤΕΣ                 ------------------------------------------13/05/2020
@@ -153,7 +155,7 @@ else:
 # dbase = "\\\\192.168.1.33\\εγγραφα\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 # qnap dbase "\\\\192.168.1.200\\Public\\DROPBOX\\ΕΓΓΡΑΦΑ\\2.  ΑΠΟΘΗΚΗ\\3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 
-dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
+# dbase = "3. ΚΑΙΝΟΥΡΙΑ_ΑΠΟΘΗΚΗ.db"
 tables = []
 user = getpass.getuser()
 db_path = os.path.basename(os.path.abspath(dbase))
@@ -397,7 +399,7 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2020"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.2.0'
+    Version    : '2.2.3'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -443,7 +445,7 @@ class Toplevel1:
         self.top.minsize(300, 300)
         self.top.maxsize(2560, 1080)
         self.top.resizable(1, 1)
-        self.top.title("Αποθήκη V2.2.0")
+        self.top.title("Αποθήκη V2.2.3")
         self.top.configure(background="#C2C0BD")
         self.top.bind('<F1>', self.add_event)
         self.top.bind('<F3>', self.double_click)
@@ -1062,7 +1064,7 @@ class Toplevel1:
                     try:
                         color = [color for color in colors if color in selected_data[self.headers.index("ΠΕΡΙΓΡΑΦΗ")]]
                     except TypeError:
-                        print("Line 1070 Η περιγραφή δεν μπορει να είναι NoneType")
+                        print("Line 1070 Η περιγραφή δεν μπορει να είναι NoneType Line 1065")
                         color = 0
                     perigrafi = ScrolledText(edit_window, height=3, border=2)
                     # Αν υπάρχει χρώμα να ελέγχει ποιο χρώμα και ανάλογα να τροποποιεί  το κείμενο
@@ -1408,7 +1410,7 @@ class Toplevel1:
             # ====================ΕΠΙΛΕΓΜΈΝΟ ID =================
             selected_item = self.Scrolledtreeview.selection()
             selected_id = self.Scrolledtreeview.set(selected_item, "#1")
-            # print("==========selected_id==========LINE 469 \n", selected_id)
+            print("==========selected_id==========LINE 469 \n", selected_id)
 
             # Θα βάζει το data_to_add απο πάνω γραμμη 371
             # βαζουμε και το id που χρειάζεται για το WHERE ID=?
@@ -1505,8 +1507,9 @@ class Toplevel1:
             # sql_insert = "INSERT INTO  " + table + "(" + culumns + ")" + "VALUES(NULL, ?, ?, ?, ?, ?, ?, ?);"
             # sqlite_update_query = """Update new_developers set salary = ?, email = ? where id = ?"""
             edit_cursor.execute("UPDATE " + self.table + "  SET " + culumns + " WHERE ID=? ", (tuple(edited_data)))
-
+            print("edited_data", edited_data)
             edit_conn.commit()
+            edit_conn.close()
             print(60 * "*")
             print(50 * "*", "Το προΐον ενημερώθηκε με επιτυχία", 50 * "*")
             print(60 * "*")
@@ -1751,7 +1754,7 @@ class Toplevel1:
                                            "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
                     shutil.rmtree(images_path, ignore_errors=True)
                     edit_window.focus()
-                    self.update_view(self.table)
+                    # self.update_view(self.table)
                     return None
                 else:
                     messagebox.showwarning("ΑΚΥΡΩΣΗ",
@@ -1775,7 +1778,7 @@ class Toplevel1:
             messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
             shutil.rmtree(images_path, ignore_errors=True)
             edit_window.focus()
-            self.update_view(self.table)
+            # self.update_view(self.table)
             return None
         # Αν δεν υπάρχουν παραγγελίες
         if not data_from_paraggelies:
@@ -1788,14 +1791,14 @@ class Toplevel1:
                 messagebox.showwarning("ΠΡΟΣΘΗΚΗ", "Ο κωδικός {} προστέθηκε στις παραγγελίες".format(code_for_order))
                 shutil.rmtree(images_path, ignore_errors=True)
                 edit_window.destroy()
-                self.update_view(self.table)
+                # self.update_view(self.table)
                 return None
             except sqlite3.ProgrammingError as error:
                 print("Σφάλμα. Line 1701..sqlite3.ProgrammingError {}".format(error))
                 messagebox.showwarning("Σφάλμα...", "Line 1702..sqlite3.ProgrammingError {} ".format(error))
                 shutil.rmtree(images_path, ignore_errors=True)
                 edit_window.destroy()
-                self.update_view(self.table)
+                # self.update_view(self.table)
                 return None
         else:
             return None
