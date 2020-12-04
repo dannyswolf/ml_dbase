@@ -401,7 +401,7 @@ def get_info():
     Αuthor     : "Jordanis Ntini"
     Copyright  : "Copyright © 2020"
     Credits    : ['Athanasia Tzampazi']
-    Version    : '2.2.3'
+    Version    : '2.2.4'
     Maintainer : "Jordanis Ntini"
     Email      : "ntinisiordanis@gmail.com"
     Status     : 'Development' 
@@ -447,7 +447,7 @@ class Toplevel1:
         self.top.minsize(300, 300)
         self.top.maxsize(2560, 1080)
         self.top.resizable(1, 1)
-        self.top.title("Αποθήκη V2.2.3")
+        self.top.title("Αποθήκη V2.2.4")
         self.top.configure(background="#C2C0BD")
         self.top.bind('<F1>', self.add_event)
         self.top.bind('<F3>', self.double_click)
